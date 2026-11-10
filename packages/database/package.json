@@ -6,14 +6,19 @@
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
     "studio": "prisma studio",
+    "validate": "prisma validate",
     "typecheck": "tsc --noEmit",
     "build": "prisma generate"
   },
   "dependencies": {
-    "@prisma/client": "^6.0.0"
+    "@prisma/client": "7.10.0",
+    "@prisma/adapter-pg": "7.10.0",
+    "pg": "^8.16.0",
+    "dotenv": "^17.2.0"
   },
   "devDependencies": {
-    "prisma": "^6.0.0",
-    "typescript": "^5.9.0"
+    "prisma": "7.10.0",
+    "typescript": "^5.9.0",
+    "@types/pg": "^8.15.0"
   }
 }
