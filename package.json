@@ -1,0 +1,21 @@
+{
+  "name": "quali-bispo",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.18.0",
+  "scripts": {
+    "dev": "pnpm -r --parallel --filter @quali/api --filter @quali/clube --filter @quali/admin dev",
+    "dev:clube": "pnpm --filter @quali/clube dev",
+    "dev:admin": "pnpm --filter @quali/admin dev",
+    "dev:api": "pnpm --filter @quali/api dev",
+    "db:generate": "pnpm --filter @quali/database generate",
+    "db:migrate": "pnpm --filter @quali/database migrate",
+    "db:studio": "pnpm --filter @quali/database studio",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r --filter @quali/contracts --filter @quali/database --filter @quali/api --filter @quali/admin --filter @quali/clube build"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "@types/node": "^22.0.0"
+  }
+}

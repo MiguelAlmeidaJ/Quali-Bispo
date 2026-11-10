@@ -1,20 +1,30 @@
-# Quali Bispo
+# Quali Bispo — Refactor
 
-Sistema Quali Benefícios — modernização do Adm Quali e Clube Quali em um monorepo PNPM.
+Base inicial do monorepo PNPM para o Adm Quali, Clube Quali e API compartilhada.
 
-## Arquitetura planejada
+## Estrutura
 
-- `apps/admin`: painel administrativo com Next.js.
-- `apps/clube`: Clube Quali com Next.js.
-- `apps/api`: API NestJS em `/v1`.
-- `packages/contracts`: contratos e validação compartilhados.
-- `packages/database`: Prisma e PostgreSQL compartilhados.
-- Docker Compose para desenvolvimento.
+- `apps/admin`: Next.js com basePath `/admin` (servidor interno 3003).
+- `apps/clube`: Next.js com roteamento de `/admin` para o app administrativo (porta 3002).
+- `apps/api`: NestJS (porta 4002, prefixo `/v1`).
+- `packages/contracts`: schemas compartilhados com Zod.
+- `packages/database`: modelo inicial Prisma/PostgreSQL.
+- `compose.yaml`: PostgreSQL local.
 
-## Desenvolvimento
+## Início
 
-A implementação será realizada inicialmente na branch [`refactor`](../../tree/refactor), sem alterar a identidade visual dos sistemas atuais.
+Requer Node.js, PNPM e Docker.
 
-**Endereços locais planejados:** Clube `http://127.0.0.1:3002/`, Admin `http://127.0.0.1:3002/admin` e API `http://127.0.0.1:4002/v1`.
+```bash
+cp .env.example .env
+pnpm install
+docker compose up -d
+pnpm db:generate
+pnpm dev
+```
 
-> Projeto em construção. Não utilizar credenciais demonstrativas ou HTML legado com senhas embutidas em produção.
+Clube: http://127.0.0.1:3002/ · Admin: http://127.0.0.1:3002/admin · API: http://127.0.0.1:4002/v1/health
+
+## Situação
+
+Esta é somente a base estrutural, não a migração funcional. Páginas provisórias foram adicionadas. O HTML legado original e suas senhas embutidas **não foram incluídos** no repositório público. A migração deve preservar identidade visual, implementar autenticação no servidor e consolidar as regras na API antes de qualquer implantação em produção.
