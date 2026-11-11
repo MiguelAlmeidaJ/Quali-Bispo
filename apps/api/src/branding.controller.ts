@@ -20,7 +20,7 @@ export class BrandingController {
     try {
       const content = await readBrandAsset(kind);
       response.setHeader("Content-Type", "image/png");
-      response.setHeader("Cache-Control", "no-cache, must-revalidate");
+      response.setHeader("Cache-Control", "no-store");
       response.setHeader("X-Content-Type-Options", "nosniff");
       return response.send(content);
     } catch (error) {
