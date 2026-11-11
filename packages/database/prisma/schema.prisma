@@ -31,6 +31,7 @@ model User {
   active       Boolean  @default(true)
   partnerId    String?  @db.Uuid
   partner      Partner? @relation(fields: [partnerId], references: [id])
+  financeAttendances FinanceAttendance[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   @@index([role])
@@ -51,6 +52,7 @@ model Partner {
   users           User[]
   attendances     Attendance[]
   financeCustomers FinanceCustomer[]
+  financeAttendances FinanceAttendance[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -136,6 +138,8 @@ model CatalogItem {
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
 
+  attendances      FinanceAttendance[]
+
   @@index([active, category, displayOrder])
   @@index([group])
 }
@@ -171,6 +175,7 @@ model FinanceCustomer {
   rawStatus      String?
   status         FinanceStatus  @default(UNSPECIFIED)
   issues         FinanceIssue[]
+  attendances    FinanceAttendance[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
@@ -199,4 +204,29 @@ model FinanceIssue {
 
   @@index([status, resolved])
   @@index([customerId])
+}
+
+model FinanceAttendance {
+  id               String          @id @default(uuid()) @db.Uuid
+  customerId       String          @db.Uuid
+  customer         FinanceCustomer @relation(fields: [customerId], references: [id])
+  partnerId        String          @db.Uuid
+  partner          Partner         @relation(fields: [partnerId], references: [id])
+  catalogItemId    String          @db.Uuid
+  catalogItem      CatalogItem     @relation(fields: [catalogItemId], references: [id])
+  serviceName      String
+  serviceType      String
+  fullPriceCents   Int
+  chargedCents     Int
+  performedAt      DateTime        @default(now())
+  registeredById   String          @db.Uuid
+  registeredBy     User            @relation(fields: [registeredById], references: [id])
+  voidedAt         DateTime?
+  voidedById       String?         @db.Uuid
+  voidReason       String?
+  createdAt        DateTime        @default(now())
+
+  @@index([performedAt, voidedAt])
+  @@index([partnerId, performedAt])
+  @@index([customerId, performedAt])
 }
