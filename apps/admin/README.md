@@ -177,3 +177,28 @@ O campo **Unidade** de Novo Cliente/Editar Cliente agora é um seletor alimentad
 O texto `FinanceCustomer.unit` originalmente importado da planilha **não é descartado**. Se o cliente foi importado e ainda não possui `partnerId`, a tela de edição mostra o valor textual histórico e solicita escolha manual da unidade correspondente. Nenhum vínculo é feito automaticamente por semelhança de nomes; uma edição sem vínculo preexistente pode salvar outros dados sem forçar uma escolha. A listagem prefere o nome da unidade vinculada e usa o texto importado quando ainda não houver associação.
 
 O aviso visual de campos obrigatórios usa `span.customer-field-title` para manter o asterisco na mesma linha da legenda. Alterar o modelo exige `pnpm db:generate` e `pnpm db:migrate` antes de gerar os builds de API/Admin. Não é necessário repetir a importação financeira; os valores antigos ficam preservados.
+
+## Vincular em lote as unidades da planilha
+
+Após importar os clientes e criar as unidades na Rede Credenciada, execute **na raiz do repositório**:
+
+```powershell
+pnpm db:vincular:unidades
+```
+
+Por padrão, o comando **simula** e mostra quantos cadastros possuem correspondência exata (ignorando apenas acentos, espaços duplicados e maiúsculas/minúsculas) nos quatro nomes aprovados:
+
+- `Largo da Batalha` → `Unidade Largo da Batalha`
+- `Mutua` (também `Mutuá`) → `Unidade Mutuá`
+- `Venda da Cruz` → `Unidade Venda da Cruz`
+- `Vila Lage` → `Unidade Vila Lage`
+
+Se o resumo estiver correto e as quatro unidades de destino existirem uma vez cada no banco, confirme:
+
+```powershell
+pnpm db:vincular:unidades --apply
+```
+
+O comando atualiza apenas `FinanceCustomer.partnerId IS NULL`, nunca substitui vínculos existentes nem modifica o campo `unit` original, CPF, pagamentos ou pendências. Clientes com unidade vazia ou fora dessas quatro correspondências ficam para revisão. Cada grupo alterado gera um `AuditLog` com quantidade, sem dados pessoais. Executar novamente é seguro: registros já vinculados são ignorados.
+
+**Não é necessária migração, seed ou reimportação do Excel.** O comando atualiza diretamente o banco configurado por `DATABASE_URL`; confira o ambiente antes de usar `--apply`. Atualize a página Clientes após concluído. Execute `pnpm db:generate` apenas se seu Prisma Client estiver desatualizado.
