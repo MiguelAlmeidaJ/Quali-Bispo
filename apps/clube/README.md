@@ -28,3 +28,9 @@ O componente `src/components/sections/Partners.tsx` consulta `GET /v1/partners` 
 `PriceTable.tsx`, `Benefits.tsx` e `Simulator.tsx` obtêm os procedimentos ativos de `GET /v1/catalog`, roteado via `next.config.mjs`. Não há valores de consultas ou exames codificados em `src/data/catalog.ts`. Alterações do Admin aparecem após recarregar a página. A disponibilidade depende da API e da importação inicial do catálogo.
 
 **Nota:** o simulador é uma estimativa baseada na média dos registros ativos e não representa preço final ou garantia de atendimento.
+
+## Lista resumida e tabela completa
+
+A seção de preços da home (`src/components/sections/PriceTable.tsx`) mostra **até 15 procedimentos**, respeitando busca e filtro, com o botão **Ver mais valores** para a rota pública `/valores`. A página completa (`app/valores/page.tsx`) exibe **20 resultados por página** e navegação anterior/próxima. Ambas consultam o catálogo ativo do banco pela API; nenhuma delas duplica os preços.
+
+Os cards de **Benefícios** mostram o valor normal em cinza e riscado e o valor Quali em verde com destaque. Os links do menu e rodapé foram atualizados para funcionar também fora da home.
