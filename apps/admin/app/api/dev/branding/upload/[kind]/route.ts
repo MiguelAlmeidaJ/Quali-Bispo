@@ -5,6 +5,9 @@ export async function POST(request: NextRequest, context: { params: Promise<{ ki
   if (kind !== "logo" && kind !== "favicon") {
     return NextResponse.json({ error: "Imagem inválida" }, { status: 400 });
   }
+  if (request.headers.get("sec-fetch-site") === "cross-site") {
+    return NextResponse.json({ error: "Origem não permitida" }, { status: 403 });
+  }
   const token = request.cookies.get("quali_session")?.value;
   if (!token) return NextResponse.json({ error: "Sessão necessária" }, { status: 401 });
   const contentType = request.headers.get("content-type") || "";
