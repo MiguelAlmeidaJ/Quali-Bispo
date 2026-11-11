@@ -13,3 +13,6 @@
 - Perfis: DEV (gestão técnica, contas ADMIN, auditoria e identidade visual), ADMIN (operação geral), PARTNER (operações restritas). Conferir permissão na API e consultar estado ativo no banco em cada operação.
 - Nunca incluir senha DEV fixa no código; bootstrap DEV apenas via variável de ambiente local e seed, sem sobrescrever senha existente.
 - Registros de auditoria não devem conter senhas, JWTs nem dados pessoais em claro.
+
+- Identidade visual: arquivo PNG logo/favicon apenas no backend via endpoint DEV autenticado, limite 2 MB e normalização com Sharp. Não versionar arquivos enviados nem expor diretórios de armazenamento.
+- Ambos os frontends devem ler identidade visual da mesma API pública e manter fallback quando a API estiver indisponível.
