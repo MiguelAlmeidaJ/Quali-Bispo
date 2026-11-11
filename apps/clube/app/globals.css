@@ -100,7 +100,7 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
 .benefit-price-normal{font-size:.75rem;color:#8995a2;text-decoration:line-through;text-decoration-thickness:1px;font-weight:600}
 .benefit-price-quali{color:var(--verde);font-size:.85rem;font-weight:900}
 .catalog-note{display:block;color:var(--tx2);font-size:.75rem;margin-top:4px}
-.public-values-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 4px 0;color:var(--tx2);font-size:.88rem}
+.public-values-footer{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;padding:18px 4px 0;color:var(--tx2);font-size:.88rem}
 .values-more-link{padding:11px 20px;border-radius:11px;white-space:nowrap}
 .public-values-pagination{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .public-values-pagination button{padding:9px 13px;color:var(--azul);background:#fff;border:1px solid var(--bd);border-radius:9px;font-size:.85rem;font-weight:800;cursor:pointer}

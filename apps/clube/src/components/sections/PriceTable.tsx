@@ -41,13 +41,12 @@ export function PriceTable({full=false}:{full?:boolean}){
  {!loading&&!error&&filtered.length===0&&<p className="empty">Nenhum procedimento disponível para sua busca.</p>}
  </div>
  {!loading&&!error&&filtered.length>0&&<div className="public-values-footer">
-  <span>{full?`Exibindo ${(currentPage-1)*pageSize+1}–${Math.min(currentPage*pageSize,filtered.length)} de ${filtered.length} procedimentos`:`Exibindo até 15 de ${filtered.length} procedimentos`}</span>
   {full?<nav className="public-values-pagination" aria-label="Paginação dos valores">
    <button type="button" disabled={currentPage===1} onClick={()=>setPage(v=>Math.max(1,v-1))}>Anterior</button>
    <span>Página {currentPage} de {totalPages}</span>
    <button type="button" disabled={currentPage>=totalPages} onClick={()=>setPage(v=>Math.min(totalPages,v+1))}>Próxima</button>
   </nav>:<Link href="/valores" className="btn values-more-link">Ver mais valores →</Link>}
  </div>}
- <p className="hint spaced">Os preços podem ser atualizados pela rede Quali. Confirme a disponibilidade e as condições diretamente com o parceiro.</p>
+ <p className="hint spaced center">Consultas médicas, psicologia e nutrição: até 3 por mês por beneficiário (somadas). Valores sujeitos a alteração sem aviso prévio.</p>
  </div></section>;
 }
