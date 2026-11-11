@@ -24,7 +24,7 @@ async function requireFinanceStaff(header?:string){
 const customerFields={
  id:true,importKey:true,name:true,birthDate:true,cpfLast4:true,cpfValid:true,cpfConflict:true,planType:true,
  amountCents:true,paymentMethod:true,paymentDetails:true,referenceDate:true,
- invoice:true,unit:true,rawStatus:true,status:true,updatedAt:true
+ invoice:true,unit:true,partnerId:true,partner:{select:{id:true,name:true,active:true}},rawStatus:true,status:true,updatedAt:true
 } as const;
 const issueFields={
  id:true,importKey:true,customerId:true,name:true,planType:true,amountCents:true,paymentMethod:true,
@@ -77,6 +77,9 @@ export class FinanceController {
   const actor=await requireFinanceStaff(auth);
   const payload=parseCustomerPayload(body);
   if(!payload.cpf)throw new HttpException("Informe um CPF válido para cadastrar o cliente.",400);
+  if(!payload.partnerId)throw new HttpException("Selecione uma unidade da Rede Credenciada.",400);
+  const assignedPartner=await db.partner.findUnique({where:{id:payload.partnerId},select:{id:true,name:true,active:true}});
+  if(!assignedPartner?.active)throw new HttpException("Unidade credenciada não encontrada ou inativa.",400);
   const cpfHash=cpfFingerprint(payload.cpf);
   if(cpfHash&&await db.financeCustomer.findFirst({where:{cpfHash},select:{id:true}}))
    throw new HttpException("CPF já está vinculado a outro cliente. Verifique o cadastro existente.",409);
@@ -84,13 +87,13 @@ export class FinanceController {
    return await db.$transaction(async tx=>{
     const record=await tx.financeCustomer.create({data:{
      importKey:createManualImportKey(),name:payload.name,invoice:payload.invoice,
-     birthDate:payload.birthDate,unit:payload.unit,planType:payload.planType,
+     birthDate:payload.birthDate,partnerId:assignedPartner.id,unit:assignedPartner.name,planType:payload.planType,
      amountCents:payload.amountCents,paymentMethod:payload.paymentMethod,
      status:payload.status,paymentDetails:payload.paymentDetails,
      cpfHash,cpfLast4:payload.cpf?.slice(-4)||null,cpfValid:!!payload.cpf,cpfConflict:false,
     },select:customerFields});
     await tx.auditLog.create({data:{actorId:actor.id,action:"FINANCE_CUSTOMER_CREATED",
-     entityType:"FinanceCustomer",entityId:record.id,metadata:{fields:["name","invoice","birthDate","unit","planType","amountCents","paymentMethod","status","paymentDetails","cpfHash"]}}});
+     entityType:"FinanceCustomer",entityId:record.id,metadata:{partnerId:assignedPartner.id,fields:["name","invoice","birthDate","partnerId","planType","amountCents","paymentMethod","status","paymentDetails","cpfHash"]}}});
     return record;
    });
   }catch(error){
@@ -134,6 +137,16 @@ export class FinanceController {
    });
   }
   const payload=parseCustomerPayload(raw);
+  // Clientes importados permanecem sem vínculo até seleção manual; nunca inferimos unidade por nome.
+  let partnerChange:{partnerId:string;unit:string}|null=null;
+  if(payload.partnerId){
+   const chosen=await db.partner.findUnique({where:{id:payload.partnerId},select:{id:true,name:true,active:true}});
+   if(!chosen)throw new HttpException("Unidade credenciada não encontrada.",400);
+   if(!chosen.active&&chosen.id!==previous.partnerId)throw new HttpException("Não é possível vincular a uma unidade inativa.",400);
+   partnerChange={partnerId:chosen.id,unit:chosen.name};
+  } else if(previous.partnerId) {
+   throw new HttpException("Selecione uma unidade credenciada para manter ou alterar o vínculo.",400);
+  }
   const cpfHash=payload.cpf?cpfFingerprint(payload.cpf):previous.cpfHash;
   if(payload.cpf){
    const duplicate=await db.financeCustomer.findFirst({where:{cpfHash,id:{not:id}},select:{id:true}});
@@ -143,13 +156,13 @@ export class FinanceController {
    return await db.$transaction(async tx=>{
     const record=await tx.financeCustomer.update({where:{id},data:{
      name:payload.name,invoice:payload.invoice,birthDate:payload.birthDate,
-     unit:payload.unit,planType:payload.planType,amountCents:payload.amountCents,
+     ...(partnerChange||{}),planType:payload.planType,amountCents:payload.amountCents,
      paymentMethod:payload.paymentMethod,paymentDetails:payload.paymentDetails,status:payload.status,
      ...(payload.cpf?{cpfHash,cpfLast4:payload.cpf.slice(-4),cpfValid:true,cpfConflict:false}:{}),
     },select:customerFields});
     await tx.auditLog.create({data:{actorId:actor.id,action:"FINANCE_CUSTOMER_UPDATED",
      entityType:"FinanceCustomer",entityId:id,
-     metadata:{fields:["name","invoice","birthDate","unit","planType","amountCents","paymentMethod","status","paymentDetails",...(payload.cpf?["cpfHash"]:[])]}}});
+     metadata:{partnerId:partnerChange?.partnerId||previous.partnerId,fields:["name","invoice","birthDate","partnerId","planType","amountCents","paymentMethod","status","paymentDetails",...(payload.cpf?["cpfHash"]:[])]}}});
     return record;
    });
   }catch(error){
