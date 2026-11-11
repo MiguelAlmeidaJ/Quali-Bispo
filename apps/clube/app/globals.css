@@ -90,3 +90,5 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
 .has-brand-logo .brand-fallback{display:none}
 .brand-fallback{display:flex;flex-direction:column;line-height:.73}
 .site-footer .brand-image{filter:grayscale(1) brightness(0) invert(1)}
+
+.has-brand-logo .brand-image{background:url("/v1/branding/assets/logo") left center/contain no-repeat}
