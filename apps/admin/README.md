@@ -67,3 +67,18 @@ O diretório padrão é `apps/api/storage/branding`, calculado a partir do `cwd`
 **Crucial:** copie esse diretório no backup junto do PostgreSQL e monte volume persistente quando migrar a API para Docker. O banco armazena metadados e URLs, mas os bytes das imagens ficam em disco. Não apague `apps/api/storage` durante deployments. Em produção, prefira volume dedicado ou storage de objetos com controle de acesso ao upload.
 
 Execute `pnpm install --no-frozen-lockfile` para instalar `sharp` e atualizar o lock, `pnpm build`, e depois `pnpm pm2:restart`. Recarregue Clube e Admin após salvar.
+
+## Rede credenciada (módulo operacional)
+
+- `src/pages/PartnersPage.tsx`: tabela, filtros por situação, formulário modal para criação e edição.
+- `src/types/partner.ts`: campos e tipos do cadastro.
+- `src/lib/partnersApi.ts`: chamadas HTTP e tratamento de erro.
+- `app/api/partners/route.ts` e `app/api/partners/[id]/route.ts`: proxy autenticado para a API Nest.
+- `apps/api/src/partners.controller.ts`: validação, autorização DEV/ADMIN, CRUD e auditoria.
+- `packages/database/prisma/schema.prisma`: modelo `Partner` ampliado.
+
+O cadastro e a edição são persistidos no PostgreSQL; inativação usa `active=false` para não remover atendimentos históricos. A listagem calcula os atendimentos do mês a partir do banco, sem valores fictícios.
+
+**Primeira execução após atualização:** `pnpm db:migrate` para adicionar os campos. Opcionalmente execute `pnpm db:seed:partners` para cadastrar as quatro unidades das imagens de referência, sem sobrescrever registros existentes. O parceiro de demonstração do seed anterior permanece no banco, podendo ser inativado ou editado pela interface.
+
+Novo parceiro cadastrado e ativo aparecerá na vitrine do Clube após recarregar. A API disponibiliza `GET /v1/partners` apenas com parceiros ativos. Para alteração use as rotas autenticadas `/v1/admin/partners` (ADMIN/DEV). `PARTNER` não tem acesso ao cadastro.

@@ -5,6 +5,7 @@ import {Login} from "./Login";
 import {DashboardPage} from "../pages/DashboardPage";
 import {ValidateCpfPage} from "../pages/ValidateCpfPage";
 import {PlaceholderPage} from "../pages/PlaceholderPage";
+import {PartnersPage} from "../pages/PartnersPage";
 import {AdminUsersPage} from "../pages/dev/AdminUsersPage";
 import {AuditPage} from "../pages/dev/AuditPage";
 import {SettingsPage} from "../pages/dev/SettingsPage";
@@ -34,6 +35,7 @@ export function AdminApp(){
    <main className="app-main">
      {allowedView==="dashboard"&&user.role!=="PARTNER"?<DashboardPage/>:
       allowedView==="validate"?<ValidateCpfPage/>:
+      allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
       allowedView==="dev-users"&&user.role==="DEV"?<AdminUsersPage/>:
       allowedView==="dev-audit"&&user.role==="DEV"?<AuditPage/>:
       allowedView==="dev-settings"&&user.role==="DEV"?<SettingsPage/>:
