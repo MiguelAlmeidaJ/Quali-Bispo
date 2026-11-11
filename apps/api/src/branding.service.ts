@@ -1,9 +1,11 @@
 import { createPrismaClient } from "@quali/database";
+import { config as loadEnv } from "dotenv";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 
+loadEnv({ path: "../../.env" });
 const db = createPrismaClient();
 export type AssetKind = "logo" | "favicon";
 export type Branding = {
