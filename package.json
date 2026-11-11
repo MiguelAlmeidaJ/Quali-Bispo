@@ -12,10 +12,19 @@
     "db:migrate": "pnpm --filter @quali/database migrate",
     "db:studio": "pnpm --filter @quali/database studio",
     "typecheck": "pnpm -r typecheck",
-    "build": "pnpm -r --filter @quali/contracts --filter @quali/database --filter @quali/api --filter @quali/admin --filter @quali/clube build"
+    "build": "pnpm -r --filter @quali/contracts --filter @quali/database --filter @quali/api --filter @quali/admin --filter @quali/clube build",
+    "pm2:start": "pm2 start ecosystem.config.cjs --update-env",
+    "pm2:status": "pm2 status",
+    "pm2:logs": "pm2 logs",
+    "pm2:restart": "pm2 restart ecosystem.config.cjs --update-env",
+    "pm2:reload": "pm2 reload ecosystem.config.cjs --update-env",
+    "pm2:stop": "pm2 stop ecosystem.config.cjs",
+    "pm2:delete": "pm2 delete ecosystem.config.cjs",
+    "pm2:save": "pm2 save"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
-    "@types/node": "^22.0.0"
+    "@types/node": "^22.0.0",
+    "pm2": "^6.0.0"
   }
 }
