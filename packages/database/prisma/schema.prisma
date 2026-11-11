@@ -151,6 +151,7 @@ enum FinanceStatus {
 
 model FinanceCustomer {
   id             String         @id @default(uuid()) @db.Uuid
+  birthDate      DateTime?      @db.Date
   importKey      String         @unique
   name           String
   cpfHash        String?
