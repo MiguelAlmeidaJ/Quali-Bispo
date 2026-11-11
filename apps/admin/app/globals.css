@@ -127,3 +127,5 @@
 .brand-upload-card input[type=file]{font-size:13px;max-width:100%}
 .brand-upload-card button{align-self:flex-start}
 @media(max-width:700px){.brand-upload-grid{grid-template-columns:1fr}}
+
+.has-brand-logo .admin-brand-image{background:url("/v1/branding/assets/logo") left center/contain no-repeat}
