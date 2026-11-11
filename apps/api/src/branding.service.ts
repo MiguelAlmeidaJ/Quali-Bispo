@@ -42,7 +42,7 @@ export async function updateBrandColors(actorId: string, incoming: Pick<Branding
   const updated = { ...current, ...incoming };
   await db.$transaction(async (tx) => {
     await tx.systemSetting.upsert({
-      where: { key }, create: { key, value: updated }, update: { value: updated },
+      where: { key }, create: { key, value: { ...updated } }, update: { value: updated },
     });
     await tx.auditLog.create({
       data: { actorId, action: "VISUAL_IDENTITY_UPDATED", entityType: "SystemSetting", entityId: key,
@@ -78,7 +78,7 @@ export async function storeBrandAsset(kind: AssetKind, buffer: Buffer, actorId: 
     const current = await readBranding();
     const next: Branding = { ...current, [kind === "logo" ? "logoUrl" : "faviconUrl"]: imageEndpoint(kind) };
     await db.$transaction(async tx => {
-      await tx.systemSetting.upsert({ where: { key }, create: { key, value: next }, update: { value: next } });
+      await tx.systemSetting.upsert({ where: { key }, create: { key, value: { ...next } }, update: { value: next } });
       await tx.auditLog.create({
         data: { actorId, action: kind === "logo" ? "LOGO_UPDATED" : "FAVICON_UPDATED",
           entityType: "SystemSetting", entityId: key, metadata: { format: "png", bytes: output.length } },
