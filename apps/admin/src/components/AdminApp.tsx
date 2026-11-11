@@ -1,12 +1,12 @@
 "use client";
 import {useEffect,useState} from "react";
+import { Brand } from "./Brand";
+import { Sidebar, type AdminView } from "./Sidebar";
 type User={id:string;name:string;username:string|null;role:"ADMIN"|"PARTNER"};
 type Dashboard={active:number;pending:number;inactive:number;people:number;partners:number;attendances:number;updatedAt:string};
-type View="dashboard"|"validate"|"clients"|"payments"|"attendances"|"pricing"|"partners"|"reports";
+type View = AdminView;
 const money=(n:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n);
-function Brand({light=false}:{light?:boolean}){return <span className={`admin-brand ${light?"light":""}`} aria-label="Quali Benefícios"><strong>Quali</strong><small>Benefícios</small></span>}
 const labels:Record<View,string>={dashboard:"Painel",validate:"Validar CPF",clients:"Clientes",payments:"Inadimplência",attendances:"Atendimentos",pricing:"Tabela de valores",partners:"Rede credenciada",reports:"Relatórios"};
-const menu:{view:View;icon:string;adminOnly?:boolean}[]=[{view:"dashboard",icon:"📊",adminOnly:true},{view:"validate",icon:"🔎"},{view:"clients",icon:"👥",adminOnly:true},{view:"payments",icon:"💰",adminOnly:true},{view:"attendances",icon:"🩺"},{view:"pricing",icon:"💲"},{view:"partners",icon:"🏥",adminOnly:true},{view:"reports",icon:"📁",adminOnly:true}];
 function Login({onLogin}:{onLogin:(u:User)=>void}){
  const[username,setUsername]=useState("");const[password,setPassword]=useState("");const[busy,setBusy]=useState(false);const[error,setError]=useState("");
  async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");try{const res=await fetch("/admin/api/session",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({username,password})});const body=await res.json();if(!res.ok)throw new Error(body.error||"Não foi possível autenticar");onLogin(body.user);}catch(err){setError(err instanceof Error?err.message:"Erro ao entrar");}finally{setBusy(false);}}
@@ -14,9 +14,6 @@ function Login({onLogin}:{onLogin:(u:User)=>void}){
  <aside className="login-banner"><Brand light/><div className="login-banner-center"><h1>Painel de gestão do<br/>Clube Quali Benefícios</h1><ul><li>Validação de CPF em tempo real</li><li>Controle do limite de consultas</li><li>Clientes, inadimplência e atendimentos</li><li>Carteirinhas e relatórios</li></ul></div><p className="support">Acesso restrito à equipe Quali e aos parceiros credenciados.<br/>Suporte comercial: <a href="https://wa.me/553299388743" target="_blank" rel="noreferrer">WhatsApp Amanda · (32) 9938-8743</a></p></aside>
  <main className="login-right"><div className="login-form"><Brand/><h2>Entrar no painel</h2><p>Use o usuário e a senha fornecidos pela Quali.</p><form onSubmit={submit}><label htmlFor="username">Usuário</label><input id="username" autoComplete="username" placeholder="usuário" required value={username} onChange={e=>setUsername(e.target.value)}/><label htmlFor="password">Senha</label><input id="password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)}/><button className="primary" disabled={busy}>{busy?"Entrando...":"Entrar"}</button>{error&&<div className="notice error" role="alert">{error}</div>}</form><a href="/">← Voltar ao site do cliente</a></div></main>
  </div>;
-}
-function Sidebar({user,view,setView,logout}:{user:User;view:View;setView:(v:View)=>void;logout:()=>void}){
- return <aside className="sidebar"><div className="sidebar-brand"><Brand light/></div><nav aria-label="Menu administrativo">{menu.filter(item=>!item.adminOnly||user.role==="ADMIN").map((item,i)=><div key={item.view}>{(i===2||i===7)&&<p className="nav-group">{i===2?"GESTÃO":"SISTEMA"}</p>}<button className={view===item.view?"active":""} onClick={()=>setView(item.view)}><span>{item.icon}</span>{labels[item.view]}</button></div>)}</nav><div className="sidebar-bottom"><p>💬 WhatsApp Comercial · Amanda<br/><b>(32) 9938-8743</b></p><div className="sidebar-user"><b>{user.name}</b><p>{user.role==="ADMIN"?"Administrador · acesso total":"Parceiro · validação e atendimentos"}</p><button onClick={logout}>Sair</button></div></div></aside>;
 }
 function DashboardView(){
  const[data,setData]=useState<Dashboard|null>(null);const[error,setError]=useState("");
@@ -31,10 +28,10 @@ function ValidateView(){
 }
 function ComingSoon({view}:{view:View}){return <><header className="page-title"><div><h1>{labels[view]}</h1><p>Módulo em preparação</p></div></header><section className="panel"><h2>{labels[view]}</h2><p className="muted">Estrutura visual preparada. Os dados e operações deste módulo serão conectados à API sem simular cadastros reais.</p></section></>}
 export function AdminApp(){
- const[user,setUser]=useState<User|null>(null);const[loading,setLoading]=useState(true);const[view,setView]=useState<View>("dashboard");
+ const[user,setUser]=useState<User|null>(null);const[loading,setLoading]=useState(true);const[view,setView]=useState<View>("dashboard");const [sidebarCollapsed,setSidebarCollapsed]=useState(false);
  useEffect(()=>{fetch("/admin/api/session",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(data=>{if(data?.user){setUser(data.user);setView(data.user.role==="PARTNER"?"validate":"dashboard");}}).finally(()=>setLoading(false));},[]);
  async function logout(){await fetch("/admin/api/session",{method:"DELETE"});setUser(null);setView("dashboard");}
  if(loading)return <div className="splash">Carregando painel Quali...</div>;
  if(!user)return <Login onLogin={u=>{setUser(u);setView(u.role==="PARTNER"?"validate":"dashboard");}}/>;
- return <div className="app-layout"><Sidebar user={user} view={view} setView={setView} logout={logout}/><main className="app-main">{view==="dashboard"&&user.role==="ADMIN"?<DashboardView/>:view==="validate"?<ValidateView/>:<ComingSoon view={view}/>}</main></div>;
+ return <div className={`app-layout ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}><Sidebar user={user} view={view} setView={setView} logout={logout} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed}/><main className="app-main">{view==="dashboard"&&user.role==="ADMIN"?<DashboardView/>:view==="validate"?<ValidateView/>:<ComingSoon view={view}/>}</main></div>;
 }
