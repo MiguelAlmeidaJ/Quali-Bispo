@@ -386,3 +386,10 @@
 .customer-cancel{border:1px solid #d7e4ee;background:#fff;color:#35536b;border-radius:10px;padding:11px 18px;font-size:13px;font-weight:900}
 .customer-submit:disabled,.customer-cancel:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:720px){.finance-page-title{align-items:flex-start;flex-direction:column}.customer-new-link{width:100%}.customer-editor-card section{padding:20px 16px}.customer-editor-grid{grid-template-columns:1fr}.customer-editor-footer{padding:15px 16px}}
+
+
+/* Campo obrigatório: marcador na mesma linha do título, sem criar linha extra */
+.customer-editor-grid .customer-field-title{display:inline-flex;align-items:baseline;gap:4px;line-height:1.25;min-height:17px;flex-wrap:nowrap;white-space:nowrap}
+.customer-editor-grid .customer-field-title em{display:inline;flex:0 0 auto;color:#d13e4c;font-style:normal;font-weight:900}
+.customer-editor-grid .customer-field-warning{color:#95631b;font-size:12px;line-height:1.5}
+.customer-editor-grid select:disabled{background:#f5f7fa;cursor:wait}
