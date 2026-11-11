@@ -456,3 +456,9 @@
 .attendance-form footer button:disabled{opacity:.5;cursor:not-allowed}
 @media(max-width:900px){.attendance-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.attendance-heading{align-items:flex-start;flex-direction:column}}
 @media(max-width:600px){.attendance-filters,.attendance-form-grid{grid-template-columns:1fr}.attendance-modal>header,.attendance-form{padding:17px}.attendance-heading-actions{width:100%}.attendance-heading-actions button{flex:1}.attendance-summary{gap:9px;flex-direction:column;align-items:flex-start}.attendance-table-footer{flex-direction:column;align-items:flex-start}}
+
+/* Histórico privado de validações, sem revelar CPF */
+.cpf-history{overflow-x:auto;margin-top:12px}
+.cpf-history table{width:100%;min-width:520px;border-collapse:collapse;text-align:left}
+.cpf-history th{font-size:11px;color:#73879b;background:#f6f8fb;padding:11px}
+.cpf-history td{font-size:13px;color:#35536c;padding:11px;border-top:1px solid #e8eef5}
