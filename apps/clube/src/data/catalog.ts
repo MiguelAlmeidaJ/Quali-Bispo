@@ -21,12 +21,6 @@ export const procedures: Procedure[] = [
 ["terap","Nutricionista","Dra. Elôa",60,110]
 ].map(([category,specialty,professional,quali,normal])=>({category:category as Category,specialty:String(specialty),professional:String(professional),quali:Number(quali),normal:Number(normal)}));
 export const money = (value:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(value);
-export const partners = [
-{name:"Unidade Largo da Batalha",address:"Estr. Washington Luís, 47 – Sapê / Largo da Batalha",city:"Niterói/RJ",discount:50},
-{name:"Unidade Venda da Cruz",address:"R. Dr. March, 5 – Venda da Cruz",city:"São Gonçalo/RJ",discount:50},
-{name:"Unidade Vila Lage",address:"R. Dr. Alberto Torres, 1631 – Vila Lage",city:"São Gonçalo/RJ",discount:50},
-{name:"Unidade Mutuá",address:"Av. Dezoito do Forte, 317 – Mutuá",city:"São Gonçalo/RJ",discount:50}
-];
 export const faqs: [string,string][] = [
 ["O Cartão Quali é um plano de saúde?","Não. É um clube de benefícios que garante descontos em serviços de saúde na rede parceira. Você paga diretamente ao parceiro o valor já com desconto."],
 ["Tem carência?","Não. Os descontos podem ser usados logo após a confirmação da adesão."],
