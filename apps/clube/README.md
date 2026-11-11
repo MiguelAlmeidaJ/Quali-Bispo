@@ -18,3 +18,7 @@ Edite preços e procedimentos em `src/data/catalog.ts`. Edite telefone/WhatsApp 
 ## Identidade visual compartilhada
 
 O layout `app/layout.tsx` consulta `GET /v1/branding` no servidor via `src/lib/branding.ts`. Isso atualiza o nome da página, favicon, logotipo e variáveis de cor sem recompilar a aplicação. As imagens usam os caminhos públicos `/v1/branding/assets/logo` e `/v1/branding/assets/favicon`, roteados via `next.config.mjs` para NestJS. Sem configuração no banco, permanece o visual padrão anterior.
+
+## Rede credenciada dinâmica
+
+O componente `src/components/sections/Partners.tsx` consulta `GET /v1/partners` via rewrite do Next. Somente parceiros ativos são apresentados. A rede passa a ser mantida pelo Admin em `/admin`, sem duplicação em `src/data/catalog.ts`. Se a API estiver indisponível, o componente informa erro sem mostrar dados de exemplo como se fossem reais.
