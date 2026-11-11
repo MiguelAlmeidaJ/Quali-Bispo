@@ -73,7 +73,7 @@ export class AdminController {
       select:{id:true,createdAt:true,metadata:true,actorId:true},
     });
     return rows.map(item=>{
-      const meta=item.metadata&&typeof item.metadata==='object'&&!Array.isArray(item.metadata)
+      const meta:Record<string,unknown>=item.metadata&&typeof item.metadata==='object'&&!Array.isArray(item.metadata)
         ?item.metadata as Record<string,unknown>:{};
       return {id:item.id,at:item.createdAt,actor:item.actorId===actor.id?'Você':'Equipe Quali',
         matched:meta.matched===true,eligible:meta.eligible===true,
