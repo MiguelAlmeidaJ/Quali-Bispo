@@ -1,6 +1,6 @@
 import { createPrismaClient } from "@quali/database";
 import { config as loadEnv } from "dotenv";
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
@@ -30,12 +30,17 @@ export const imageEndpoint = (kind: AssetKind) => `/v1/branding/assets/${kind}`;
 export async function readBranding(): Promise<Branding> {
   const record = await db.systemSetting.findUnique({ where: { key } });
   const raw = (record?.value ?? {}) as Partial<Branding>;
+  const [logoAvailable, faviconAvailable] = await Promise.all(
+    (["logo", "favicon"] as const).map(async kind => {
+      try { await access(fileFor(kind)); return true; } catch { return false; }
+    }),
+  );
   return {
     appName: typeof raw.appName === "string" ? raw.appName : defaultBranding.appName,
     primaryColor: typeof raw.primaryColor === "string" ? raw.primaryColor : defaultBranding.primaryColor,
     secondaryColor: typeof raw.secondaryColor === "string" ? raw.secondaryColor : defaultBranding.secondaryColor,
-    logoUrl: typeof raw.logoUrl === "string" && raw.logoUrl.startsWith("/v1/branding/assets/") ? raw.logoUrl : "",
-    faviconUrl: typeof raw.faviconUrl === "string" && raw.faviconUrl.startsWith("/v1/branding/assets/") ? raw.faviconUrl : "",
+    logoUrl: logoAvailable && raw.logoUrl === imageEndpoint("logo") ? raw.logoUrl : "",
+    faviconUrl: faviconAvailable && raw.faviconUrl === imageEndpoint("favicon") ? raw.faviconUrl : "",
   };
 }
 
