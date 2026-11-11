@@ -50,6 +50,7 @@ model Partner {
   active          Boolean     @default(true)
   users           User[]
   attendances     Attendance[]
+  financeCustomers FinanceCustomer[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -164,7 +165,9 @@ model FinanceCustomer {
   paymentDetails String?
   referenceDate  DateTime?      @db.Date
   invoice        String?
-  unit           String?
+  unit           String?        // Nome original importado, mantido para histórico
+  partnerId      String?        @db.Uuid
+  partner        Partner?       @relation(fields: [partnerId], references: [id], onDelete: SetNull)
   rawStatus      String?
   status         FinanceStatus  @default(UNSPECIFIED)
   issues         FinanceIssue[]
@@ -174,6 +177,7 @@ model FinanceCustomer {
   @@index([status])
   @@index([name])
   @@index([cpfHash])
+  @@index([partnerId])
 }
 
 model FinanceIssue {
