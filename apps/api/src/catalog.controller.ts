@@ -80,7 +80,7 @@ export class AdminCatalogController {
    if(!previous)throw new HttpException("Procedimento não encontrado",404);
    const updated=await tx.catalogItem.update({where:{id},data:input,select:fields});
    await tx.auditLog.create({data:{actorId:actor.id,action:"CATALOG_ITEM_UPDATED",entityType:"CatalogItem",entityId:updated.id,
-    metadata:{name:updated.name,changedFields:Object.keys(input).filter(k=>String((previous as Record<string,unknown>)[k])!==String((input as Record<string,unknown>)[k]))}}});
+    metadata:{name:updated.name,changedFields:Object.keys(input).filter(k=>String((previous as unknown as Record<string,unknown>)[k])!==String((input as unknown as Record<string,unknown>)[k]))}}});
    return updated;
   });
  }
