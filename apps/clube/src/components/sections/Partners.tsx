@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import {SectionHeading} from "../ui/SectionHeading";
-type Partner = {id:string;name:string;serviceType:string;services:string;address:string;city:string;phone:string|null;businessHours:string;discountPercent:number};
+type Partner = {id:string;name:string;serviceType:string;serviceTypes?:string[];services:string;address:string;city:string;phone:string|null;businessHours:string;discountPercent:number};
 export function Partners(){
  const[partners,setPartners]=useState<Partner[]>([]);
  const[loading,setLoading]=useState(true),[error,setError]=useState("");
@@ -17,7 +17,7 @@ export function Partners(){
  },[]);
  const cities=useMemo(()=>Array.from(new Set(partners.map(p=>p.city))).sort((a,b)=>a.localeCompare(b,"pt-BR")),[partners]);
  const filtered=useMemo(()=>partners
-  .filter(p=>(!city||p.city===city)&&[p.name,p.address,p.services,p.serviceType].some(value=>value.toLocaleLowerCase("pt-BR").includes(query.toLocaleLowerCase("pt-BR"))))
+  .filter(p=>(!city||p.city===city)&&[p.name,p.address,p.services,p.serviceType,...(p.serviceTypes||[])].some(value=>value.toLocaleLowerCase("pt-BR").includes(query.toLocaleLowerCase("pt-BR"))))
   .sort((a,b)=>sort==="discount"?b.discountPercent-a.discountPercent:a.name.localeCompare(b.name,"pt-BR")),[partners,city,query,sort]);
  return <section className="sec" id="rede"><div className="wrap">
   <SectionHeading eyebrow="Rede credenciada" title="Nossas unidades e parceiros">Conheça a rede Quali, consulte os horários e encontre atendimento perto de você.</SectionHeading>
@@ -36,7 +36,7 @@ export function Partners(){
    filtered.length===0?<p className="hint center">Nenhuma unidade disponível para os filtros selecionados.</p>:
    <div className="parc">{filtered.map(p=><article className="partner-card" key={p.id}>
     <span className="partner-discount">até {p.discountPercent}%</span><h4>{p.name}</h4>
-    <p>{p.services||p.serviceType}</p><p>📍 {p.address} · {p.city}</p>
+    <p>{p.serviceTypes?.length?p.serviceTypes.join(" · "):p.serviceType}</p>{p.services&&<p>{p.services}</p>}<p>📍 {p.address} · {p.city}</p>
     {p.businessHours&&<p>🕘 {p.businessHours}</p>}
     {p.phone&&<p>☎ {p.phone}</p>}
     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.address+", "+p.city)}`} target="_blank" rel="noopener noreferrer">Ver no mapa →</a>
