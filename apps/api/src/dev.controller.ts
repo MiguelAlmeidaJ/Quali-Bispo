@@ -3,13 +3,14 @@ import { hash } from "bcryptjs";
 import { config as loadEnv } from "dotenv";
 import jwt from "jsonwebtoken";
 import { createPrismaClient } from "@quali/database";
+import { readBranding, updateBrandColors } from "./branding.service";
 
 loadEnv({ path: "../../.env" });
 const db = createPrismaClient();
 const jwtSecret = process.env.AUTH_JWT_SECRET;
 if (!jwtSecret || jwtSecret.length < 32) throw new Error("AUTH_JWT_SECRET must have 32+ characters");
 
-async function requireDev(header?: string) {
+export async function requireDev(header?: string) {
   if (!header?.startsWith("Bearer ")) throw new UnauthorizedException();
   let claims: { sub?: string };
   try {
@@ -23,9 +24,6 @@ async function requireDev(header?: string) {
 }
 const bad=(message:string)=>new HttpException(message,400);
 const safeUser = {id:true,username:true,name:true,email:true,role:true,active:true,createdAt:true} as const;
-type BrandSettings = {appName:string;primaryColor:string;secondaryColor:string;logoUrl:string;faviconUrl:string};
-const defaults:BrandSettings={appName:"Quali Benefícios",primaryColor:"#0c66aa",secondaryColor:"#21834a",logoUrl:"",faviconUrl:""};
-const isUrl=(value:string)=> value==="" || (/^https:\/\/[\w.-]+(?:\:[0-9]{2,5})?(?:\/[\w\-./%?=&]*)?$/.test(value) && value.length <= 500) || (/^\/(?!\/)[a-zA-Z0-9_./%-]*$/.test(value) && value.length<=500);
 const isHex=(value:string)=>/^#[0-9a-fA-F]{6}$/.test(value);
 
 @Controller("dev")
@@ -74,27 +72,23 @@ export class DevController {
   }
 
   @Get("settings")
-  async settings(@Headers("authorization") authorization?:string){
+  async settings(@Headers("authorization") authorization?:string) {
     await requireDev(authorization);
-    const record=await db.systemSetting.findUnique({where:{key:"visualIdentity"}});
-    const value=record?.value as Partial<BrandSettings>|undefined;
-    return {...defaults,...value};
+    return readBranding();
   }
 
   @Put("settings")
-  async updateSettings(@Headers("authorization") authorization:string|undefined,@Body() body:BrandSettings){
+  async updateSettings(@Headers("authorization") authorization:string|undefined,
+    @Body() body:{appName?:string;primaryColor?:string;secondaryColor?:string}) {
     const actor=await requireDev(authorization);
-    if(!body || typeof body!=="object" ||
-      typeof body.appName!=="string" || body.appName.trim().length<3 || body.appName.length>80 ||
-      typeof body.primaryColor!=="string" || !isHex(body.primaryColor) ||
-      typeof body.secondaryColor!=="string" || !isHex(body.secondaryColor) ||
-      typeof body.logoUrl!=="string" || !isUrl(body.logoUrl) ||
-      typeof body.faviconUrl!=="string" || !isUrl(body.faviconUrl)) throw bad("Configurações visuais inválidas.");
-    const next:BrandSettings={appName:body.appName.trim(),primaryColor:body.primaryColor,secondaryColor:body.secondaryColor,logoUrl:body.logoUrl, faviconUrl:body.faviconUrl};
-    await db.$transaction(async tx=>{
-      await tx.systemSetting.upsert({where:{key:"visualIdentity"},create:{key:"visualIdentity",value:{...next}},update:{value:next}});
-      await tx.auditLog.create({data:{actorId:actor.id,action:"VISUAL_IDENTITY_UPDATED",entityType:"SystemSetting",entityId:"visualIdentity",metadata:{fields:Object.keys(next)}}});
+    if (!body || typeof body.appName!=="string" || body.appName.trim().length<3 || body.appName.length>80
+      || typeof body.primaryColor!=="string" || !isHex(body.primaryColor)
+      || typeof body.secondaryColor!=="string" || !isHex(body.secondaryColor)) {
+      throw bad("Configurações visuais inválidas.");
+    }
+    return updateBrandColors(actor.id, {
+      appName:body.appName.trim(),primaryColor:body.primaryColor,secondaryColor:body.secondaryColor
     });
-    return next;
   }
+
 }

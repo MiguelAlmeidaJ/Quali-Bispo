@@ -6,4 +6,4 @@
 
 A API valida o papel DEV em toda requisição. Apenas ocultar opções do menu não é segurança.
 
-Nesta etapa, URLs e cores são persistidas mas não aplicadas automaticamente ao Clube ou Admin. Upload de imagens, armazenamento de arquivos e gerenciamento avançado de usuários ficam para próxima fase.
+Nesta etapa, Cores, nome, logo e favicon são aplicados pelo layout Next no Clube e Admin após recarregar a página. Upload é privado do perfil DEV, imagens públicas servidas pela API e arquivos salvos no diretório persistente da API. Gestão avançada de usuários fica para próxima fase.

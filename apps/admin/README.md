@@ -48,3 +48,22 @@ Defina `SEED_DEV_PASSWORD` no `.env` (mínimo 12 caracteres, exclusiva e aleató
 É obrigatório configurar `AUTH_JWT_SECRET` e conexão PostgreSQL antes de subir API. O perfil DEV pode acessar o painel operacional, criar contas ADMIN, consultar auditoria paginada e salvar identidade visual (nome, cores, URLs de logo e favicon). Configurações estão persistidas, mas ainda não são aplicadas automaticamente no Clube e Admin. Upload de arquivos não foi implementado nesta fase.
 
 Os endpoints DEV exigem JWT válido, usuário ativo e papel DEV validado no banco. Contas ADMIN e PARTNER não podem gerenciar DEV, nem criar administradores.
+
+## Identidade visual dinâmica
+
+A tela DEV > Configurações permite editar nome e cores e enviar logo/favicon (PNG, JPEG ou WebP, até 2 MB).
+O navegador envia arquivos via `/admin/api/dev/branding/upload/:kind` (proxy Next com cookie HttpOnly). A API Nest autentica **DEV**, decodifica e normaliza para PNG com Sharp, armazena os arquivos em disco e registra `LOGO_UPDATED`/`FAVICON_UPDATED` em AuditLog. Preferências ficam em `SystemSetting.visualIdentity`.
+
+- Dados públicos: `GET /v1/branding` (nome, cores e caminhos das imagens).
+- Imagens públicas: `GET /v1/branding/assets/logo` e `/v1/branding/assets/favicon`.
+- Clube roteia `/v1/branding/*` para a API local; Admin utiliza o mesmo caminho através da porta 3002.
+- Layouts Next buscam as preferências no servidor em cada navegação e aplicam variáveis CSS, título, favicon e logo.
+- Quando não houver imagem enviada ou a API estiver indisponível, o layout usa as cores e a marca tipográfica anteriores.
+
+### Persistência da mídia
+
+O diretório padrão é `apps/api/storage/branding`, calculado a partir do `cwd` da API no PM2. Pode ser alterado com `BRAND_ASSET_DIR` no `.env` ou ambiente do processo.
+
+**Crucial:** copie esse diretório no backup junto do PostgreSQL e monte volume persistente quando migrar a API para Docker. O banco armazena metadados e URLs, mas os bytes das imagens ficam em disco. Não apague `apps/api/storage` durante deployments. Em produção, prefira volume dedicado ou storage de objetos com controle de acesso ao upload.
+
+Execute `pnpm install --no-frozen-lockfile` para instalar `sharp` e atualizar o lock, `pnpm build`, e depois `pnpm pm2:restart`. Recarregue Clube e Admin após salvar.
