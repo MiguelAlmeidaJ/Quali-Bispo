@@ -1,5 +1,18 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { getBranding, themeStyle } from "../src/lib/branding";
 import "./globals.css";
-export const metadata:Metadata={title:"Adm Quali Benefícios",description:"Painel de gestão do Clube Quali Benefícios"};
-export default function RootLayout({children}:{children:ReactNode}){return <html lang="pt-BR"><body>{children}</body></html>;}
+
+export const dynamic = "force-dynamic";
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBranding();
+  return {
+    title: `Adm · ${brand.appName}`,
+    description: "Painel de gestão do Clube Quali Benefícios",
+    ...(brand.faviconUrl ? { icons: { icon: brand.faviconUrl } } : {}),
+  };
+}
+export default async function RootLayout({children}:{children:ReactNode}) {
+  const brand = await getBranding();
+  return <html lang="pt-BR" className={brand.logoUrl ? "has-brand-logo" : ""} style={themeStyle(brand)}><body>{children}</body></html>;
+}
