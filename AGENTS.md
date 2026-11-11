@@ -29,3 +29,6 @@
 - Dados pessoais/financeiros: nunca incluir planilhas nem JSONs de clientes no Git; a importação `db:import:financeiro` lê exclusivamente `private/` local. Não registrar CPF puro, credenciais nem dados financeiros completos em AuditLog.
 - `FinanceCustomer` e `FinanceIssue` são registros financeiros, separados de `Beneficiary`. Não conceder status de associado nem acesso por CPF somente com base na situação de cobrança.
 - Se pendência não tiver correspondência exata não ambígua, manter `customerId=null` para revisão, sem criar vínculo presumido.
+
+- Cadastro financeiro de clientes: a rota `/admin/cliente/novo` e `/admin/cliente/:id/edit` são internas ao Next Admin (basePath `/admin`), com autorização ADMIN/DEV na API. Dados de CPF apenas HMAC SHA-256 e sufixo, não armazenar CPF puro. Edição com CPF vazio mantém fingerprint existente.
+- `FinanceCustomer.birthDate` é uma data opcional `@db.Date`; a importação histórica mantém null até haver informação confirmada.

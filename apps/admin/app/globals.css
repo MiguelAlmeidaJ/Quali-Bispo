@@ -356,3 +356,33 @@
 .finance-footer button:disabled{opacity:.4;cursor:not-allowed}
 @media(max-width:900px){.finance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.finance-stats{grid-template-columns:1fr 1fr}.finance-toolbar{align-items:stretch;flex-direction:column}.finance-search{min-width:0}.finance-footer{flex-direction:column;align-items:flex-start}}
+
+
+/* Cadastro financeiro: páginas de novo cliente e edição */
+.finance-page-title{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.customer-new-link,.customer-submit{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:var(--green);color:#fff;border:0;text-decoration:none;border-radius:11px;font-weight:900;font-size:13px;padding:12px 18px}
+.customer-new-link:hover,.customer-submit:hover{filter:brightness(.94);color:#fff}
+.customer-edit-link{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:900;text-decoration:none;color:var(--blue);border:1px solid var(--border);background:#fff;padding:8px 12px;border-radius:9px;white-space:nowrap}
+.customer-edit-link:hover{background:#eef6fc}
+.customer-editor{max-width:1150px;margin:0 auto}
+.customer-editor-heading{margin-bottom:22px}
+.customer-editor-heading h1{font-size:29px;margin:12px 0 4px;letter-spacing:-.4px}
+.customer-editor-heading p{font-size:14px;color:var(--muted);margin:0}
+.customer-back{display:inline-flex;gap:8px;align-items:center;padding:7px 0;border:0;background:transparent;color:var(--blue);font-weight:800;font-size:13px}
+.customer-back:hover{text-decoration:underline}
+.customer-editor-card{background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 4px 18px rgba(18,61,101,.04)}
+.customer-editor-card section{padding:26px 30px;border-bottom:1px solid #ebf0f5}
+.customer-editor-card h2{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:900;color:#16466b;margin:0 0 20px}
+.customer-editor-card h2 svg{color:var(--blue)}
+.customer-editor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:19px 22px}
+.customer-editor-grid label{display:flex;flex-direction:column;gap:7px;min-width:0;color:#567088;font-size:13px;font-weight:900}
+.customer-editor-grid label.wide{grid-column:1/-1}
+.customer-editor-grid label em{display:inline;color:#c24848;font-style:normal}
+.customer-editor-grid input,.customer-editor-grid select,.customer-editor-grid textarea{width:100%;border:1px solid #d9e4f0;border-radius:11px;padding:11px 13px;min-height:46px;font:inherit;font-weight:600;font-size:14px;color:#234765;background:#fff;outline:none}
+.customer-editor-grid textarea{resize:vertical;min-height:110px}
+.customer-editor-grid input:focus,.customer-editor-grid select:focus,.customer-editor-grid textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px #0a70b31c}
+.customer-editor-grid label small{font-size:11px;font-weight:600;line-height:1.4;color:#7e91a4}
+.customer-editor-footer{padding:19px 30px;display:flex;justify-content:flex-end;gap:11px;align-items:center;background:#fbfcfe}
+.customer-cancel{border:1px solid #d7e4ee;background:#fff;color:#35536b;border-radius:10px;padding:11px 18px;font-size:13px;font-weight:900}
+.customer-submit:disabled,.customer-cancel:disabled{opacity:.5;cursor:not-allowed}
+@media(max-width:720px){.finance-page-title{align-items:flex-start;flex-direction:column}.customer-new-link{width:100%}.customer-editor-card section{padding:20px 16px}.customer-editor-grid{grid-template-columns:1fr}.customer-editor-footer{padding:15px 16px}}

@@ -18,3 +18,17 @@ export async function PATCH(request:NextRequest,context:{params:Promise<{resourc
   return NextResponse.json(await response.json(),{status:response.status,headers:{"cache-control":"no-store"}});
  }catch{return NextResponse.json({error:"API indisponível"},{status:503});}
 }
+
+export async function GET(request:NextRequest,context:{params:Promise<{resource:string;id:string}>}){
+ const {resource,id}=await context.params;
+ if(resource!=="customers"||!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(id))
+  return NextResponse.json({error:"Recurso inválido"},{status:404});
+ const token=request.cookies.get("quali_session")?.value;
+ if(!token)return NextResponse.json({error:"Autenticação necessária"},{status:401});
+ try{
+  const endpoint=process.env.INTERNAL_API_URL||"http://127.0.0.1:4002/v1";
+  const response=await fetch(`${endpoint}/admin/finance/customers/${id}`,{
+   headers:{authorization:`Bearer ${token}`},cache:"no-store",signal:AbortSignal.timeout(10000)});
+  return NextResponse.json(await response.json(),{status:response.status,headers:{"cache-control":"no-store"}});
+ }catch{return NextResponse.json({error:"API indisponível"},{status:503});}
+}
