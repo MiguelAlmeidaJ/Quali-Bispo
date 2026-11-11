@@ -34,3 +34,16 @@ O componente `src/components/sections/Partners.tsx` consulta `GET /v1/partners` 
 A seção de preços da home (`src/components/sections/PriceTable.tsx`) mostra **até 15 procedimentos**, respeitando busca e filtro, com o botão **Ver mais valores** para a rota pública `/valores`. A página completa (`app/valores/page.tsx`) exibe **20 resultados por página** e navegação anterior/próxima. Ambas consultam o catálogo ativo do banco pela API; nenhuma delas duplica os preços.
 
 Os cards de **Benefícios** mostram o valor normal em cinza e riscado e o valor Quali em verde com destaque. Os links do menu e rodapé foram atualizados para funcionar também fora da home.
+
+## Fórmula do simulador anual
+
+Os valores exibidos na seção Simulador vêm dos procedimentos ativos de `GET /v1/catalog`. Os descontos são calculados como a diferença entre preço normal e preço Quali. Para cada modalidade, utiliza-se a média aritmética das economias por atendimento, **excluindo pacotes**:
+
+- **Consultas médicas:** apenas `category=CONSULTA`, multiplicadas pelo uso mensal e por 12.
+- **Check-ups:** apenas `category=CHECKUP`, multiplicados pela quantidade anual.
+- **Psicologia e nutrição:** apenas `category=TERAPIA` cujo grupo corresponde a Psicologia/Nutrição. Fisioterapia e drenagem linfática ficam fora desta média.
+- **Mensalidade anual:** 12 vezes o preço do plano escolhido.
+
+A economia líquida é a soma dessas economias menos as mensalidades. Limites de uso do plano são respeitados no contador de consultas; resultados são estimativas, não garantias de desconto. O simulador e o catálogo público compartilham os preços mantidos no Admin.
+
+Exemplo de validação com os 99 registros originais, plano Familiar e seleções 2 consultas/mês, 1 check-up/ano e 1 terapia/mês: economia bruta de aproximadamente R$ 1.803,05; mensalidades R$ 1.078,80; economia líquida R$ 724,25. Os números variam conforme edições do catálogo.
