@@ -12,7 +12,8 @@
     "seed": "tsx prisma/seed.ts",
     "seed:partners": "tsx prisma/seed-partners.ts",
     "seed:catalog": "tsx prisma/seed-catalog.ts",
-    "import:financeiro": "tsx prisma/import-finance.ts"
+    "import:financeiro": "tsx prisma/import-finance.ts",
+    "vincular:unidades": "tsx prisma/link-imported-units.ts"
   },
   "dependencies": {
     "@prisma/client": "7.10.0",
