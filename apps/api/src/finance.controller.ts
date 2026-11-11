@@ -76,7 +76,8 @@ export class FinanceController {
  async createCustomer(@Headers("authorization") auth:string|undefined,@Body() body:unknown){
   const actor=await requireFinanceStaff(auth);
   const payload=parseCustomerPayload(body);
-  const cpfHash=payload.cpf?cpfFingerprint(payload.cpf):null;
+  if(!payload.cpf)throw new HttpException("Informe um CPF válido para cadastrar o cliente.",400);
+  const cpfHash=cpfFingerprint(payload.cpf);
   if(cpfHash&&await db.financeCustomer.findFirst({where:{cpfHash},select:{id:true}}))
    throw new HttpException("CPF já está vinculado a outro cliente. Verifique o cadastro existente.",409);
   try {
