@@ -5,9 +5,10 @@ import { AuthController, AdminController } from './auth.controller';
 import { DevController } from './dev.controller';
 import { BrandingController, BrandingUploadController } from './branding.controller';
 import { PartnersController, AdminPartnersController } from './partners.controller';
+import { PublicCatalogController, AdminCatalogController } from './catalog.controller';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: ['../../.env', '.env'] })],
-  controllers: [HealthController, AuthController, AdminController, DevController, BrandingController, BrandingUploadController, PartnersController, AdminPartnersController],
+  controllers: [HealthController, AuthController, AdminController, DevController, BrandingController, BrandingUploadController, PartnersController, AdminPartnersController, PublicCatalogController, AdminCatalogController],
 })
 export class AppModule {}
