@@ -9,7 +9,7 @@ type Resource = keyof typeof allowed;
 async function handle(request:NextRequest, resource:string, method:"GET"|"POST"|"PUT"){
  if(!(resource in allowed) || !(allowed[resource as Resource] as ReadonlySet<string>).has(method))
    return NextResponse.json({error:"Recurso não encontrado"},{status:404});
- if(method!=="GET" && request.headers.get("sec-fetch-site")==="cross-site") {
+ if(method!=="GET" && request.headers.has("sec-fetch-site") && !["same-origin","none"].includes(request.headers.get("sec-fetch-site")!)) {
    return NextResponse.json({error:"Origem não permitida"},{status:403});
  }
  const token=request.cookies.get("quali_session")?.value;
