@@ -18,3 +18,14 @@
 Os usuários `admin` e `parceiro` são cadastrados ou atualizados pelo seed com hash bcrypt. Não há credenciais fixas no código ou no banco versionado. Senhas de demonstração devem ser trocadas antes de expor o servidor publicamente.
 
 **Situação:** painel, login e validação CPF conectados à API; os módulos adicionais estão identificados mas ainda sem fluxo CRUD implementado. O histórico de CPF e o detalhamento dos indicadores serão completados depois. A validação só encontra beneficiários cujo CPF já tenha um `cpfHash` HMAC cadastrado no banco.
+
+## Sidebar moderno
+
+O menu administrativo fica em `src/components/Sidebar.tsx`, separado da lógica das páginas. Os ícones usam a biblioteca `react-icons` (coleções Feather e Font Awesome). Alterar um item ou a permissão do menu deve ser feito em `items`, no próprio componente.
+
+- Desktop: botão no cabeçalho do sidebar recolhe/expande o menu; os ícones continuam clicáveis e as opções possuem tooltip ao recolher.
+- Celular: botão no topo abre um menu lateral sobreposto, com opção de fechar e overlay.
+- O perfil autenticado permanece no rodapé do menu; a saída continua encerrando a sessão.
+- Estilos específicos ficam no bloco "Sidebar administrativo" em `app/globals.css`.
+
+Para instalar a nova dependência após `git pull`, rode `pnpm install --no-frozen-lockfile` e gere novamente o build do Admin antes de reiniciar o PM2. Atualize o `pnpm-lock.yaml` com a resolução gerada pelo PNPM.
