@@ -70,12 +70,12 @@ export class AdminController {
     const rows=await db.auditLog.findMany({
       where:{action:'CPF_LOOKUP',...(admin?{}:{actorId:actor.id})},
       orderBy:{createdAt:'desc'},take:15,
-      select:{id:true,createdAt:true,metadata:true,actor:{select:{name:true}}},
+      select:{id:true,createdAt:true,metadata:true,actorId:true},
     });
     return rows.map(item=>{
       const meta=item.metadata&&typeof item.metadata==='object'&&!Array.isArray(item.metadata)
         ?item.metadata as Record<string,unknown>:{};
-      return {id:item.id,at:item.createdAt,actor:item.actor?.name||'Sistema',
+      return {id:item.id,at:item.createdAt,actor:item.actorId===actor.id?'Você':'Equipe Quali',
         matched:meta.matched===true,eligible:meta.eligible===true,
         source:typeof meta.source==='string'?meta.source:null};
     });
