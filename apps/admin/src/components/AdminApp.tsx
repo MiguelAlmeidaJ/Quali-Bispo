@@ -6,6 +6,7 @@ import {DashboardPage} from "../pages/DashboardPage";
 import {ValidateCpfPage} from "../pages/ValidateCpfPage";
 import {PlaceholderPage} from "../pages/PlaceholderPage";
 import {PartnersPage} from "../pages/PartnersPage";
+import {CatalogPage} from "../pages/CatalogPage";
 import {AdminUsersPage} from "../pages/dev/AdminUsersPage";
 import {AuditPage} from "../pages/dev/AuditPage";
 import {SettingsPage} from "../pages/dev/SettingsPage";
@@ -36,6 +37,7 @@ export function AdminApp(){
      {allowedView==="dashboard"&&user.role!=="PARTNER"?<DashboardPage/>:
       allowedView==="validate"?<ValidateCpfPage/>:
       allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
+      allowedView==="pricing"&&user.role!=="PARTNER"?<CatalogPage/>:
       allowedView==="dev-users"&&user.role==="DEV"?<AdminUsersPage/>:
       allowedView==="dev-audit"&&user.role==="DEV"?<AuditPage/>:
       allowedView==="dev-settings"&&user.role==="DEV"?<SettingsPage/>:
