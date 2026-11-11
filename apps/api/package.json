@@ -19,7 +19,8 @@
     "@quali/contracts": "workspace:*",
     "@quali/database": "workspace:*",
     "bcryptjs": "^3.0.2",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^17.2.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
