@@ -202,3 +202,35 @@ pnpm db:vincular:unidades --apply
 O comando atualiza apenas `FinanceCustomer.partnerId IS NULL`, nunca substitui vínculos existentes nem modifica o campo `unit` original, CPF, pagamentos ou pendências. Clientes com unidade vazia ou fora dessas quatro correspondências ficam para revisão. Cada grupo alterado gera um `AuditLog` com quantidade, sem dados pessoais. Executar novamente é seguro: registros já vinculados são ignorados.
 
 **Não é necessária migração, seed ou reimportação do Excel.** O comando atualiza diretamente o banco configurado por `DATABASE_URL`; confira o ambiente antes de usar `--apply`. Atualize a página Clientes após concluído. Execute `pnpm db:generate` apenas se seu Prisma Client estiver desatualizado.
+
+## Validação de CPF unificada e Atendimentos
+
+O endpoint `POST /v1/admin/validate-cpf` agora consulta **Beneficiary** e **FinanceCustomer** pelo hash HMAC do CPF (a mesma chave `CPF_HASH_KEY` da importação). A resposta separa:
+- **found**: CPF presente em um cadastro confiável;
+- **eligible**: autorização de uso do benefício; no cadastro financeiro, somente `PAID` e CPF válido/sem conflito liberam acesso. `OPEN`, `PENDING` e outros status são localizados mas **não liberados**;
+- **source**: `finance` ou `beneficiary`.
+
+Clientes cujos CPFs não receberam hash por inconsistências da planilha precisam corrigir o CPF no formulário de edição; não são encontrados por lookup até essa revisão. CPFs completos nunca são retornados. A seção **Últimas validações** consulta até 15 registros recentes da auditoria (para Parceiro, somente os próprios).
+
+O módulo `Atendimentos` usa `FinanceAttendance`, modelo separado de `Attendance` legado (vinculado apenas a `Beneficiary`). Os registros têm FK para `FinanceCustomer`, `Partner`, `CatalogItem` e `User`. Preços normal/Quali, tipo e nome do serviço são **congelados** na data do lançamento, de modo que alterações posteriores da Tabela de valores não modificam o histórico. A API fornece:
+- `GET /v1/admin/attendances` com mês, parceiro, tipo, busca por nome e paginação de 20, além de totais sobre todos os registros filtrados;
+- `GET /v1/admin/attendances/options` para parceiros e procedimentos ativos;
+- `GET /v1/admin/attendances/customers?q=...` para pesquisar clientes pelo nome, exibindo apenas CPF final e situação;
+- `POST /v1/admin/attendances` para registrar atendimento autorizado;
+- `PATCH /v1/admin/attendances/:id/void` para cancelar logicamente, preservando histórico e auditoria (ADMIN/DEV apenas).
+
+Parceiros autenticados só veem e lançam atendimentos da própria unidade vinculada no usuário; não podem cancelar. ADMIN/DEV acessam toda a rede. Os lançamentos só são permitidos a clientes financeiros com status `PAID` e CPF confiável (válido, sem duplicidade). Um cliente pode usar uma unidade diferente daquela de seu cadastro, conforme disponibilidade do parceiro.
+
+Na tela Admin > Atendimentos: filtros por mês/tipo/parceiro/nome, resultados por página, novo lançamento, cancelamento administrativo com motivo e exportação CSV respeitando filtros (máximo de 4.000 registros por exportação). Painel e Rede Credenciada contam somente lançamentos reais não cancelados. Os atendimentos históricos da imagem do antigo sistema **não são importados automaticamente**; o módulo começa vazio até registrar ou migrar dados reais.
+
+### Implantação
+```powershell
+git pull origin refactor
+pnpm db:generate
+pnpm db:migrate
+pnpm build
+# após confirmar êxito:
+pnpm exec pm2 restart quali-api
+pnpm exec pm2 restart quali-admin
+```
+Não é necessário executar novamente a importação de clientes. Mantenha a mesma `CPF_HASH_KEY` que foi utilizada na importação. Teste consulta de CPF existente pago, CPF com situação não paga, CPF duplicado, criação e cancelamento de atendimento, restrição do parceiro e exportação.
