@@ -256,3 +256,13 @@
 .catalog-cancel{background:#fff;border:1px solid #d9e3ec;border-radius:9px;padding:10px 18px;color:#3c5570;font-weight:800;cursor:pointer}
 .catalog-source{font-size:12px;color:#788b9e;margin-top:14px}
 @media(max-width:760px){.catalog-heading{align-items:flex-start;flex-direction:column}.catalog-stats{grid-template-columns:1fr 1fr}.catalog-toolbar{flex-direction:column}.catalog-form-grid{grid-template-columns:1fr}.catalog-form{padding:17px}}
+
+
+/* Paginação da tabela de valores: 20 procedimentos por página */
+.catalog-pagination{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.catalog-pagination nav{display:flex;align-items:center;gap:12px}
+.catalog-pagination nav button{border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--blue);padding:8px 13px;font-size:12px;font-weight:800;cursor:pointer}
+.catalog-pagination nav button:hover:not(:disabled){background:#edf5fc}
+.catalog-pagination nav button:disabled{opacity:.4;cursor:not-allowed}
+.catalog-pagination nav span{font-size:12px;color:var(--muted);white-space:nowrap}
+@media(max-width:700px){.catalog-pagination{align-items:flex-start;flex-direction:column;width:100%}}
