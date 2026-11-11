@@ -111,3 +111,7 @@ Preços são guardados em **centavos inteiros**, com valor normal e valor Quali 
 Observações a revisar: `Eletroneuromiografia 4 membros` consta como R$ 660,00 / R$ 564,00 (percentual diferente da maioria); `Cauterização grande URO` aparece com `R4:630,00` no documento e foi interpretada como R$ 630,00; duas linhas de audiometria combinada não indicam faixa etária. Os valores registrados são os valores textuais dos arquivos, não descontos recalculados. Confira os documentos antes de disponibilizar em produção.
 
 As tabelas de Consultas, Exames, Check-ups e Terapias são exibidas no Clube via `GET /v1/catalog`. O Admin não permite apagar fisicamente os preços nesta etapa; utilize `active=false` para preservar o histórico.
+
+## Paginação da tabela de valores
+
+A tela `src/screens/CatalogPage.tsx` mostra **20 registros por página**, com botões **Anterior** e **Próxima**. A paginação é aplicada ao resultado filtrado; busca, categoria e situação levam o usuário automaticamente à primeira página. O rodapé informa o intervalo e o total de registros encontrados.

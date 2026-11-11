@@ -61,6 +61,8 @@ export function CatalogPage(){
  const [items,setItems]=useState<CatalogItem[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState("");
  const [search,setSearch]=useState(""),[category,setCategory]=useState(""),[status,setStatus]=useState("active");
  const [modal,setModal]=useState<{open:boolean;item:CatalogItem|null}>({open:false,item:null});
+ const [page,setPage]=useState(1);
+ const pageSize=20;
  async function load(){try{setItems(await catalogApi.list());setError("");}catch(e){setError(e instanceof Error?e.message:"Erro ao buscar procedimentos");}finally{setLoading(false);}}
  useEffect(()=>{void load()},[]);
  const filtered=useMemo(()=>items.filter(item=>{
@@ -70,22 +72,26 @@ export function CatalogPage(){
   const q=search.trim().toLocaleLowerCase("pt-BR");
   return !q||[item.name,item.group,item.professional||"",item.notes||""].some(value=>value.toLocaleLowerCase("pt-BR").includes(q));
  }),[items,search,category,status]);
+ const totalPages=Math.max(1,Math.ceil(filtered.length/pageSize));
+ const currentPage=Math.min(page,totalPages);
+ const displayed=filtered.slice((currentPage-1)*pageSize,currentPage*pageSize);
+ function changeFilters(action:()=>void){action();setPage(1);}
  return <div className="catalog-page">
   <div className="catalog-heading"><div><span>GESTÃO DE PREÇOS</span><h1>Tabela de valores</h1><p>Consultas, exames e procedimentos. Alterações aparecem no Clube Quali.</p></div>
    <button className="catalog-save" type="button" onClick={()=>setModal({open:true,item:null})}><FiPlus size={18}/> Novo procedimento</button>
   </div>
   <div className="catalog-stats"><article><span>Itens cadastrados</span><b>{items.length}</b></article><article><span>Disponíveis no Clube</span><b>{items.filter(x=>x.active).length}</b></article><article><span>Categorias</span><b>{new Set(items.map(x=>x.category)).size}</b></article></div>
   <div className="catalog-card"><div className="catalog-toolbar">
-   <label className="catalog-search"><FiSearch/><input aria-label="Buscar procedimento" placeholder="Buscar exame, consulta, profissional..." value={search} onChange={e=>setSearch(e.target.value)}/></label>
-   <select aria-label="Categoria" value={category} onChange={e=>setCategory(e.target.value)}><option value="">Todas as categorias</option>{(Object.entries(categories) as [CatalogCategory,string][]).map(([v,label])=><option key={v} value={v}>{label}</option>)}</select>
-   <select aria-label="Situação" value={status} onChange={e=>setStatus(e.target.value)}><option value="active">Ativos</option><option value="inactive">Inativos</option><option value="all">Todos</option></select>
+   <label className="catalog-search"><FiSearch/><input aria-label="Buscar procedimento" placeholder="Buscar exame, consulta, profissional..." value={search} onChange={e=>changeFilters(()=>setSearch(e.target.value))}/></label>
+   <select aria-label="Categoria" value={category} onChange={e=>changeFilters(()=>setCategory(e.target.value))}><option value="">Todas as categorias</option>{(Object.entries(categories) as [CatalogCategory,string][]).map(([v,label])=><option key={v} value={v}>{label}</option>)}</select>
+   <select aria-label="Situação" value={status} onChange={e=>changeFilters(()=>setStatus(e.target.value))}><option value="active">Ativos</option><option value="inactive">Inativos</option><option value="all">Todos</option></select>
   </div>
   {error&&<p className="notice error" role="alert">{error}</p>}
   {loading?<p className="catalog-empty">Carregando catálogo...</p>:filtered.length===0?<p className="catalog-empty">Nenhum procedimento encontrado.</p>:
   <div className="catalog-scroll"><table className="catalog-table"><thead><tr><th>PROCEDIMENTO</th><th>CATEGORIA / GRUPO</th><th>VALOR NORMAL</th><th>VALOR QUALI</th><th>DESCONTO</th><th>STATUS</th><th>AÇÕES</th></tr></thead>
-   <tbody>{filtered.map(item=><tr key={item.id}><td><b>{item.name}</b>{item.professional&&<small>{item.professional}</small>}{item.notes&&<small title={item.notes}>ⓘ {item.notes}</small>}</td><td>{categories[item.category]}<small>{item.group}</small></td><td>{money(item.normalPriceCents)}</td><td className="catalog-price">{money(item.qualiPriceCents)}</td><td>{Math.round((1-item.qualiPriceCents/item.normalPriceCents)*100)}%</td><td><span className={item.active?"catalog-active":"catalog-inactive"}>{item.active?"Ativo":"Inativo"}</span></td><td><button className="catalog-edit" onClick={()=>setModal({open:true,item})} type="button"><FiEdit2/> Editar</button></td></tr>)}</tbody>
+   <tbody>{displayed.map(item=><tr key={item.id}><td><b>{item.name}</b>{item.professional&&<small>{item.professional}</small>}{item.notes&&<small title={item.notes}>ⓘ {item.notes}</small>}</td><td>{categories[item.category]}<small>{item.group}</small></td><td>{money(item.normalPriceCents)}</td><td className="catalog-price">{money(item.qualiPriceCents)}</td><td>{Math.round((1-item.qualiPriceCents/item.normalPriceCents)*100)}%</td><td><span className={item.active?"catalog-active":"catalog-inactive"}>{item.active?"Ativo":"Inativo"}</span></td><td><button className="catalog-edit" onClick={()=>setModal({open:true,item})} type="button"><FiEdit2/> Editar</button></td></tr>)}</tbody>
   </table></div>}
-  <footer className="catalog-footer">Exibindo {filtered.length} de {items.length} registros</footer></div>
+  <footer className="catalog-footer catalog-pagination"><span>{filtered.length===0?"Nenhum registro":`Exibindo ${(currentPage-1)*pageSize+1}–${Math.min(currentPage*pageSize,filtered.length)} de ${filtered.length} registros`} · 20 por página</span><nav aria-label="Paginação da tabela de valores"><button type="button" disabled={currentPage===1||loading} onClick={()=>setPage(p=>Math.max(1,p-1))}>Anterior</button><span>Página {currentPage} de {totalPages}</span><button type="button" disabled={currentPage===totalPages||loading} onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>Próxima</button></nav></footer></div>
   {modal.open&&<CatalogModal item={modal.item} onClose={()=>setModal({open:false,item:null})} onSaved={load}/>}
  </div>;
 }

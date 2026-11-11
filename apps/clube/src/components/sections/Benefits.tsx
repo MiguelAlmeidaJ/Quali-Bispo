@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import {SectionHeading} from "../ui/SectionHeading";
 import {useCatalog,centsMoney} from "../../hooks/useCatalog";
 const benefitGroups=[
@@ -16,8 +17,8 @@ export function Benefits(){
    return <article className="ben" key={b.name}>
     {pct!==null&&<span className="pct">até {pct}%</span>}
     <div className="ic">{b.icon}</div><h4>{b.name}</h4><p>{b.detail}</p>
-    <ul>{available.slice(0,3).map(item=><li key={item.id}><span>{item.name}</span><b>{centsMoney(item.qualiPriceCents)}</b></li>)}</ul>
-    <a href="#valores">Ver tabela completa →</a>
+    <ul>{available.slice(0,3).map(item=><li key={item.id}><span className="benefit-item-name">{item.name}</span><span className="benefit-price-stack"><del className="benefit-price-normal" aria-label={`Valor normal: ${centsMoney(item.normalPriceCents)}`}>{centsMoney(item.normalPriceCents)}</del><strong className="benefit-price-quali" aria-label={`Valor Quali: ${centsMoney(item.qualiPriceCents)}`}>{centsMoney(item.qualiPriceCents)}</strong></span></li>)}</ul>
+    <Link href="/valores">Ver tabela completa →</Link>
    </article>;
   })}</div>
   {loading&&<p className="hint center spaced">Carregando benefícios...</p>}
