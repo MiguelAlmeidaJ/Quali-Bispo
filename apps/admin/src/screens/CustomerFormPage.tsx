@@ -9,18 +9,31 @@ import {
 function toForm(value:CustomerRecord):CustomerFormData{
  return {
   invoice:value.invoice||"",name:value.name,cpf:"",
-  birthDate:value.birthDate?.slice(0,10)||"",unit:value.unit||"",
+  birthDate:value.birthDate?.slice(0,10)||"",partnerId:value.partnerId||"",
   planType:value.planType||"",amount:centsInput(value.amountCents),
   paymentMethod:value.paymentMethod||"",status:value.status,
   paymentDetails:value.paymentDetails||"",
  };
 }
+type PartnerOption={id:string;name:string;city:string;active:boolean};
 const returnToClients=()=>{window.location.assign("/admin/?view=clients");};
 export function CustomerFormPage({id}:{id?:string}){
  const [form,setForm]=useState<CustomerFormData>({...blankCustomer});
  const [original,setOriginal]=useState<CustomerRecord|null>(null);
+ const [partners,setPartners]=useState<PartnerOption[]>([]);
+ const [partnersLoading,setPartnersLoading]=useState(true);
+ const [partnersError,setPartnersError]=useState("");
  const [loading,setLoading]=useState(!!id),[saving,setSaving]=useState(false),[error,setError]=useState("");
  const editing=!!id;
+ useEffect(()=>{
+  const controller=new AbortController();
+  fetch("/admin/api/partners",{credentials:"same-origin",cache:"no-store",signal:controller.signal})
+   .then(async response=>{const data=await response.json();if(!response.ok)throw new Error(data.message||data.error||"Erro ao carregar a Rede Credenciada");return data as PartnerOption[];})
+   .then(data=>{if(!controller.signal.aborted)setPartners(data);})
+   .catch(e=>{if(!controller.signal.aborted)setPartnersError(e instanceof Error?e.message:"Falha ao buscar unidades");})
+   .finally(()=>{if(!controller.signal.aborted)setPartnersLoading(false);});
+  return()=>controller.abort();
+ },[]);
  useEffect(()=>{
   if(!id)return;
   const controller=new AbortController();
@@ -42,6 +55,8 @@ export function CustomerFormPage({id}:{id?:string}){
   setError("");
   const cents=parseCents(form.amount);
   if(Number.isNaN(cents)){setError("Informe um valor de plano válido, como 89,90.");return;}
+  if(!form.partnerId&&!editing){setError("Selecione a unidade credenciada do cliente.");return;}
+  if(!form.partnerId&&editing&&original?.partnerId){setError("Mantenha ou selecione outra unidade credenciada.");return;}
   if((!editing||form.cpf)&&form.cpf.replace(/\D/g,"").length!==11){
    setError("Informe um CPF com 11 dígitos.");return;
   }
@@ -53,7 +68,7 @@ export function CustomerFormPage({id}:{id?:string}){
     headers:{"content-type":"application/json"},
     body:JSON.stringify({
      invoice:form.invoice||null,name:form.name.trim(),cpf:form.cpf.replace(/\D/g,"")||null,
-     birthDate:form.birthDate||null,unit:form.unit||null,planType:form.planType||null,
+     birthDate:form.birthDate||null,partnerId:form.partnerId||null,planType:form.planType||null,
      amountCents:cents,paymentMethod:form.paymentMethod||null,status:form.status,
      paymentDetails:form.paymentDetails||null,
     }),
@@ -81,8 +96,8 @@ export function CustomerFormPage({id}:{id?:string}){
      <h2><FiUser/> Dados pessoais</h2>
      <div className="customer-editor-grid">
       <label>NF<input maxLength={100} value={form.invoice} placeholder="Número da nota fiscal" onChange={e=>update("invoice",e.target.value)}/></label>
-      <label className="wide">Nome completo <em>*</em><input required minLength={2} maxLength={180} autoComplete="name" value={form.name} onChange={e=>update("name",e.target.value)}/></label>
-      <label>CPF {!editing&&<em>*</em>}
+      <label className="wide"><span className="customer-field-title">Nome completo <em>*</em></span><input required minLength={2} maxLength={180} autoComplete="name" value={form.name} onChange={e=>update("name",e.target.value)}/></label>
+      <label><span className="customer-field-title">CPF {!editing&&<em>*</em>}</span>
        <input required={!editing} value={form.cpf} maxLength={14} inputMode="numeric"
         autoComplete="off" placeholder="000.000.000-00"
         onChange={e=>update("cpf",formatCpf(e.target.value))}/>
@@ -90,7 +105,17 @@ export function CustomerFormPage({id}:{id?:string}){
       </label>
       <label>Data de nascimento<input type="date" value={form.birthDate} max={new Date().toISOString().slice(0,10)}
        onChange={e=>update("birthDate",e.target.value)}/></label>
-      <label className="wide">Unidade<input maxLength={120} value={form.unit} placeholder="Unidade de atendimento" onChange={e=>update("unit",e.target.value)}/></label>
+      <label className="wide"><span className="customer-field-title">Unidade credenciada {!editing&&<em>*</em>}</span>
+       <select value={form.partnerId} required={!editing||!!original?.partnerId} disabled={partnersLoading||saving} onChange={e=>update("partnerId",e.target.value)}>
+        <option value="">{partnersLoading?"Carregando unidades...":"Selecione uma unidade credenciada"}</option>
+        {partners.filter(partner=>partner.active||partner.id===original?.partnerId).map(partner=>
+         <option key={partner.id} value={partner.id}>{partner.name}{partner.city?` — ${partner.city}`:""}{!partner.active?" (inativa)":""}</option>)}
+       </select>
+       {partnersError&&<small role="alert" className="customer-field-warning">{partnersError}</small>}
+       {editing&&!original?.partnerId&&original?.unit&&<small className="customer-field-warning">Unidade informada na planilha: <strong>{original.unit}</strong>. Selecione a correspondente na Rede Credenciada para criar o vínculo.</small>}
+       {editing&&!original?.partnerId&&!original?.unit&&<small>Este cliente ainda não possui vínculo com uma unidade credenciada.</small>}
+       {original?.partnerId&&!partners.some(p=>p.id===original.partnerId)&&!partnersLoading&&<small className="customer-field-warning">A unidade vinculada não foi encontrada. Verifique a Rede Credenciada antes de salvar.</small>}
+      </label>
      </div>
     </section>
     <section>
