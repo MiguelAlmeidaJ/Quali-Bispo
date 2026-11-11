@@ -34,3 +34,6 @@
 - `FinanceCustomer.birthDate` é uma data opcional `@db.Date`; a importação histórica mantém null até haver informação confirmada.
 
 - O cliente financeiro vincula-se a `Partner` via FK opcional `FinanceCustomer.partnerId`. Novos clientes exigem um parceiro ativo; cadastros antigos não recebem vínculo presumido. `FinanceCustomer.unit` é apenas o texto histórico da planilha, não a FK. Preferir `partner.name` na exibição quando houver vínculo.
+
+- CPF na validação: consultar beneficiários e clientes financeiros pelo mesmo HMAC; não confundir `found` com `eligible`. Nunca liberar acesso com `cpfValid=false`, `cpfConflict=true` ou `FinanceStatus != PAID` no FinanceCustomer.
+- Atendimentos financeiros: utilizar `FinanceAttendance` com snapshot de preços e cancelamento lógico. Usuário PARTNER acessa apenas o partnerId do próprio usuário, ADMIN/DEV toda a rede. Nunca copiar dados de atendimento do HTML legado como se fossem reais.

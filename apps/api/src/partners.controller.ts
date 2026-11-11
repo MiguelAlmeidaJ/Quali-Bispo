@@ -90,7 +90,7 @@ export class AdminPartnersController {
     const start = new Date(); start.setDate(1);start.setHours(0,0,0,0);
     const [partners,grouped] = await Promise.all([
       db.partner.findMany({select:selection,orderBy:{name:"asc"},take:500}),
-      db.attendance.groupBy({by:["partnerId"],where:{performedAt:{gte:start}},_count:{id:true}}),
+      db.financeAttendance.groupBy({by:["partnerId"],where:{performedAt:{gte:start},voidedAt:null},_count:{id:true}}),
     ]);
     const counts = new Map(grouped.map(item=>[item.partnerId,item._count.id]));
     return partners.map(item=>({...item,monthlyAttendances:counts.get(item.id)??0}));
