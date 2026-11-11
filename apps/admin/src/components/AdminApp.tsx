@@ -1,37 +1,43 @@
 "use client";
 import {useEffect,useState} from "react";
-import { Brand } from "./Brand";
-import { Sidebar, type AdminView } from "./Sidebar";
-type User={id:string;name:string;username:string|null;role:"ADMIN"|"PARTNER"};
-type Dashboard={active:number;pending:number;inactive:number;people:number;partners:number;attendances:number;updatedAt:string};
-type View = AdminView;
-const money=(n:number)=>new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(n);
-const labels:Record<View,string>={dashboard:"Painel",validate:"Validar CPF",clients:"Clientes",payments:"Inadimplência",attendances:"Atendimentos",pricing:"Tabela de valores",partners:"Rede credenciada",reports:"Relatórios"};
-function Login({onLogin}:{onLogin:(u:User)=>void}){
- const[username,setUsername]=useState("");const[password,setPassword]=useState("");const[busy,setBusy]=useState(false);const[error,setError]=useState("");
- async function submit(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");try{const res=await fetch("/admin/api/session",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({username,password})});const body=await res.json();if(!res.ok)throw new Error(body.error||"Não foi possível autenticar");onLogin(body.user);}catch(err){setError(err instanceof Error?err.message:"Erro ao entrar");}finally{setBusy(false);}}
- return <div className="login-page">
- <aside className="login-banner"><Brand light/><div className="login-banner-center"><h1>Painel de gestão do<br/>Clube Quali Benefícios</h1><ul><li>Validação de CPF em tempo real</li><li>Controle do limite de consultas</li><li>Clientes, inadimplência e atendimentos</li><li>Carteirinhas e relatórios</li></ul></div><p className="support">Acesso restrito à equipe Quali e aos parceiros credenciados.<br/>Suporte comercial: <a href="https://wa.me/553299388743" target="_blank" rel="noreferrer">WhatsApp Amanda · (32) 9938-8743</a></p></aside>
- <main className="login-right"><div className="login-form"><Brand/><h2>Entrar no painel</h2><p>Use o usuário e a senha fornecidos pela Quali.</p><form onSubmit={submit}><label htmlFor="username">Usuário</label><input id="username" autoComplete="username" placeholder="usuário" required value={username} onChange={e=>setUsername(e.target.value)}/><label htmlFor="password">Senha</label><input id="password" type="password" autoComplete="current-password" required value={password} onChange={e=>setPassword(e.target.value)}/><button className="primary" disabled={busy}>{busy?"Entrando...":"Entrar"}</button>{error&&<div className="notice error" role="alert">{error}</div>}</form><a href="/">← Voltar ao site do cliente</a></div></main>
- </div>;
-}
-function DashboardView(){
- const[data,setData]=useState<Dashboard|null>(null);const[error,setError]=useState("");
- useEffect(()=>{fetch("/admin/api/dashboard",{cache:"no-store"}).then(async r=>{const data=await r.json();if(!r.ok)throw new Error(data.error||"Erro ao carregar");setData(data);}).catch(e=>setError(String(e.message)));},[]);
- const cards:[string,number|string,string,string][]=[["ASSOCIADOS ATIVOS",data?.active??"—","Cadastrados no banco","green"],["PENDENTES",data?.pending??"—","Em atraso","amber"],["INATIVOS",data?.inactive??"—","Descontos suspensos","red"],["VIDAS COBERTAS",data?.people??"—","Beneficiários registrados","blue"],["ATENDIMENTOS NO MÊS",data?.attendances??"—","Registros do mês","green"],["PARCEIROS ATIVOS",data?.partners??"—","Rede de atendimento","blue"]];
- return <div><header className="page-title"><div><h1>Painel</h1><p>Visão geral da carteira e do uso dos benefícios</p></div><span>{data? "Atualizado em "+new Date(data.updatedAt).toLocaleString("pt-BR"):""}</span></header>{error&&<div className="notice error">{error}</div>}<div className="stat-grid">{cards.map(([label,value,note,color])=><article className={`stat-card ${color}`} key={label}><h3>{label}</h3><strong>{value}</strong><p>{note}</p></article>)}</div><div className="dashboard-grid"><section className="panel"><h2>Adesões nos últimos 6 meses</h2><p className="muted panel-placeholder">A série histórica será exibida quando as adesões estiverem integradas à API.</p></section><section className="panel"><h2>Atendimentos por tipo</h2><p className="muted panel-placeholder">A classificação de atendimentos será exibida após a integração dos registros.</p></section><section className="panel"><h2>Uso por parceiro (mês)</h2><p className="muted">Dados disponíveis após integração de atendimentos.</p></section><section className="panel"><h2>Carteira por plano e situação</h2><p className="muted">Consulte os indicadores acima. Detalhamento por plano em desenvolvimento.</p></section></div></div>;
-}
-function ValidateView(){
- const[cpf,setCpf]=useState("");const[loading,setLoading]=useState(false);const[result,setResult]=useState<{found:boolean;beneficiary?:{name:string;status:string;plan:string|null}}|null>(null);const[error,setError]=useState("");
- async function submit(e:React.FormEvent){e.preventDefault();setLoading(true);setError("");setResult(null);try{const response=await fetch("/admin/api/validate-cpf",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({cpf})});const data=await response.json();if(!response.ok)throw new Error(typeof data.message==="string"?data.message:data.error||"Falha na validação");setResult(data);}catch(e){setError(e instanceof Error?e.message:"Erro ao validar");}finally{setLoading(false);}}
- return <><header className="page-title"><div><h1>Validar CPF</h1><p>Confirme o acesso do associado</p></div></header><section className="panel"><h2>Consultar CPF do associado</h2><form className="cpf-form" onSubmit={submit}><div><label htmlFor="cpf">CPF do titular ou dependente</label><input id="cpf" inputMode="numeric" placeholder="000.000.000-00" value={cpf} onChange={e=>setCpf(e.target.value)} required maxLength={14}/></div><button className="primary" disabled={loading}>{loading?"Consultando...":"Validar acesso"}</button></form>{error&&<div role="alert" className="notice error">{error}</div>}{result&&<div className={`notice ${result.found?"success":"error"}`} role="status">{result.found?<><b>{result.beneficiary?.name}</b> · Situação: {result.beneficiary?.status} · Plano: {result.beneficiary?.plan||"Não informado"}</>:"CPF não encontrado na base de associados."}</div>}</section><section className="panel gap-panel"><h2>Últimas validações</h2><p className="muted">O histórico completo de validações será conectado ao registro de auditoria da API.</p></section></>;
-}
-function ComingSoon({view}:{view:View}){return <><header className="page-title"><div><h1>{labels[view]}</h1><p>Módulo em preparação</p></div></header><section className="panel"><h2>{labels[view]}</h2><p className="muted">Estrutura visual preparada. Os dados e operações deste módulo serão conectados à API sem simular cadastros reais.</p></section></>}
+import {Sidebar,type AdminView} from "./Sidebar";
+import {Login} from "./Login";
+import {DashboardPage} from "../pages/DashboardPage";
+import {ValidateCpfPage} from "../pages/ValidateCpfPage";
+import {PlaceholderPage} from "../pages/PlaceholderPage";
+import {AdminUsersPage} from "../pages/dev/AdminUsersPage";
+import {AuditPage} from "../pages/dev/AuditPage";
+import {SettingsPage} from "../pages/dev/SettingsPage";
+import type {User} from "../types/admin";
+
+const privileged = new Set<AdminView>(["dev-users","dev-audit","dev-settings"]);
 export function AdminApp(){
- const[user,setUser]=useState<User|null>(null);const[loading,setLoading]=useState(true);const[view,setView]=useState<View>("dashboard");const [sidebarCollapsed,setSidebarCollapsed]=useState(false);
- useEffect(()=>{fetch("/admin/api/session",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(data=>{if(data?.user){setUser(data.user);setView(data.user.role==="PARTNER"?"validate":"dashboard");}}).finally(()=>setLoading(false));},[]);
- async function logout(){await fetch("/admin/api/session",{method:"DELETE"});setUser(null);setView("dashboard");}
+ const[user,setUser]=useState<User|null>(null);
+ const[loading,setLoading]=useState(true);
+ const[view,setView]=useState<AdminView>("dashboard");
+ const[collapsed,setCollapsed]=useState(false);
+ useEffect(()=>{
+   fetch("/admin/api/session",{cache:"no-store"})
+     .then(r=>r.ok?r.json():null)
+     .then(data=>{if(data?.user){setUser(data.user);setView(data.user.role==="PARTNER"?"validate":"dashboard");}})
+     .catch(()=>{})
+     .finally(()=>setLoading(false));
+ },[]);
+ async function logout(){
+   try {await fetch("/admin/api/session",{method:"DELETE"});} finally {setUser(null);setView("dashboard");}
+ }
  if(loading)return <div className="splash">Carregando painel Quali...</div>;
  if(!user)return <Login onLogin={u=>{setUser(u);setView(u.role==="PARTNER"?"validate":"dashboard");}}/>;
- return <div className={`app-layout ${sidebarCollapsed ? "sidebar-collapsed" : ""}`}><Sidebar user={user} view={view} setView={setView} logout={logout} collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed}/><main className="app-main">{view==="dashboard"&&user.role==="ADMIN"?<DashboardView/>:view==="validate"?<ValidateView/>:<ComingSoon view={view}/>}</main></div>;
+ const allowedView:AdminView = user.role!=="DEV"&&privileged.has(view)?"dashboard":user.role==="PARTNER"&&view==="dashboard"?"validate":view;
+ return <div className={`app-layout ${collapsed?"sidebar-collapsed":""}`}>
+   <Sidebar user={user} view={allowedView} setView={setView} logout={logout} collapsed={collapsed} setCollapsed={setCollapsed}/>
+   <main className="app-main">
+     {allowedView==="dashboard"&&user.role!=="PARTNER"?<DashboardPage/>:
+      allowedView==="validate"?<ValidateCpfPage/>:
+      allowedView==="dev-users"&&user.role==="DEV"?<AdminUsersPage/>:
+      allowedView==="dev-audit"&&user.role==="DEV"?<AuditPage/>:
+      allowedView==="dev-settings"&&user.role==="DEV"?<SettingsPage/>:
+      <PlaceholderPage view={allowedView}/>}
+   </main>
+ </div>;
 }

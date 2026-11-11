@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   FiActivity, FiBarChart2, FiChevronLeft, FiChevronRight,
   FiClipboard, FiDollarSign, FiFileText, FiLogOut,
-  FiMenu, FiSearch, FiUsers, FiX,
+  FiMenu, FiSearch, FiUsers, FiX, FiSettings, FiShield, FiUserPlus,
 } from "react-icons/fi";
 import { FaRegHospital } from "react-icons/fa";
 import { Brand } from "./Brand";
@@ -12,8 +12,9 @@ import type { IconType } from "react-icons";
 
 export type AdminView =
   | "dashboard" | "validate" | "clients" | "payments"
-  | "attendances" | "pricing" | "partners" | "reports";
-type User = { name: string; role: "ADMIN" | "PARTNER" };
+  | "attendances" | "pricing" | "partners" | "reports"
+  | "dev-users" | "dev-audit" | "dev-settings";
+type User = { name: string; role: "DEV" | "ADMIN" | "PARTNER" };
 
 type MenuItem = {
   view: AdminView;
@@ -21,6 +22,7 @@ type MenuItem = {
   icon: IconType;
   group: "principal" | "gestao" | "sistema";
   adminOnly?: boolean;
+  devOnly?: boolean;
 };
 
 const items: MenuItem[] = [
@@ -32,6 +34,9 @@ const items: MenuItem[] = [
   { view: "pricing", label: "Tabela de valores", icon: FiClipboard, group: "gestao" },
   { view: "partners", label: "Rede credenciada", icon: FaRegHospital, group: "gestao", adminOnly: true },
   { view: "reports", label: "Relatórios", icon: FiFileText, group: "sistema", adminOnly: true },
+  { view: "dev-users", label: "Administradores", icon: FiUserPlus, group: "sistema", devOnly: true },
+  { view: "dev-audit", label: "Auditoria", icon: FiShield, group: "sistema", devOnly: true },
+  { view: "dev-settings", label: "Configurações", icon: FiSettings, group: "sistema", devOnly: true },
 ];
 
 export function Sidebar({
@@ -45,7 +50,7 @@ export function Sidebar({
   setCollapsed: (value: boolean) => void;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const allowedItems = items.filter(item => !item.adminOnly || user.role === "ADMIN");
+  const allowedItems = items.filter(item => (!item.adminOnly || user.role === "ADMIN" || user.role === "DEV") && (!item.devOnly || user.role === "DEV"));
 
   function navigate(nextView: AdminView) {
     setView(nextView);
@@ -112,7 +117,7 @@ export function Sidebar({
             <span className="sidebar-avatar" aria-hidden="true">{user.name.slice(0, 1).toUpperCase()}</span>
             <div className="sidebar-user-text sidebar-label">
               <b>{user.name}</b>
-              <small>{user.role === "ADMIN" ? "Administrador" : "Parceiro credenciado"}</small>
+              <small>{user.role === "DEV" ? "Desenvolvedor" : user.role === "ADMIN" ? "Administrador" : "Parceiro credenciado"}</small>
             </div>
             <button type="button" className="logout-button" onClick={logout}
               aria-label="Sair do painel" title="Sair do painel">
