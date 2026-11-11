@@ -4,7 +4,6 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import type { Response } from "express";
-import type { Express } from "express";
 import { requireDev } from "./dev.controller";
 import { readBrandAsset, readBranding, storeBrandAsset, type AssetKind } from "./branding.service";
 
