@@ -138,3 +138,60 @@ model CatalogItem {
   @@index([active, category, displayOrder])
   @@index([group])
 }
+
+enum FinanceStatus {
+  PAID
+  OPEN
+  EXPECTED
+  PENDING
+  IN_REVIEW
+  AWAITING
+  UNSPECIFIED
+}
+
+model FinanceCustomer {
+  id             String         @id @default(uuid()) @db.Uuid
+  importKey      String         @unique
+  name           String
+  cpfHash        String?
+  cpfLast4       String?
+  cpfValid       Boolean        @default(false)
+  cpfConflict    Boolean        @default(false)
+  planType       String?
+  amountCents    Int?
+  paymentMethod  String?
+  paymentDetails String?
+  referenceDate  DateTime?      @db.Date
+  invoice        String?
+  unit           String?
+  rawStatus      String?
+  status         FinanceStatus  @default(UNSPECIFIED)
+  issues         FinanceIssue[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([status])
+  @@index([name])
+  @@index([cpfHash])
+}
+
+model FinanceIssue {
+  id             String         @id @default(uuid()) @db.Uuid
+  importKey      String         @unique
+  customerId     String?        @db.Uuid
+  customer       FinanceCustomer? @relation(fields: [customerId], references: [id])
+  name           String
+  planType       String?
+  amountCents    Int?
+  paymentMethod  String?
+  paymentDetails String?
+  referenceDate  DateTime?      @db.Date
+  rawStatus      String?
+  status         FinanceStatus  @default(UNSPECIFIED)
+  resolved       Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([status, resolved])
+  @@index([customerId])
+}
