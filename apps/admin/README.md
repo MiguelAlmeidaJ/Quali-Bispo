@@ -29,3 +29,22 @@ O menu administrativo fica em `src/components/Sidebar.tsx`, separado da lógica 
 - Estilos específicos ficam no bloco "Sidebar administrativo" em `app/globals.css`.
 
 Para instalar a nova dependência após `git pull`, rode `pnpm install --no-frozen-lockfile` e gere novamente o build do Admin antes de reiniciar o PM2. Atualize o `pnpm-lock.yaml` com a resolução gerada pelo PNPM.
+
+## Organização das telas e perfil DEV
+
+- `src/components/AdminApp.tsx`: sessão, escolha da tela e layout (sem lógica própria de páginas).
+- `src/components/Login.tsx`: login.
+- `src/components/Sidebar.tsx`: navegação por papel.
+- `src/pages/DashboardPage.tsx`, `ValidateCpfPage.tsx`: páginas operacionais.
+- `src/pages/PlaceholderPage.tsx`: módulos ainda não implementados.
+- `src/pages/dev/`: criação de administradores, auditoria e configurações visuais.
+- `app/api/dev/[resource]/route.ts`: proxy Next server-side com allowlist.
+- `apps/api/src/dev.controller.ts`: endpoints de DEV com checagem obrigatória de papel no PostgreSQL.
+
+### Ativando o DEV inicial
+
+Defina `SEED_DEV_PASSWORD` no `.env` (mínimo 12 caracteres, exclusiva e aleatória). Não use senha pública de demonstração para DEV. Rode `pnpm db:migrate` e `pnpm db:seed`. O seed cria o usuário `dev` se ainda não existir; em execuções seguintes **não altera** sua senha.
+
+É obrigatório configurar `AUTH_JWT_SECRET` e conexão PostgreSQL antes de subir API. O perfil DEV pode acessar o painel operacional, criar contas ADMIN, consultar auditoria paginada e salvar identidade visual (nome, cores, URLs de logo e favicon). Configurações estão persistidas, mas ainda não são aplicadas automaticamente no Clube e Admin. Upload de arquivos não foi implementado nesta fase.
+
+Os endpoints DEV exigem JWT válido, usuário ativo e papel DEV validado no banco. Contas ADMIN e PARTNER não podem gerenciar DEV, nem criar administradores.
