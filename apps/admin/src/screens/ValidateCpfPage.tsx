@@ -1,11 +1,75 @@
 "use client";
-import {useState} from "react";
-export const formatCpf = (value:string) => {
+import {useEffect,useState} from "react";
+export const formatCpf=(value:string)=>{
  const digits=value.replace(/\D/g,"").slice(0,11);
- return digits.replace(/^(\d{3})(\d)/,"$1.$2").replace(/^(\d{3})\.(\d{3})(\d)/,"$1.$2.$3").replace(/(\d{3}\.\d{3}\.\d{3})(\d{1,2})$/,"$1-$2");
+ return digits.replace(/^(\d{3})(\d)/,"$1.$2")
+  .replace(/^(\d{3})\.(\d{3})(\d)/,"$1.$2.$3")
+  .replace(/(\d{3}\.\d{3}\.\d{3})(\d{1,2})$/,"$1-$2");
 };
+type Lookup={
+ found:boolean;eligible:boolean;message:string;source:"finance"|"beneficiary"|null;
+ beneficiary?:{name:string;status:string;plan:string|null}|null;
+ customer?:{id:string;name:string;status:string;plan:string|null;unit:string|null}|null;
+};
+type Validation={id:string;at:string;actor:string;matched:boolean;eligible:boolean;source:string|null};
 export function ValidateCpfPage(){
- const[cpf,setCpf]=useState("");const[loading,setLoading]=useState(false);const[result,setResult]=useState<{found:boolean;eligible:boolean;message:string;source:"finance"|"beneficiary"|null;beneficiary?:{name:string;status:string;plan:string|null}|null;customer?:{id:string;name:string;status:string;plan:string|null;unit:string|null}|null}|null>(null);const[error,setError]=useState("");
- async function submit(e:React.FormEvent){e.preventDefault();if(cpf.replace(/\D/g,"").length!==11){setError("Informe os 11 dígitos do CPF.");setResult(null);return;}setLoading(true);setError("");setResult(null);try{const response=await fetch("/admin/api/validate-cpf",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({cpf:cpf.replace(/\D/g,"")})});const data=await response.json();if(!response.ok)throw new Error(typeof data.message==="string"?data.message:data.error||"Falha na validação");setResult(data);}catch(e){setError(e instanceof Error?e.message:"Erro ao validar");}finally{setLoading(false);}}
- return <><header className="page-title"><div><h1>Validar CPF</h1><p>Confirme o acesso do associado</p></div></header><section className="panel"><h2>Consultar CPF do associado</h2><form className="cpf-form" onSubmit={submit}><div><label htmlFor="cpf">CPF do titular ou dependente</label><input id="cpf" inputMode="numeric" placeholder="000.000.000-00" value={cpf} onChange={e=>{setCpf(formatCpf(e.target.value));setError("");setResult(null)}} required maxLength={14} autoComplete="off" pattern="[0-9]{3}[.][0-9]{3}[.][0-9]{3}-[0-9]{2}" title="CPF no formato 000.000.000-00"/></div><button className="primary" disabled={loading}>{loading?"Consultando...":"Validar acesso"}</button></form>{error&&<div role="alert" className="notice error">{error}</div>}{result&&<div className={`notice ${result.eligible?"success":"error"}`} role="status"><strong>{result.message}</strong>{result.found&&<div style={{marginTop:8}}><b>{result.beneficiary?.name}</b> · Plano: {result.beneficiary?.plan||"Não informado"} · Situação: {result.customer?.status==="PAID"?"Pago":result.customer?.status||result.beneficiary?.status||"Não informada"}{result.customer?.unit&&<> · Unidade: {result.customer.unit}</>}{result.customer&&<p style={{margin:"8px 0 0"}}>Cadastro financeiro identificado. {result.eligible?"Benefícios liberados.":"Verifique pagamento e situação do cliente antes de registrar atendimento."}</p>}</div>}</div>}</section><section className="panel gap-panel"><h2>Últimas validações</h2><p className="muted">O histórico completo de validações será conectado ao registro de auditoria da API.</p></section></>;
+ const [cpf,setCpf]=useState(""),[loading,setLoading]=useState(false);
+ const [result,setResult]=useState<Lookup|null>(null),[error,setError]=useState("");
+ const [history,setHistory]=useState<Validation[]>([]);
+ async function refresh(){
+  try{
+   const r=await fetch("/admin/api/validations",{cache:"no-store"});
+   if(r.ok)setHistory(await r.json() as Validation[]);
+  }catch{}
+ }
+ useEffect(()=>{void refresh()},[]);
+ async function submit(event:React.FormEvent){
+  event.preventDefault();const digits=cpf.replace(/\D/g,"");
+  if(digits.length!==11){setError("Informe os 11 dígitos do CPF.");setResult(null);return;}
+  setLoading(true);setError("");setResult(null);
+  try{
+   const response=await fetch("/admin/api/validate-cpf",{method:"POST",
+    headers:{"content-type":"application/json"},body:JSON.stringify({cpf:digits})});
+   const data=await response.json();
+   if(!response.ok)throw new Error(typeof data.message==="string"?data.message:data.error||"Falha na consulta");
+   setResult(data as Lookup);
+   await refresh();
+  }catch(err){setError(err instanceof Error?err.message:"Falha na validação");}
+  finally{setLoading(false);}
+ }
+ return <>
+  <header className="page-title"><div><h1>Validar CPF</h1><p>Confirme o cadastro e a situação de acesso do associado</p></div></header>
+  <section className="panel">
+   <h2>Consultar CPF do associado</h2>
+   <form className="cpf-form" onSubmit={submit}>
+    <div><label htmlFor="cpf">CPF do titular ou dependente</label>
+     <input id="cpf" inputMode="numeric" placeholder="000.000.000-00" value={cpf} required maxLength={14}
+      pattern="[0-9]{3}[.][0-9]{3}[.][0-9]{3}-[0-9]{2}"
+      title="CPF no formato 000.000.000-00" autoComplete="off"
+      onChange={e=>{setCpf(formatCpf(e.target.value));setError("");setResult(null);}}/>
+    </div><button className="primary" disabled={loading}>{loading?"Consultando...":"Validar acesso"}</button>
+   </form>
+   {error&&<div role="alert" className="notice error">{error}</div>}
+   {result&&<div className={`notice ${result.eligible?"success":"error"}`} role="status">
+    <strong>{result.message}</strong>
+    {result.found&&<div style={{marginTop:8}}>
+     <b>{result.beneficiary?.name}</b> · Plano: {result.beneficiary?.plan||"Não informado"} ·
+     Situação: {result.customer?.status==="PAID"?"Pago":result.customer?.status||result.beneficiary?.status||"Não informada"}
+     {result.customer?.unit&&<> · Unidade: {result.customer.unit}</>}
+     {result.customer&&<p style={{margin:"8px 0 0"}}>{result.eligible?
+      "Cadastro financeiro confirmado e acesso liberado.":
+      "Cadastro identificado, mas o pagamento/situação precisa de revisão antes do atendimento."}</p>}
+    </div>}
+   </div>}
+  </section>
+  <section className="panel gap-panel"><h2>Últimas validações</h2>
+   {history.length===0?<p className="muted">Nenhuma validação registrada recentemente.</p>:
+    <div className="cpf-history"><table><thead><tr><th>DATA</th><th>OPERADOR</th><th>RESULTADO</th><th>ACESSO</th></tr></thead>
+     <tbody>{history.map(item=><tr key={item.id}><td>{new Date(item.at).toLocaleString("pt-BR")}</td>
+      <td>{item.actor}</td><td>{item.matched?"Cadastro localizado":"Não encontrado"}</td>
+      <td>{item.eligible?"Liberado":"Não liberado"}</td></tr>)}</tbody>
+    </table></div>}
+   <p className="muted" style={{fontSize:12,marginTop:12}}>O histórico não exibe CPFs completos.</p>
+  </section>
+ </>;
 }
