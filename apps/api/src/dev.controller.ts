@@ -1,8 +1,10 @@
 import { Body, Controller, ForbiddenException, Get, Headers, HttpException, Post, Put, Query, UnauthorizedException } from "@nestjs/common";
 import { hash } from "bcryptjs";
+import { config as loadEnv } from "dotenv";
 import jwt from "jsonwebtoken";
 import { createPrismaClient } from "@quali/database";
 
+loadEnv({ path: "../../.env" });
 const db = createPrismaClient();
 const jwtSecret = process.env.AUTH_JWT_SECRET;
 if (!jwtSecret || jwtSecret.length < 32) throw new Error("AUTH_JWT_SECRET must have 32+ characters");
@@ -90,7 +92,7 @@ export class DevController {
       typeof body.faviconUrl!=="string" || !isUrl(body.faviconUrl)) throw bad("Configurações visuais inválidas.");
     const next:BrandSettings={appName:body.appName.trim(),primaryColor:body.primaryColor,secondaryColor:body.secondaryColor,logoUrl:body.logoUrl, faviconUrl:body.faviconUrl};
     await db.$transaction(async tx=>{
-      await tx.systemSetting.upsert({where:{key:"visualIdentity"},create:{key:"visualIdentity",value:next},update:{value:next}});
+      await tx.systemSetting.upsert({where:{key:"visualIdentity"},create:{key:"visualIdentity",value:{...next}},update:{value:next}});
       await tx.auditLog.create({data:{actorId:actor.id,action:"VISUAL_IDENTITY_UPDATED",entityType:"SystemSetting",entityId:"visualIdentity",metadata:{fields:Object.keys(next)}}});
     });
     return next;
