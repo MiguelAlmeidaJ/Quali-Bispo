@@ -1,5 +1,5 @@
 import {NextRequest,NextResponse} from "next/server";
-export async function handler(request:NextRequest,method:"GET"|"POST"){
+async function handler(request:NextRequest,method:"GET"|"POST"){
  const token=request.cookies.get("quali_session")?.value;
  if(!token)return NextResponse.json({error:"Sessão necessária"},{status:401});
  if(method!=="GET"&&request.headers.has("sec-fetch-site")&&!["same-origin","none"].includes(request.headers.get("sec-fetch-site")!))
