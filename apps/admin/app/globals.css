@@ -89,3 +89,25 @@
 .page-title{align-items:flex-start}
 .cpf-form{flex-direction:column;align-items:stretch}
 }
+
+/* Páginas técnicas DEV — formulários, tabelas e prévias */
+.dev-page{max-width:1450px}
+.dev-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 22px}
+.dev-form label{color:#536981;font-weight:800;font-size:13px;display:flex;flex-direction:column;gap:7px}
+.dev-form input{width:100%;min-height:44px;border-radius:10px;border:1px solid var(--border);padding:10px 12px;background:#fff;color:var(--text)}
+.dev-form input:focus-visible{outline:3px solid #c8e5ff;border-color:var(--blue)}
+.dev-actions{display:flex;align-items:center;gap:14px;grid-column:1/-1;margin-top:10px;flex-wrap:wrap}
+.dev-actions button:not(.primary){padding:10px 16px;border:1px solid var(--border);background:#f6f9fc;border-radius:9px;color:var(--text);font-weight:800}
+.dev-actions button:disabled{opacity:.45;cursor:not-allowed}
+.dev-table-scroll{overflow-x:auto}
+.dev-table{width:100%;border-collapse:collapse;font-size:14px;text-align:left}
+.dev-table th{background:#f3f7fb;color:#58708b;text-align:left;font-size:12px;padding:14px 12px;white-space:nowrap}
+.dev-table td{padding:14px 12px;border-bottom:1px solid #e7edf3;vertical-align:top}
+.dev-table pre{max-width:340px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-size:12px}
+.dev-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dev-color{display:flex;gap:10px;align-items:center}
+.dev-color input[type=color]{width:58px;min-width:58px;padding:3px;height:44px;cursor:pointer}
+.brand-preview{display:flex;gap:12px;flex-wrap:wrap}
+.brand-preview span{color:#fff;padding:14px 25px;border-radius:12px;font-weight:900}
+.audit-id{font-family:ui-monospace,monospace}
+@media(max-width:700px){.dev-form{grid-template-columns:1fr}.dev-row{align-items:flex-start;flex-direction:column}}
