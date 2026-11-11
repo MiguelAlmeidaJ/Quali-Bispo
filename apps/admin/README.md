@@ -153,3 +153,19 @@ O importador mantém os status originais em `rawStatus` e classifica: Pago, Em a
 Os valores mostrados na aba Resumo do Excel podem ter fórmulas ou cache desatualizados; as contagens usadas pelo sistema são calculadas a partir das linhas importadas no PostgreSQL.
 
 Depois de importar, guarde o Excel/JSON privado em um local protegido e considere apagar o JSON temporário, quando houver backup adequado do PostgreSQL.
+
+## Cadastro e edição de clientes
+
+As páginas administrativas de clientes são rotas reais do Next.js com `basePath=/admin`:
+
+- `/admin/cliente/novo` — formulário de novo cliente;
+- `/admin/cliente/:id/edit` — carregamento por UUID para edição do cadastro existente;
+- menu **Clientes** — botão **Novo cliente** e ação **Editar** em cada linha.
+
+Componentes: `src/screens/CustomerFormPage.tsx` e `src/types/customer.ts`. Os campos são `NF, Nome, CPF, Data de nascimento, Unidade, Tipo de cartão, Valor do plano, Forma de pagamento, Status e Detalhes`. `birthDate` é opcional e exige nova migração do Prisma. O cadastro do cliente não implica ativar o benefício automaticamente.
+
+Endpoints Nest com autorização ADMIN/DEV: `POST /v1/admin/finance/customers`, `GET /v1/admin/finance/customers/:id` e `PATCH /v1/admin/finance/customers/:id`. Proxy BFF existente em `app/api/finance/`. O PATCH preserva a alteração rápida de status da tabela.
+
+**Privacidade:** o CPF é verificado com dígitos validadores e guardado apenas como HMAC-SHA256 com `CPF_HASH_KEY` e últimos 4 dígitos. Ao editar, o campo CPF fica vazio; deixá-lo vazio mantém o anterior, preencher substitui após validação. O CPF completo não é recuperável nem exibido. As mudanças registram somente campos alterados na auditoria, sem valores pessoais sensíveis.
+
+Após atualizar: `pnpm db:generate`, `pnpm db:migrate`, `pnpm build`, depois reiniciar API e Admin. Não é necessário executar novamente o seed/importador da planilha.
