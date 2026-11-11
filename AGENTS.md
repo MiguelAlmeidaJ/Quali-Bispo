@@ -22,3 +22,6 @@
 - Catálogo de serviços: uma fonte da verdade no PostgreSQL (`CatalogItem`), preços armazenados em centavos; alterações apenas DEV/ADMIN, logs de auditoria, inativação em vez de exclusão física.
 - As listas do Clube e o simulador devem consumir a API pública. Não duplicar valores em componentes ou constantes estáticas.
 - Seed `pnpm db:seed:catalog` importa os 99 registros dos documentos de consultas e exames, preservando correções já realizadas via Admin.
+
+- Para a Rede Credenciada, `Partner.serviceTypes` é o conjunto de tipos oferecidos; `serviceType` é legado e deve refletir a primeira seleção. Conservar ambos enquanto houver consumidores antigos, aceitar fallback de registros pré-migração, validar lista na API.
+- CPF: aplicar máscara apenas no frontend, enviar 11 dígitos para a API e preservar checagem do dígito verificador no backend.

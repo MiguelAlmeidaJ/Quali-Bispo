@@ -115,3 +115,11 @@ As tabelas de Consultas, Exames, Check-ups e Terapias são exibidas no Clube via
 ## Paginação da tabela de valores
 
 A tela `src/screens/CatalogPage.tsx` mostra **20 registros por página**, com botões **Anterior** e **Próxima**. A paginação é aplicada ao resultado filtrado; busca, categoria e situação levam o usuário automaticamente à primeira página. O rodapé informa o intervalo e o total de registros encontrados.
+
+## CPF e múltiplos atendimentos dos parceiros
+
+A página `src/screens/ValidateCpfPage.tsx` aplica máscara de CPF `000.000.000-00` durante a digitação, recebe somente os 11 números e envia os dígitos à API para validação. A máscara é visual, não substitui a validação matemática/consulta no backend.
+
+A tela de Rede Credenciada usa o componente isolado `src/components/PartnerModal.tsx`, com cabeçalho e rodapé fixos, corpo rolável, grupos de campos e seleção múltipla pesquisável. O campo `serviceTypes` armazena vários tipos de atendimento, com tags editáveis e validação de pelo menos um tipo. O campo legado `serviceType` continua atualizado com a primeira seleção para compatibilidade com outras integrações.
+
+**Após atualizar a branch:** execute `pnpm db:generate`, `pnpm db:migrate`, `pnpm build` e reinicie a API, Admin e Clube após builds bem-sucedidos. O novo campo `Partner.serviceTypes` usa array PostgreSQL com default `[]`. Registros antigos aparecem pelo tipo legado até serem editados. Não precisa recriar o cadastro ou executar seed de parceiros.

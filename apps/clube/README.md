@@ -47,3 +47,7 @@ Os valores exibidos na seção Simulador vêm dos procedimentos ativos de `GET /
 A economia líquida é a soma dessas economias menos as mensalidades. Limites de uso do plano são respeitados no contador de consultas; resultados são estimativas, não garantias de desconto. O simulador e o catálogo público compartilham os preços mantidos no Admin.
 
 Exemplo de validação com os 99 registros originais, plano Familiar e seleções 2 consultas/mês, 1 check-up/ano e 1 terapia/mês: economia bruta de aproximadamente R$ 1.803,05; mensalidades R$ 1.078,80; economia líquida R$ 724,25. Os números variam conforme edições do catálogo.
+
+## Múltiplos tipos da Rede Credenciada
+
+A API agora expõe `serviceTypes: string[]` por parceiro. O site lista os tipos selecionados; para cadastros antigos, usa `serviceType` como fallback. A alteração é feita no Admin > Rede credenciada; o campo requer migração Prisma antes da API atualizada entrar no ar.

@@ -9,7 +9,7 @@ const secret = process.env.AUTH_JWT_SECRET;
 if (!secret || secret.length < 32) throw new Error("AUTH_JWT_SECRET não configurado");
 
 type PartnerInput = {
-  name: string; serviceType: string; services: string; address: string;
+  name: string; serviceType: string; serviceTypes: string[]; services: string; address: string;
   city: string; phone: string | null; businessHours: string; discountPercent: number; active: boolean;
 };
 const text = (value: unknown, max: number, required = false): string => {
@@ -18,10 +18,19 @@ const text = (value: unknown, max: number, required = false): string => {
   }
   return value.trim();
 };
+const availableTypes = ["Consultas médicas", "Exames e check-ups", "Psicologia", "Nutrição", "Odontologia", "Outros"] as const;
 const parseInput = (raw: unknown): PartnerInput => {
   if (!raw || typeof raw !== "object") throw new HttpException("Dados inválidos", 400);
   const body = raw as Record<string, unknown>;
   const phone = text(body.phone ?? "", 30);
+  // Aceita registros antigos com um único tipo, mas novos cadastros enviam uma lista.
+  const rawTypes = body.serviceTypes ?? [body.serviceType];
+  if (!Array.isArray(rawTypes) || rawTypes.length < 1 || rawTypes.length > availableTypes.length ||
+    !rawTypes.every((item:unknown) => typeof item === "string" && availableTypes.includes(item as typeof availableTypes[number])) ||
+    new Set(rawTypes).size !== rawTypes.length) {
+    throw new HttpException("Selecione pelo menos um tipo de atendimento válido, sem repetições.",400);
+  }
+  const serviceTypes = rawTypes as string[];
   const discount = body.discountPercent;
   if (typeof discount !== "number" || !Number.isInteger(discount) || discount < 0 || discount > 100) {
     throw new HttpException("Desconto deve ser um percentual de 0 a 100", 400);
@@ -29,7 +38,8 @@ const parseInput = (raw: unknown): PartnerInput => {
   if (typeof body.active !== "boolean") throw new HttpException("Situação inválida", 400);
   return {
     name: text(body.name, 120, true),
-    serviceType: text(body.serviceType, 80, true),
+    serviceType: serviceTypes[0],
+    serviceTypes,
     services: text(body.services, 600),
     address: text(body.address, 250, true),
     city: text(body.city, 100, true),
@@ -51,7 +61,7 @@ async function requireStaff(auth?: string) {
   return user;
 }
 const selection = {
-  id:true,name:true,serviceType:true,services:true,address:true,city:true,
+  id:true,name:true,serviceType:true,serviceTypes:true,services:true,address:true,city:true,
   phone:true,businessHours:true,discountPercent:true,active:true,createdAt:true,updatedAt:true,
 } as const;
 
@@ -65,6 +75,7 @@ export class PartnersController {
         {name:{contains:keyword,mode:"insensitive" as const}},
         {city:{contains:keyword,mode:"insensitive" as const}},
         {services:{contains:keyword,mode:"insensitive" as const}},
+        {serviceTypes:{has:keyword}},
       ]}:{})},
       select:selection,orderBy:{name:"asc"},take:300,
     });

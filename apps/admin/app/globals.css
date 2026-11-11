@@ -266,3 +266,56 @@
 .catalog-pagination nav button:disabled{opacity:.4;cursor:not-allowed}
 .catalog-pagination nav span{font-size:12px;color:var(--muted);white-space:nowrap}
 @media(max-width:700px){.catalog-pagination{align-items:flex-start;flex-direction:column;width:100%}}
+
+
+/* Modal de parceiros — estrutura com cabeçalho/rodapé fixos e conteúdo rolável */
+.partner-modal-backdrop{padding:16px;background:rgba(8,31,55,.65);backdrop-filter:blur(3px)}
+.partner-modal-refined{width:min(100%,740px);max-height:min(94dvh,940px);border-radius:20px}
+.partner-modal-refined .partner-modal-header{flex-shrink:0;padding:23px 28px 19px}
+.partner-modal-refined .partner-modal-header h2{outline:none}
+.partner-modal-refined .partner-modal-form{padding:0 28px;overflow-y:auto;flex:1;min-height:0;scrollbar-width:thin}
+.partner-form-section{padding:20px 0 22px;border-bottom:1px solid #e9eff5}
+.partner-form-section:last-of-type{border:0}
+.partner-form-section h3{font-size:13px;font-weight:900;color:#174468;margin:0 0 16px}
+.partner-modal-refined .partner-form-grid{gap:17px 18px}
+.partner-modal-refined .partner-field{display:block;min-width:0;line-height:1.45}
+.partner-modal-refined .partner-field .required{display:inline;margin-left:2px}
+.partner-modal-refined .partner-field input,.partner-modal-refined .partner-field textarea,
+.partner-modal-refined .partner-field select{display:block;margin-top:7px;font-size:13px;font-weight:600}
+.partner-modal-refined .partner-field input:focus,.partner-modal-refined .partner-field textarea:focus{box-shadow:0 0 0 3px #0b71bf1b}
+.partner-modal-refined .partner-help{display:block;margin-top:7px;font-size:11px;font-weight:600;color:#8494a4}
+.partner-modal-refined .partner-status-field{margin:0}
+.partner-modal-refined .partner-modal-footer{flex-shrink:0;margin:0;padding:18px 28px 21px;background:#fff;box-shadow:0 -4px 20px #09375d0b}
+.partner-multiselect{position:relative;margin-top:7px}
+.partner-multiselect-trigger{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:45px;padding:10px 13px;border-radius:11px;border:1px solid #d9e4f0;background:#fff;color:#294e6d;font-size:13px;text-align:left;font-weight:800}
+.partner-multiselect-trigger:hover,.partner-multiselect-trigger.is-open{border-color:var(--blue);background:#f9fcff}
+.partner-multiselect-trigger:focus-visible{outline:3px solid #d8edff}
+.partner-multiselect-trigger svg{flex:0 0 auto;color:#7891a6;transition:transform .16s ease}
+.partner-multiselect-trigger.is-open svg{transform:rotate(180deg)}
+.partner-selected-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.partner-selected-tag{display:inline-flex;align-items:center;gap:7px;max-width:100%;border-radius:8px;padding:5px 7px 5px 10px;background:#e9f4fc;border:1px solid #d4e9f9;color:#0c65a4;font-size:11px;font-weight:900}
+.partner-selected-tag button{display:grid;place-items:center;border:0;border-radius:6px;background:#d7eaf8;color:#0b5b91;padding:3px}
+.partner-selected-tag button:hover{background:#c2e1f5}
+.partner-multiselect-menu{margin-top:9px;border:1px solid #d8e7f3;border-radius:12px;background:#fff;box-shadow:0 8px 22px #153c6112;overflow:hidden}
+.partner-select-search{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid #e7eef5;color:#7b8da2}
+.partner-select-search input{border:0!important;box-shadow:none!important;margin:0!important;padding:6px 4px!important;min-height:30px!important;flex:1;background:transparent!important}
+.partner-multiselect-options{max-height:205px;overflow-y:auto;padding:5px}
+.partner-multiselect-option{display:flex;align-items:center;gap:10px;padding:10px 11px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;color:#315371}
+.partner-multiselect-option:hover{background:#f0f7fd}
+.partner-multiselect-option input{width:17px;height:17px;min-height:0;margin:0;accent-color:var(--blue);flex:0 0 auto}
+.partner-multiselect-option span{flex:1}
+.partner-multiselect-option svg{color:var(--green)}
+.partner-select-empty{font-size:12px;color:#71879b;padding:15px}
+.partner-select-actions{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-top:1px solid #e7eef5;color:#7d91a5;font-size:11px;font-weight:700}
+.partner-select-actions button{border:0;border-radius:8px;background:#e8f3fc;color:var(--blue);font-weight:900;padding:7px 12px}
+.partner-service-badges{display:flex;flex-wrap:wrap;gap:5px;max-width:250px}
+.partner-service-badge{font-size:10px;font-weight:800;color:#17618f;background:#e9f4fc;border-radius:6px;padding:4px 6px}
+@media(max-width:760px){
+ .partner-modal-backdrop{padding:8px}
+ .partner-modal-refined{width:100%;max-height:98dvh;border-radius:14px}
+ .partner-modal-refined .partner-modal-header{padding:17px 17px 13px}
+ .partner-modal-refined .partner-modal-form{padding:0 17px}
+ .partner-modal-refined .partner-modal-footer{padding:12px 17px}
+ .partner-modal-refined .partner-form-grid{grid-template-columns:1fr}
+ .partner-modal-refined .partner-primary-btn{white-space:normal}
+}
