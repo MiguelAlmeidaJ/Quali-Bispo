@@ -5,15 +5,15 @@ export const statusLabels:Record<FinanceStatus,string>={
 };
 export type CustomerRecord={
  id:string;invoice:string|null;name:string;cpfLast4:string|null;cpfValid:boolean;cpfConflict:boolean;
- birthDate:string|null;unit:string|null;planType:string|null;amountCents:number|null;
+ birthDate:string|null;unit:string|null;partnerId:string|null;partner:{id:string;name:string;active:boolean}|null;planType:string|null;amountCents:number|null;
  paymentMethod:string|null;status:FinanceStatus;paymentDetails:string|null;
 };
 export type CustomerFormData={
- invoice:string;name:string;cpf:string;birthDate:string;unit:string;planType:string;
+ invoice:string;name:string;cpf:string;birthDate:string;partnerId:string;planType:string;
  amount:string;paymentMethod:string;status:FinanceStatus;paymentDetails:string;
 };
 export const blankCustomer:CustomerFormData={
- invoice:"",name:"",cpf:"",birthDate:"",unit:"",planType:"",
+ invoice:"",name:"",cpf:"",birthDate:"",partnerId:"",planType:"",
  amount:"",paymentMethod:"",status:"UNSPECIFIED",paymentDetails:"",
 };
 export const formatCpf=(value:string)=>{

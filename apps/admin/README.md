@@ -169,3 +169,11 @@ Endpoints Nest com autorização ADMIN/DEV: `POST /v1/admin/finance/customers`, 
 **Privacidade:** o CPF é verificado com dígitos validadores e guardado apenas como HMAC-SHA256 com `CPF_HASH_KEY` e últimos 4 dígitos. Ao editar, o campo CPF fica vazio; deixá-lo vazio mantém o anterior, preencher substitui após validação. O CPF completo não é recuperável nem exibido. As mudanças registram somente campos alterados na auditoria, sem valores pessoais sensíveis.
 
 Após atualizar: `pnpm db:generate`, `pnpm db:migrate`, `pnpm build`, depois reiniciar API e Admin. Não é necessário executar novamente o seed/importador da planilha.
+
+## Vínculo do cliente com a Rede Credenciada
+
+O campo **Unidade** de Novo Cliente/Editar Cliente agora é um seletor alimentado por `GET /admin/api/partners`. Para novos clientes é obrigatório escolher uma unidade ativa da rede; a API valida a existência e situação da unidade e grava seu **ID** em `FinanceCustomer.partnerId` (relação Prisma com `Partner`). É possível editar o vínculo posteriormente; unidades inativas não podem receber novos vínculos, mas vínculos antigos podem permanecer.
+
+O texto `FinanceCustomer.unit` originalmente importado da planilha **não é descartado**. Se o cliente foi importado e ainda não possui `partnerId`, a tela de edição mostra o valor textual histórico e solicita escolha manual da unidade correspondente. Nenhum vínculo é feito automaticamente por semelhança de nomes; uma edição sem vínculo preexistente pode salvar outros dados sem forçar uma escolha. A listagem prefere o nome da unidade vinculada e usa o texto importado quando ainda não houver associação.
+
+O aviso visual de campos obrigatórios usa `span.customer-field-title` para manter o asterisco na mesma linha da legenda. Alterar o modelo exige `pnpm db:generate` e `pnpm db:migrate` antes de gerar os builds de API/Admin. Não é necessário repetir a importação financeira; os valores antigos ficam preservados.

@@ -29,7 +29,7 @@ const date=(raw:unknown):Date|null=>{
  return parsed;
 };
 export type CustomerPayload={
- invoice:string|null;name:string;cpf:string|null;birthDate:Date|null;unit:string|null;planType:string|null;
+ invoice:string|null;name:string;cpf:string|null;birthDate:Date|null;partnerId:string|null;planType:string|null;
  amountCents:number|null;paymentMethod:string|null;status:FinanceStatus;paymentDetails:string|null;
 };
 export function parseCustomerPayload(raw:unknown):CustomerPayload {
@@ -39,6 +39,10 @@ export function parseCustomerPayload(raw:unknown):CustomerPayload {
  const cpf=field(body.cpf,"CPF",14);
  if(cpf&&(!/^\d{11}$/.test(cpf.replace(/\D/g,""))||!validCpf(cpf.replace(/\D/g,""))))
   throw bad("CPF inválido. Confira os 11 dígitos.");
+ const partnerIdValue=body.partnerId;
+ if(partnerIdValue!==null&&partnerIdValue!==undefined&&partnerIdValue!==""&&
+    (typeof partnerIdValue!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(partnerIdValue)))throw bad("Selecione uma unidade credenciada válida.");
+ const partnerId=typeof partnerIdValue==="string"&&partnerIdValue!==""?partnerIdValue:null;
  const cents=body.amountCents;
  if(cents!==null&&cents!==undefined&&(!Number.isSafeInteger(cents)||Number(cents)<0||Number(cents)>100000000))
   throw bad("Valor do plano inválido.");
@@ -46,7 +50,7 @@ export function parseCustomerPayload(raw:unknown):CustomerPayload {
  return {
   invoice:field(body.invoice,"NF",100),name,
   cpf:cpf?.replace(/\D/g,"")||null,
-  birthDate:date(body.birthDate),unit:field(body.unit,"unidade",120),
+  birthDate:date(body.birthDate),partnerId,
   planType:field(body.planType,"tipo de cartão",80),
   amountCents:cents===null||cents===undefined?null:Number(cents),
   paymentMethod:field(body.paymentMethod,"forma de pagamento",140),

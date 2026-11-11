@@ -32,3 +32,5 @@
 
 - Cadastro financeiro de clientes: a rota `/admin/cliente/novo` e `/admin/cliente/:id/edit` são internas ao Next Admin (basePath `/admin`), com autorização ADMIN/DEV na API. Dados de CPF apenas HMAC SHA-256 e sufixo, não armazenar CPF puro. Edição com CPF vazio mantém fingerprint existente.
 - `FinanceCustomer.birthDate` é uma data opcional `@db.Date`; a importação histórica mantém null até haver informação confirmada.
+
+- O cliente financeiro vincula-se a `Partner` via FK opcional `FinanceCustomer.partnerId`. Novos clientes exigem um parceiro ativo; cadastros antigos não recebem vínculo presumido. `FinanceCustomer.unit` é apenas o texto histórico da planilha, não a FK. Preferir `partner.name` na exibição quando houver vínculo.
