@@ -7,7 +7,7 @@ type BaseRow={
  id:string;name:string;planType:string|null;amountCents:number|null;paymentMethod:string|null;
  paymentDetails:string|null;referenceDate:string|null;rawStatus:string|null;status:Status;
 };
-type Customer=BaseRow&{cpfLast4:string|null;cpfValid:boolean;cpfConflict:boolean;unit:string|null;invoice:string|null};
+type Customer=BaseRow&{cpfLast4:string|null;cpfValid:boolean;cpfConflict:boolean;unit:string|null;partner:{id:string;name:string;active:boolean}|null;invoice:string|null};
 type Issue=BaseRow&{customerId:string|null;resolved:boolean};
 type PageResult<T>={items:T[];total:number;page:number;pageSize:number};
 type Summary={customers:number;paid:number;open:number;issues:number;unresolved:number;unmatched:number;invalidCpf:number};
@@ -87,7 +87,7 @@ export function FinancePage({type}:{type:"customers"|"issues"}){
     {type==="customers"?<th>CPF</th>:<th>VÍNCULO</th>}
     <th>PLANO</th><th>VALOR</th><th>PAGAMENTO</th><th>OBSERVAÇÕES</th><th>SITUAÇÃO</th>{type==="customers"&&<th>AÇÕES</th>}{type==="issues"&&<th>RESOLUÇÃO</th>}</tr></thead>
     <tbody>{items.map(row=><tr key={row.id}>
-     <td><b>{row.name}</b>{type==="customers"&&(row as Customer).unit&&<small>{(row as Customer).unit}</small>}</td>
+     <td><b>{row.name}</b>{type==="customers"&&((row as Customer).partner||(row as Customer).unit)&&<small>{(row as Customer).partner?.name||(row as Customer).unit}</small>}</td>
      <td>{type==="customers"?(row as Customer).cpfValid&&!(row as Customer).cpfConflict?`***.***.***-${(row as Customer).cpfLast4?.slice(-2)||"**"}`:"Revisar CPF":
       (row as Issue).customerId?<span className="finance-linked"><FiCheckCircle/> Vinculado</span>:<span className="finance-unmatched">Não identificado</span>}</td>
      <td>{row.planType||"—"}</td><td>{money(row.amountCents)}</td><td>{row.paymentMethod||"—"}</td>
