@@ -9,8 +9,8 @@ button,input,select{font:inherit}a{color:var(--azul)}
 .header-content{display:flex;align-items:center;justify-content:space-between;height:74px;gap:16px}
 .logo{text-decoration:none;display:inline-flex;align-items:center}
 .brand{display:inline-flex;flex-direction:column;line-height:.73;min-width:128px;font-style:italic;transform:skew(-8deg)}
-.brand-word{font-family:Georgia,serif;font-size:40px;font-weight:900;letter-spacing:-4px;background:linear-gradient(110deg,#0961ab 43%,#238247 65%);color:transparent;background-clip:text}
-.brand-sub{font-size:14px;font-weight:900;color:#25884a;padding-left:54px;letter-spacing:-.8px}
+.brand-word{font-family:Georgia,serif;font-size:40px;font-weight:900;letter-spacing:-4px;background:linear-gradient(110deg,var(--azul) 43%,var(--verde) 65%);color:transparent;background-clip:text}
+.brand-sub{font-size:14px;font-weight:900;color:var(--verde);padding-left:54px;letter-spacing:-.8px}
 .nav{display:flex;align-items:center;gap:22px}
 .nav a{color:var(--tx2);text-decoration:none;font-weight:700;font-size:.93rem}
 .nav a:hover{color:var(--azul)}.nav a.btn,.nav a.btn:hover{color:#fff}
