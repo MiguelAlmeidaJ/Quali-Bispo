@@ -9,6 +9,7 @@ datasource db {
 }
 
 enum Role {
+  DEV
   ADMIN
   PARTNER
   BENEFICIARY
@@ -92,4 +93,10 @@ model AuditLog {
   createdAt  DateTime @default(now())
   @@index([createdAt])
   @@index([entityType, entityId])
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
 }
