@@ -39,8 +39,10 @@ export function parseCustomerPayload(raw:unknown):CustomerPayload {
  const cpf=field(body.cpf,"CPF",14);
  if(cpf&&(!/^\d{11}$/.test(cpf.replace(/\D/g,""))||!validCpf(cpf.replace(/\D/g,""))))
   throw bad("CPF inválido. Confira os 11 dígitos.");
- const partnerId=body.partnerId===null||body.partnerId===undefined||body.partnerId===""?null:body.partnerId;
- if(partnerId!==null&&(typeof partnerId!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(partnerId)))throw bad("Selecione uma unidade credenciada válida.");
+ const partnerIdValue=body.partnerId;
+ if(partnerIdValue!==null&&partnerIdValue!==undefined&&partnerIdValue!==""&&
+    (typeof partnerIdValue!=="string"||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(partnerIdValue)))throw bad("Selecione uma unidade credenciada válida.");
+ const partnerId=typeof partnerIdValue==="string"&&partnerIdValue!==""?partnerIdValue:null;
  const cents=body.amountCents;
  if(cents!==null&&cents!==undefined&&(!Number.isSafeInteger(cents)||Number(cents)<0||Number(cents)>100000000))
   throw bad("Valor do plano inválido.");
