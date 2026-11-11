@@ -12,3 +12,9 @@ packages/database/src/generated/
 
 # Imagens da identidade visual persistidas no servidor, fora do Git
 apps/api/storage/
+
+# Arquivos financeiros e pessoais: nunca versionar
+/private/
+**/private/
+*Controle_Financeiro_QualiBeneficios*.xlsx
+quali_importacao_financeira_privada.json
