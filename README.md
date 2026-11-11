@@ -29,11 +29,11 @@ Se `.env` já existir, não substitua suas configurações: apenas confirme que 
 
 URLs: Clube http://127.0.0.1:3002/ · Admin http://127.0.0.1:3002/admin · API http://127.0.0.1:4002/v1/health
 
-## Executar com PM2 (build de produção)
+## Rodar os serviços com PM2
 
-O PM2 gerencia três processos: `quali-api` (4002), `quali-admin` (3003, interna) e `quali-clube` (3002). O PostgreSQL continua no Docker.
+PM2 gerencia os três processos Node.js, enquanto o PostgreSQL permanece no Docker. O `apps/admin` roda internamente na porta 3003 e é acessado externamente em `http://127.0.0.1:3002/admin`.
 
-No PowerShell, dentro da raiz do repositório:
+Após instalar as dependências, inicializar o banco e criar as migrations:
 
 ```powershell
 git pull origin refactor
@@ -45,22 +45,20 @@ pnpm pm2:start
 pnpm pm2:status
 ```
 
-Não inicie os serviços antes de corrigir qualquer erro do `pnpm build`. Em especial, páginas do frontend ainda são provisórias.
+Em caso de erro durante o build, **não inicie o PM2**; corrija o build antes. Ver logs de todos os serviços: `pnpm pm2:logs`, sair do modo logs com Ctrl+C. Ver somente a API: `pnpm exec pm2 logs quali-api`.
 
-Comandos úteis:
+Comandos de gerenciamento:
 
 ```powershell
-pnpm pm2:logs
-pnpm exec pm2 logs quali-api
 pnpm pm2:restart
 pnpm pm2:stop
 pnpm pm2:delete
 pnpm pm2:save
 ```
 
-Após alterações de código, rode `pnpm build` e `pnpm pm2:restart`. PM2 executa Next com `next start` e Nest com `node dist/main.js` (sem hot reload), portanto não execute `pnpm dev` ao mesmo tempo: as portas entram em conflito.
+O PM2 usa `ecosystem.config.cjs`, inicia Next.js em modo `start` (sem hot reload) e a API a partir do JavaScript compilado. Depois de mudanças de código, rode `pnpm build` novamente e `pnpm pm2:restart`.
 
-Para reiniciar processos após reboot do Linux, use `pnpm exec pm2 startup`, siga as instruções e então `pnpm pm2:save`. No Windows, `pm2 startup` não tem suporte nativo; se precisar de inicialização automática, utilize o Agendador de Tarefas para chamar `pnpm exec pm2 resurrect` com as permissões e o diretório corretos.
+**Importante:** `pnpm pm2:save` apenas salva a lista de processos. Para reiniciar no boot de Linux, use `pnpm exec pm2 startup` e siga as instruções exibidas. No **Windows**, `pm2 startup` não oferece suporte nativo; configure uma tarefa no Agendador de Tarefas para executar `pnpm exec pm2 resurrect` na inicialização, com o usuário e diretório corretos, se precisar dessa funcionalidade. Não habilite processos PM2 de desenvolvimento simultaneamente com `pnpm dev`, pois utilizam as mesmas portas.
 
 ## Convenção obrigatória do Prisma 7
 

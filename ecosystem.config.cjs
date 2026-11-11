@@ -15,7 +15,10 @@ module.exports = {
       max_restarts: 10,
       min_uptime: '5s',
       max_memory_restart: '512M',
-      env: { NODE_ENV: 'production', API_PORT: '4002' },
+      env: {
+        NODE_ENV: 'production',
+        API_PORT: '4002',
+      },
     },
     {
       name: 'quali-admin',
@@ -29,7 +32,9 @@ module.exports = {
       max_restarts: 10,
       min_uptime: '5s',
       max_memory_restart: '768M',
-      env: { NODE_ENV: 'production' },
+      env: {
+        NODE_ENV: 'production',
+      },
     },
     {
       name: 'quali-clube',
@@ -43,7 +48,9 @@ module.exports = {
       max_restarts: 10,
       min_uptime: '5s',
       max_memory_restart: '768M',
-      env: { NODE_ENV: 'production' },
+      env: {
+        NODE_ENV: 'production',
+      },
     },
   ],
 };
