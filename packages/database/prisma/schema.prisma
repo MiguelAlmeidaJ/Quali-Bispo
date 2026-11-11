@@ -109,3 +109,31 @@ model SystemSetting {
   value     Json
   updatedAt DateTime @updatedAt
 }
+
+enum CatalogCategory {
+  CONSULTA
+  CHECKUP
+  EXAME
+  PROCEDIMENTO
+  TERAPIA
+}
+
+model CatalogItem {
+  id               String          @id @default(uuid()) @db.Uuid
+  importKey        String?         @unique
+  name             String
+  category         CatalogCategory
+  group            String
+  professional     String?
+  notes            String?
+  normalPriceCents Int
+  qualiPriceCents  Int
+  active           Boolean         @default(true)
+  displayOrder     Int             @default(0)
+  sourceDocument   String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([active, category, displayOrder])
+  @@index([group])
+}

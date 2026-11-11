@@ -22,3 +22,9 @@ O layout `app/layout.tsx` consulta `GET /v1/branding` no servidor via `src/lib/b
 ## Rede credenciada dinâmica
 
 O componente `src/components/sections/Partners.tsx` consulta `GET /v1/partners` via rewrite do Next. Somente parceiros ativos são apresentados. A rede passa a ser mantida pelo Admin em `/admin`, sem duplicação em `src/data/catalog.ts`. Se a API estiver indisponível, o componente informa erro sem mostrar dados de exemplo como se fossem reais.
+
+## Tabela de valores compartilhada
+
+`PriceTable.tsx`, `Benefits.tsx` e `Simulator.tsx` obtêm os procedimentos ativos de `GET /v1/catalog`, roteado via `next.config.mjs`. Não há valores de consultas ou exames codificados em `src/data/catalog.ts`. Alterações do Admin aparecem após recarregar a página. A disponibilidade depende da API e da importação inicial do catálogo.
+
+**Nota:** o simulador é uma estimativa baseada na média dos registros ativos e não representa preço final ou garantia de atendimento.

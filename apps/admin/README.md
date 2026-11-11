@@ -82,3 +82,32 @@ O cadastro e a edição são persistidos no PostgreSQL; inativação usa `active
 **Primeira execução após atualização:** `pnpm db:migrate` para adicionar os campos. Opcionalmente execute `pnpm db:seed:partners` para cadastrar as quatro unidades das imagens de referência, sem sobrescrever registros existentes. O parceiro de demonstração do seed anterior permanece no banco, podendo ser inativado ou editado pela interface.
 
 Novo parceiro cadastrado e ativo aparecerá na vitrine do Clube após recarregar. A API disponibiliza `GET /v1/partners` apenas com parceiros ativos. Para alteração use as rotas autenticadas `/v1/admin/partners` (ADMIN/DEV). `PARTNER` não tem acesso ao cadastro.
+
+## Tabela de valores (Consultas + Exames)
+
+- `src/pages/CatalogPage.tsx`: listagem, busca, filtros, formulário para cadastrar/editar e situação ativa/inativa.
+- `src/types/catalog.ts`: tipos de dados e conversão R$ ↔ centavos.
+- `src/lib/catalogApi.ts`: chamadas HTTP administrativas.
+- `app/api/catalog/route.ts` e `app/api/catalog/[id]/route.ts`: proxy protegido por sessão.
+- `apps/api/src/catalog.controller.ts`: listagem pública, rotas autenticadas DEV/ADMIN e auditoria.
+- `packages/database/prisma/schema.prisma`: modelo `CatalogItem`.
+
+### Atualizar banco e importar os documentos
+
+Na raiz do monorepo, após atualizar a branch:
+```powershell
+pnpm install
+pnpm db:generate
+pnpm db:migrate
+pnpm db:seed:catalog
+pnpm build
+pnpm pm2:restart
+```
+
+**Importação:** 28 registros de `Valores_Consultas_Quali_Beneficios.docx` e 71 de `VALORES DE EXAMES QUALI BENEFICIOS.pdf` (99 registros). Os documentos foram transcritos para `packages/database/prisma/seed-catalog.ts`. O comando não depende de manter PDF/DOCX na pasta, e não sobrescreve registros já importados que foram modificados pelo Admin.
+
+Preços são guardados em **centavos inteiros**, com valor normal e valor Quali separados. `sourceDocument` e `notes` preservam a proveniência e ressalvas. Itens inativados não aparecem no Clube. Alterações no Admin produzem `AuditLog`.
+
+Observações a revisar: `Eletroneuromiografia 4 membros` consta como R$ 660,00 / R$ 564,00 (percentual diferente da maioria); `Cauterização grande URO` aparece com `R4:630,00` no documento e foi interpretada como R$ 630,00; duas linhas de audiometria combinada não indicam faixa etária. Os valores registrados são os valores textuais dos arquivos, não descontos recalculados. Confira os documentos antes de disponibilizar em produção.
+
+As tabelas de Consultas, Exames, Check-ups e Terapias são exibidas no Clube via `GET /v1/catalog`. O Admin não permite apagar fisicamente os preços nesta etapa; utilize `active=false` para preservar o histórico.

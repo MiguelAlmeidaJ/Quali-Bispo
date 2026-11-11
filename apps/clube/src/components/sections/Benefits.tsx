@@ -1,12 +1,27 @@
-import { SectionHeading } from "../ui/SectionHeading";
-import { procedures, money } from "../../data/catalog";
-const benefits=[
-{icon:"🩺",name:"Consultas médicas",detail:"Mais de 20 especialidades, incluindo cardiologia, ginecologia, pediatria, dermatologia e neurologia. Até 3 consultas por mês por beneficiário.",category:"cons" as const},
-{icon:"💗",name:"Check-ups",detail:"Pacotes de exames e avaliações para cuidar de você e de sua família, sem limite mensal de uso.",category:"check" as const},
-{icon:"🧠",name:"Psicologia e nutrição",detail:"Atendimento com profissionais da rede para acompanhar sua saúde e bem-estar.",category:"terap" as const}
+"use client";
+import {SectionHeading} from "../ui/SectionHeading";
+import {useCatalog,centsMoney} from "../../hooks/useCatalog";
+const benefitGroups=[
+ {icon:"🩺",name:"Consultas médicas",detail:"Mais de 20 especialidades e atendimentos da rede parceira. Consulte as condições de uso do plano.",types:["CONSULTA"]},
+ {icon:"💗",name:"Check-ups e exames",detail:"Avaliações preventivas e exames com preços especiais para associados.",types:["CHECKUP","EXAME","PROCEDIMENTO"]},
+ {icon:"🧠",name:"Psicologia e nutrição",detail:"Atendimento com profissionais da rede para saúde e bem-estar.",types:["TERAPIA"]},
 ];
-export function Benefits(){return <section className="sec alt" id="beneficios"><div className="wrap">
-  <SectionHeading eyebrow="Benefícios" title="Descontos para cada momento da sua saúde">Para você e seus dependentes. Consultas médicas com limite de 3 por mês por beneficiário; os demais benefícios podem ser usados sempre que precisar.</SectionHeading>
-  <div className="bens">{benefits.map(b=>{const data=procedures.filter(p=>p.category===b.category);const pct=Math.max(...data.map(p=>Math.round((1-p.quali/p.normal)*100)));return <article className="ben" key={b.name}><span className="pct">até {pct}%</span><div className="ic">{b.icon}</div><h4>{b.name}</h4><p>{b.detail}</p><ul>{data.slice(0,3).map(p=><li key={p.specialty}><span>{p.specialty}</span><b>{money(p.quali)}</b></li>)}</ul><a href="#valores">Ver tabela completa →</a></article>;})}</div>
-  <p className="hint center spaced">Valores da tabela oficial Quali Benefícios. Veja todos os procedimentos abaixo.</p>
-</div></section>}
+export function Benefits(){
+ const {items,loading,error}=useCatalog();
+ return <section className="sec alt" id="beneficios"><div className="wrap">
+  <SectionHeading eyebrow="Benefícios" title="Descontos para cada momento da sua saúde">Confira uma amostra dos procedimentos disponíveis na nossa tabela.</SectionHeading>
+  <div className="bens">{benefitGroups.map(b=>{
+   const available=items.filter(item=>b.types.includes(item.category) && item.normalPriceCents>0);
+   const pct=available.length?Math.max(...available.map(p=>Math.round((1-p.qualiPriceCents/p.normalPriceCents)*100))):null;
+   return <article className="ben" key={b.name}>
+    {pct!==null&&<span className="pct">até {pct}%</span>}
+    <div className="ic">{b.icon}</div><h4>{b.name}</h4><p>{b.detail}</p>
+    <ul>{available.slice(0,3).map(item=><li key={item.id}><span>{item.name}</span><b>{centsMoney(item.qualiPriceCents)}</b></li>)}</ul>
+    <a href="#valores">Ver tabela completa →</a>
+   </article>;
+  })}</div>
+  {loading&&<p className="hint center spaced">Carregando benefícios...</p>}
+  {error&&<p role="status" className="hint center spaced">Valores temporariamente indisponíveis.</p>}
+  <p className="hint center spaced">Os valores podem mudar. Confirme a disponibilidade com o parceiro.</p>
+ </div></section>;
+}

@@ -18,3 +18,7 @@
 - Ambos os frontends devem ler identidade visual da mesma API pública e manter fallback quando a API estiver indisponível.
 
 - Rede credenciada: fonte única no modelo Prisma `Partner` e API Nest. CRUD somente DEV/ADMIN; página pública exibe exclusivamente ativos. Inativar em vez de apagar para preservar histórico. Ações de mudança devem gerar AuditLog.
+
+- Catálogo de serviços: uma fonte da verdade no PostgreSQL (`CatalogItem`), preços armazenados em centavos; alterações apenas DEV/ADMIN, logs de auditoria, inativação em vez de exclusão física.
+- As listas do Clube e o simulador devem consumir a API pública. Não duplicar valores em componentes ou constantes estáticas.
+- Seed `pnpm db:seed:catalog` importa os 99 registros dos documentos de consultas e exames, preservando correções já realizadas via Admin.
