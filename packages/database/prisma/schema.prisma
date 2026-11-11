@@ -22,6 +22,7 @@ enum BeneficiaryStatus {
 
 model User {
   id           String   @id @default(uuid()) @db.Uuid
+  username     String?  @unique
   email        String   @unique
   passwordHash String
   name         String
