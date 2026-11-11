@@ -138,12 +138,12 @@ export class FinanceController {
   }
   const payload=parseCustomerPayload(raw);
   // Clientes importados permanecem sem vínculo até seleção manual; nunca inferimos unidade por nome.
-  let partnerChange:{partnerId:string;unit:string}|null=null;
+  let partnerChange:{partnerId:string}|null=null;
   if(payload.partnerId){
    const chosen=await db.partner.findUnique({where:{id:payload.partnerId},select:{id:true,name:true,active:true}});
    if(!chosen)throw new HttpException("Unidade credenciada não encontrada.",400);
    if(!chosen.active&&chosen.id!==previous.partnerId)throw new HttpException("Não é possível vincular a uma unidade inativa.",400);
-   partnerChange={partnerId:chosen.id,unit:chosen.name};
+   partnerChange={partnerId:chosen.id};
   } else if(previous.partnerId) {
    throw new HttpException("Selecione uma unidade credenciada para manter ou alterar o vínculo.",400);
   }
