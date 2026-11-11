@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Headers, HttpException, Param, Patch, Post, Query, UnauthorizedException } from "@nestjs/common";
+import { Body, Controller, ForbiddenException, Get, Headers, HttpException, Param, Patch, Post, Query } from "@nestjs/common";
 import { createPrismaClient } from "@quali/database";
 import { currentUser } from "./auth.controller";
 
