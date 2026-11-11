@@ -111,3 +111,19 @@
 .brand-preview span{color:#fff;padding:14px 25px;border-radius:12px;font-weight:900}
 .audit-id{font-family:ui-monospace,monospace}
 @media(max-width:700px){.dev-form{grid-template-columns:1fr}.dev-row{align-items:flex-start;flex-direction:column}}
+
+/* Logotipo carregado da API apenas quando houver arquivo cadastrado */
+.admin-brand-image{display:none;width:145px;height:58px;object-fit:contain;object-position:left center;transform:skew(9deg)}
+.has-brand-logo .admin-brand-image{display:block}
+.has-brand-logo .admin-brand-fallback{display:none}
+.admin-brand-fallback{display:flex;flex-direction:column}
+.admin-brand.light .admin-brand-image{filter:grayscale(1) brightness(0) invert(1)}
+.sidebar .admin-brand-image{width:130px;height:52px}
+.sidebar.is-collapsed .admin-brand-image{width:40px;height:40px;object-fit:contain}
+.brand-upload-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.brand-upload-card{border:1px solid var(--border);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.brand-upload-preview{height:112px;background:#f1f5f9;border:1px dashed #d1dfec;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.brand-upload-preview img{max-height:94px;max-width:90%;object-fit:contain}
+.brand-upload-card input[type=file]{font-size:13px;max-width:100%}
+.brand-upload-card button{align-self:flex-start}
+@media(max-width:700px){.brand-upload-grid{grid-template-columns:1fr}}
