@@ -70,7 +70,7 @@ function AttendanceModal({options,onClose,onSaved}:{
     <p>Registre o benefício utilizando os preços vigentes do catálogo.</p></div>
     <button aria-label="Fechar" type="button" disabled={busy} onClick={onClose}><FiX size={20}/></button></header>
    <form onSubmit={submit} className="attendance-form">
-    <label>Buscar associado <em>*</em>
+    <label><span className="attendance-label-title">Buscar associado <em>*</em></span>
      <div className="attendance-search-box"><FiSearch size={18}/><input value={query} placeholder="Digite pelo menos duas letras do nome"
       onChange={e=>{setQuery(e.target.value);setCustomerId("");setError("");}} autoComplete="off"/></div>
     </label>
@@ -83,13 +83,13 @@ function AttendanceModal({options,onClose,onSaved}:{
      {customers.length===0&&<p>Nenhum cliente encontrado.</p>}
     </div>}
     <div className="attendance-form-grid">
-     <label>Unidade credenciada <em>*</em><select required value={partnerId}
+     <label><span className="attendance-label-title">Unidade credenciada <em>*</em></span><select required value={partnerId}
       disabled={!!options.userPartnerId} onChange={e=>setPartnerId(e.target.value)}>
       <option value="">Selecione</option>{options.partners.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
      </select></label>
-     <label>Data do atendimento <em>*</em><input required type="date" value={dateValue}
+     <label><span className="attendance-label-title">Data do atendimento <em>*</em></span><input required type="date" value={dateValue}
       max={new Date().toISOString().slice(0,10)} onChange={e=>setDateValue(e.target.value)}/></label>
-     <label className="wide">Serviço / procedimento <em>*</em><select required value={serviceId} onChange={e=>setServiceId(e.target.value)}>
+     <label className="wide"><span className="attendance-label-title">Serviço / procedimento <em>*</em></span><select required value={serviceId} onChange={e=>setServiceId(e.target.value)}>
       <option value="">Selecione um procedimento do catálogo</option>{options.services.map(s=><option key={s.id} value={s.id}>{s.name} — {money(s.qualiPriceCents)}</option>)}
      </select></label>
     </div>
