@@ -29,6 +29,39 @@ Se `.env` já existir, não substitua suas configurações: apenas confirme que 
 
 URLs: Clube http://127.0.0.1:3002/ · Admin http://127.0.0.1:3002/admin · API http://127.0.0.1:4002/v1/health
 
+## Executar com PM2 (build de produção)
+
+O PM2 gerencia três processos: `quali-api` (4002), `quali-admin` (3003, interna) e `quali-clube` (3002). O PostgreSQL continua no Docker.
+
+No PowerShell, dentro da raiz do repositório:
+
+```powershell
+git pull origin refactor
+pnpm install
+docker compose up -d
+pnpm db:generate
+pnpm build
+pnpm pm2:start
+pnpm pm2:status
+```
+
+Não inicie os serviços antes de corrigir qualquer erro do `pnpm build`. Em especial, páginas do frontend ainda são provisórias.
+
+Comandos úteis:
+
+```powershell
+pnpm pm2:logs
+pnpm exec pm2 logs quali-api
+pnpm pm2:restart
+pnpm pm2:stop
+pnpm pm2:delete
+pnpm pm2:save
+```
+
+Após alterações de código, rode `pnpm build` e `pnpm pm2:restart`. PM2 executa Next com `next start` e Nest com `node dist/main.js` (sem hot reload), portanto não execute `pnpm dev` ao mesmo tempo: as portas entram em conflito.
+
+Para reiniciar processos após reboot do Linux, use `pnpm exec pm2 startup`, siga as instruções e então `pnpm pm2:save`. No Windows, `pm2 startup` não tem suporte nativo; se precisar de inicialização automática, utilize o Agendador de Tarefas para chamar `pnpm exec pm2 resurrect` com as permissões e o diretório corretos.
+
 ## Convenção obrigatória do Prisma 7
 
 - `packages/database/prisma/schema.prisma`: datasource apenas com `provider = "postgresql"`.
