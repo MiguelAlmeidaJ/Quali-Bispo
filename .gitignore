@@ -9,3 +9,6 @@ dist/
 .DS_Store
 apps/*/legacy/
 packages/database/src/generated/
+
+# Imagens da identidade visual persistidas no servidor, fora do Git
+apps/api/storage/
