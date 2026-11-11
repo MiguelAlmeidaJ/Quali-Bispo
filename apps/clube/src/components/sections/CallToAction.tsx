@@ -1,0 +1,2 @@
+import { contact,whatsappUrl } from "../../config/contact";
+export function CallToAction(){return <section className="sec final-cta"><div className="wrap"><div className="cta"><div><h2>Pronto para pagar menos na saúde?</h2><p>Fale com a Amanda, do nosso time comercial, e faça sua adesão hoje mesmo.</p></div><a className="btn br" href={whatsappUrl()} target="_blank" rel="noopener noreferrer">💬 Falar com a Amanda · {contact.phone}</a></div></div></section>}
