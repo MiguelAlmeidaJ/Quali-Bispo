@@ -2,14 +2,14 @@
 import {useEffect,useState} from "react";
 import {Sidebar,type AdminView} from "./Sidebar";
 import {Login} from "./Login";
-import {DashboardPage} from "../pages/DashboardPage";
-import {ValidateCpfPage} from "../pages/ValidateCpfPage";
-import {PlaceholderPage} from "../pages/PlaceholderPage";
-import {PartnersPage} from "../pages/PartnersPage";
-import {CatalogPage} from "../pages/CatalogPage";
-import {AdminUsersPage} from "../pages/dev/AdminUsersPage";
-import {AuditPage} from "../pages/dev/AuditPage";
-import {SettingsPage} from "../pages/dev/SettingsPage";
+import {DashboardPage} from "../screens/DashboardPage";
+import {ValidateCpfPage} from "../screens/ValidateCpfPage";
+import {PlaceholderPage} from "../screens/PlaceholderPage";
+import {PartnersPage} from "../screens/PartnersPage";
+import {CatalogPage} from "../screens/CatalogPage";
+import {AdminUsersPage} from "../screens/dev/AdminUsersPage";
+import {AuditPage} from "../screens/dev/AuditPage";
+import {SettingsPage} from "../screens/dev/SettingsPage";
 import type {User} from "../types/admin";
 
 const privileged = new Set<AdminView>(["dev-users","dev-audit","dev-settings"]);
