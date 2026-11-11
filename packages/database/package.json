@@ -9,7 +9,8 @@
     "validate": "prisma validate",
     "typecheck": "tsc --noEmit",
     "build": "prisma generate && tsc -p tsconfig.json",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "seed:partners": "tsx prisma/seed-partners.ts"
   },
   "dependencies": {
     "@prisma/client": "7.10.0",
