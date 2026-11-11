@@ -48,15 +48,19 @@ export class AdminController {
   async dashboard(@Headers('authorization') authorization?:string) {
     const user=await currentUser(authorization);
     if(!['DEV','ADMIN'].includes(user.role)) throw new HttpException('Acesso restrito',403);
-    const [active,pending,inactive,people,partners,attendances]=await Promise.all([
+    const [active,pending,inactive,people,partners,attendances,financeCustomers,financePaid,financeOpen,financeUnresolved]=await Promise.all([
       db.beneficiary.count({where:{status:'ACTIVE'}}),
       db.beneficiary.count({where:{status:'OVERDUE'}}),
       db.beneficiary.count({where:{status:'INACTIVE'}}),
       db.beneficiary.count(),
       db.partner.count({where:{active:true}}),
-      db.attendance.count({where:{performedAt:{gte:new Date(new Date().getFullYear(),new Date().getMonth(),1)}}})
+      db.attendance.count({where:{performedAt:{gte:new Date(new Date().getFullYear(),new Date().getMonth(),1)}}}),
+      db.financeCustomer.count(),
+      db.financeCustomer.count({where:{status:'PAID'}}),
+      db.financeCustomer.count({where:{status:'OPEN'}}),
+      db.financeIssue.count({where:{resolved:false}})
     ]);
-    return {active,pending,inactive,people,partners,attendances,updatedAt:new Date().toISOString()};
+    return {active,pending,inactive,people,partners,attendances,financeCustomers,financePaid,financeOpen,financeUnresolved,updatedAt:new Date().toISOString()};
   }
   @Post('validate-cpf')
   async validateCpf(@Headers('authorization') authorization:string|undefined,@Body() body:{cpf?:string}) {
