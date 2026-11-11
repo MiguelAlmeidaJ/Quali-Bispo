@@ -55,7 +55,7 @@ export class AdminController {
       db.beneficiary.count({where:{status:'INACTIVE'}}),
       db.beneficiary.count(),
       db.partner.count({where:{active:true}}),
-      db.attendance.count({where:{performedAt:{gte:new Date(new Date().getFullYear(),new Date().getMonth(),1)}}}),
+      db.financeAttendance.count({where:{voidedAt:null,performedAt:{gte:new Date(new Date().getFullYear(),new Date().getMonth(),1)}}}),
       db.financeCustomer.count(),
       db.financeCustomer.count({where:{status:'PAID'}}),
       db.financeCustomer.count({where:{status:'OPEN'}}),
