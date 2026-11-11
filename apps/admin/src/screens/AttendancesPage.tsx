@@ -103,7 +103,7 @@ function AttendanceModal({options,onClose,onSaved}:{
   </section>
  </div>;
 }
-function csvValue(value:string){return '"'+value.replace(/"/g,'""')+'"';}
+function csvValue(value:string){const safe=/^[=+@-]/.test(value.trimStart())?"'"+value:value;return '"'+safe.replace(/"/g,'""')+'"';}
 export function AttendancesPage({user}:{user:User}){
  const [options,setOptions]=useState<Options|null>(null);
  const [month,setMonth]=useState(nowMonth()),[partnerId,setPartnerId]=useState(""),[serviceType,setServiceType]=useState(""),[search,setSearch]=useState(""),[page,setPage]=useState(1);
