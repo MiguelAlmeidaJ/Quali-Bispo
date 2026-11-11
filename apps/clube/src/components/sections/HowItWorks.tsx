@@ -1,0 +1,3 @@
+import { SectionHeading } from "../ui/SectionHeading";
+const steps=[["Faça sua adesão","Escolha o plano Individual ou Familiar e cadastre seus dependentes."],["Baixe a carteirinha","Acesse a área do associado com CPF e nascimento e baixe o PDF."],["Agende no parceiro","Escolha a especialidade e agende em uma das unidades Quali."],["Pague com desconto","O parceiro valida seu CPF na hora e você paga o valor Quali."]];
+export function HowItWorks(){return <section className="sec alt" id="como"><div className="wrap"><SectionHeading eyebrow="Como funciona" title="Simples do começo ao fim"/><div className="passos">{steps.map(([title,detail],i)=><div className="passo" key={title}><span className="step-num">{i+1}</span><b>{title}</b><p>{detail}</p></div>)}</div></div></section>}
