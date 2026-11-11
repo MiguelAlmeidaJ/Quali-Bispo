@@ -1,6 +1,6 @@
 "use client";
 import {useCallback,useEffect,useState} from "react";
-import {FiAlertTriangle,FiCheckCircle,FiSearch} from "react-icons/fi";
+import {FiAlertTriangle,FiCheckCircle,FiSearch,FiPlus,FiEdit2} from "react-icons/fi";
 
 type Status="PAID"|"OPEN"|"EXPECTED"|"PENDING"|"IN_REVIEW"|"AWAITING"|"UNSPECIFIED";
 type BaseRow={
@@ -62,7 +62,7 @@ export function FinancePage({type}:{type:"customers"|"issues"}){
  }
  const pages=Math.max(1,Math.ceil(total/20));
  return <div className="finance-page">
-  <header className="page-title"><div><h1>{title}</h1><p>{type==="customers"?"Cadastro financeiro importado da planilha Quali.":"Pendências e cobranças para acompanhamento."}</p></div></header>
+  <header className="page-title finance-page-title"><div><h1>{title}</h1><p>{type==="customers"?"Cadastro financeiro importado da planilha Quali.":"Pendências e cobranças para acompanhamento."}</p></div>{type==="customers"&&<a className="customer-new-link" href="/admin/cliente/novo"><FiPlus size={18}/> Novo cliente</a>}</header>
   <div className="finance-stats">
    <article><span>Clientes importados</span><strong>{summary?.customers??"—"}</strong></article>
    <article><span>Pagamentos em dia</span><strong className="finance-ok">{summary?.paid??"—"}</strong></article>
@@ -85,7 +85,7 @@ export function FinancePage({type}:{type:"customers"|"issues"}){
    {loading?<p className="finance-empty">Carregando registros...</p>:items.length===0?<p className="finance-empty">Nenhum registro encontrado.</p>:
    <div className="finance-scroll"><table className="finance-table"><thead><tr><th>NOME</th>
     {type==="customers"?<th>CPF</th>:<th>VÍNCULO</th>}
-    <th>PLANO</th><th>VALOR</th><th>PAGAMENTO</th><th>OBSERVAÇÕES</th><th>SITUAÇÃO</th>{type==="issues"&&<th>RESOLUÇÃO</th>}</tr></thead>
+    <th>PLANO</th><th>VALOR</th><th>PAGAMENTO</th><th>OBSERVAÇÕES</th><th>SITUAÇÃO</th>{type==="customers"&&<th>AÇÕES</th>}{type==="issues"&&<th>RESOLUÇÃO</th>}</tr></thead>
     <tbody>{items.map(row=><tr key={row.id}>
      <td><b>{row.name}</b>{type==="customers"&&(row as Customer).unit&&<small>{(row as Customer).unit}</small>}</td>
      <td>{type==="customers"?(row as Customer).cpfValid&&!(row as Customer).cpfConflict?`***.***.***-${(row as Customer).cpfLast4?.slice(-2)||"**"}`:"Revisar CPF":
@@ -94,6 +94,7 @@ export function FinancePage({type}:{type:"customers"|"issues"}){
      <td className="finance-notes">{row.paymentDetails||"—"}{row.referenceDate&&<small>{new Date(row.referenceDate).toLocaleDateString("pt-BR",{timeZone:"UTC"})}</small>}</td>
      <td><select className="finance-status-select" aria-label={`Situação de ${row.name}`} value={row.status} disabled={savingId===row.id}
       onChange={e=>void save(row,{status:e.target.value as Status})}>{statusOptions.map(([key,label])=><option value={key} key={key}>{label}</option>)}</select></td>
+     {type==="customers"&&<td><a className="customer-edit-link" href={`/admin/cliente/${row.id}/edit`}><FiEdit2 size={15}/> Editar</a></td>}
      {type==="issues"&&<td><label className="finance-resolve"><input type="checkbox" checked={(row as Issue).resolved} disabled={savingId===row.id}
       onChange={e=>void save(row,{resolved:e.target.checked})}/> Resolvida</label></td>}
     </tr>)}</tbody></table></div>}
