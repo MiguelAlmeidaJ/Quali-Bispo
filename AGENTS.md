@@ -9,3 +9,7 @@
 - Gerar o cliente com `provider = "prisma-client"` e output explícito. Evitar importar o cliente gerado de `@prisma/client`.
 - Não versionar arquivos `.env`, senhas, segredos e credenciais do HTML legado.
 - API local: porta 4002 com prefixo `/v1`. Clube: 3002, Admin: `/admin`.
+
+- Perfis: DEV (gestão técnica, contas ADMIN, auditoria e identidade visual), ADMIN (operação geral), PARTNER (operações restritas). Conferir permissão na API e consultar estado ativo no banco em cada operação.
+- Nunca incluir senha DEV fixa no código; bootstrap DEV apenas via variável de ambiente local e seed, sem sobrescrever senha existente.
+- Registros de auditoria não devem conter senhas, JWTs nem dados pessoais em claro.
