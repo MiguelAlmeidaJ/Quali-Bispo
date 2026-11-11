@@ -319,3 +319,40 @@
  .partner-modal-refined .partner-form-grid{grid-template-columns:1fr}
  .partner-modal-refined .partner-primary-btn{white-space:normal}
 }
+
+
+/* Clientes e pendências financeiras: dados privados do PostgreSQL */
+.finance-page{max-width:1500px;margin:0 auto}
+.finance-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.finance-stats article{border:1px solid var(--border);background:white;padding:18px;border-radius:14px}
+.finance-stats article span{font-size:12px;color:#627b92;font-weight:800;display:block;margin-bottom:6px}
+.finance-stats article strong{font-size:26px;color:var(--blue)}
+.finance-stats article strong.finance-ok{color:var(--green)}
+.finance-stats article strong.finance-alert{color:#b67718}
+.finance-info{display:flex;align-items:center;gap:10px;border:1px solid #fae4ba;background:#fffaed;border-radius:12px;padding:12px 15px;margin-bottom:18px;color:#895b1c;font-size:13px;font-weight:700}
+.finance-info svg{flex-shrink:0}
+.finance-table-card{border:1px solid var(--border);background:#fff;border-radius:17px;overflow:hidden}
+.finance-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:17px;border-bottom:1px solid var(--border)}
+.finance-search{display:flex;flex:1;min-width:240px;align-items:center;gap:10px;background:#f6f9fc;border:1px solid var(--border);padding:0 12px;border-radius:10px;color:#7890a7}
+.finance-search input{height:44px;flex:1;background:none;border:0;outline:0;min-width:0}
+.finance-toolbar select{height:44px;padding:9px 12px;border:1px solid var(--border);background:#fff;color:#315570;border-radius:10px}
+.finance-only-open{display:flex;align-items:center;gap:8px;color:#47657d;font-size:13px;font-weight:700;white-space:nowrap}
+.finance-only-open input,.finance-resolve input{width:17px;height:17px;accent-color:var(--green)}
+.finance-scroll{overflow-x:auto}
+.finance-table{width:100%;min-width:1100px;text-align:left;border-collapse:collapse}
+.finance-table th{font-size:11px;letter-spacing:.05em;padding:13px 14px;color:#627c92;background:#f6f9fc}
+.finance-table td{padding:14px;color:#31516c;font-size:13px;vertical-align:top;border-top:1px solid #ebf0f5}
+.finance-table td b{color:#154164;display:block}
+.finance-table td small{color:#8295a7;display:block;margin-top:5px}
+.finance-notes{max-width:300px;min-width:150px;line-height:1.55}
+.finance-linked{display:inline-flex;align-items:center;gap:5px;color:#16814a;font-weight:800}
+.finance-unmatched{color:#ad6a1d;font-weight:800}
+.finance-status-select{border:1px solid #d7e3ee;background:#fff;border-radius:8px;padding:8px;font:inherit;color:#345673;max-width:155px}
+.finance-resolve{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;white-space:nowrap}
+.finance-empty{padding:45px;text-align:center;color:#71869c}
+.finance-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;padding:15px 18px;background:#fafcfe;border-top:1px solid #ebf1f5;color:#637d92;font-size:12px}
+.finance-footer nav{display:flex;align-items:center;gap:11px}
+.finance-footer button{border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--blue);padding:8px 11px;font-weight:800;cursor:pointer}
+.finance-footer button:disabled{opacity:.4;cursor:not-allowed}
+@media(max-width:900px){.finance-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.finance-stats{grid-template-columns:1fr 1fr}.finance-toolbar{align-items:stretch;flex-direction:column}.finance-search{min-width:0}.finance-footer{flex-direction:column;align-items:flex-start}}
