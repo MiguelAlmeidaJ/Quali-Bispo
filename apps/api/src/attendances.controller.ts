@@ -44,11 +44,12 @@ export class AttendancesController {
 
  @Get("customers")
  async customers(@Headers("authorization") authorization:string|undefined,@Query("q") raw?:string){
-  await staff(authorization);
+  const user=await staff(authorization);
   const q=typeof raw==="string"?raw.trim().slice(0,100):"";
   if(q.length<2)return [];
   return db.financeCustomer.findMany({
-   where:{name:{contains:q,mode:"insensitive"},cpfValid:true,cpfConflict:false},
+   where:{name:{contains:q,mode:"insensitive"},cpfValid:true,cpfConflict:false,
+    ...(user.role==="PARTNER"?{status:"PAID" as const}:{})},
    select:{id:true,name:true,status:true,cpfLast4:true,partner:{select:{name:true}}},
    orderBy:{name:"asc"},take:20,
   });
@@ -101,7 +102,8 @@ export class AttendancesController {
   if(!service?.active)throw new HttpException("Procedimento não disponível.",400);
   const performedAt=typeof input.performedAt==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(input.performedAt)
    ?new Date(input.performedAt+"T12:00:00.000Z"):new Date();
-  if(Number.isNaN(performedAt.getTime())||performedAt.getTime()>Date.now()+86400000)
+  if(Number.isNaN(performedAt.getTime())||performedAt.getTime()>Date.now()+86400000 ||
+     (typeof input.performedAt==="string"&&performedAt.toISOString().slice(0,10)!==input.performedAt))
    throw new HttpException("Data de atendimento inválida.",400);
   // Os dois preços são congelados no momento do atendimento.
   return db.$transaction(async tx=>{
