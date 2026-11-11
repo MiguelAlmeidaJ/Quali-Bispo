@@ -92,3 +92,20 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
 .site-footer .brand-image{filter:grayscale(1) brightness(0) invert(1)}
 
 .has-brand-logo .brand-image{background:url("/v1/branding/assets/logo") left center/contain no-repeat}
+
+
+/* Catálogo público — card com preço original riscado e preço Quali */
+.ben li .benefit-item-name{min-width:0;flex:1;line-height:1.35;overflow-wrap:anywhere}
+.ben li .benefit-price-stack{display:flex;align-items:flex-end;flex-direction:column;gap:2px;flex:0 0 auto;white-space:nowrap;text-align:right}
+.benefit-price-normal{font-size:.75rem;color:#8995a2;text-decoration:line-through;text-decoration-thickness:1px;font-weight:600}
+.benefit-price-quali{color:var(--verde);font-size:.85rem;font-weight:900}
+.catalog-note{display:block;color:var(--tx2);font-size:.75rem;margin-top:4px}
+.public-values-footer{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px 4px 0;color:var(--tx2);font-size:.88rem}
+.values-more-link{padding:11px 20px;border-radius:11px;white-space:nowrap}
+.public-values-pagination{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.public-values-pagination button{padding:9px 13px;color:var(--azul);background:#fff;border:1px solid var(--bd);border-radius:9px;font-size:.85rem;font-weight:800;cursor:pointer}
+.public-values-pagination button:hover:not(:disabled){background:var(--azul-claro)}
+.public-values-pagination button:disabled{opacity:.45;cursor:not-allowed}
+.values-breadcrumb{background:#fff;border-bottom:1px solid var(--bd);font-size:.83rem;padding:15px 0;color:var(--tx2)}
+.values-breadcrumb a{font-weight:800;text-decoration:none}
+@media(max-width:700px){.ben li .benefit-item-name{font-size:.78rem}.ben li .benefit-price-stack{font-size:.78rem}.public-values-footer{align-items:stretch;flex-direction:column}.values-more-link{align-self:stretch}.public-values-pagination{justify-content:space-between}}
