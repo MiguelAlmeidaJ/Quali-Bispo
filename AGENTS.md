@@ -25,3 +25,7 @@
 
 - Para a Rede Credenciada, `Partner.serviceTypes` é o conjunto de tipos oferecidos; `serviceType` é legado e deve refletir a primeira seleção. Conservar ambos enquanto houver consumidores antigos, aceitar fallback de registros pré-migração, validar lista na API.
 - CPF: aplicar máscara apenas no frontend, enviar 11 dígitos para a API e preservar checagem do dígito verificador no backend.
+
+- Dados pessoais/financeiros: nunca incluir planilhas nem JSONs de clientes no Git; a importação `db:import:financeiro` lê exclusivamente `private/` local. Não registrar CPF puro, credenciais nem dados financeiros completos em AuditLog.
+- `FinanceCustomer` e `FinanceIssue` são registros financeiros, separados de `Beneficiary`. Não conceder status de associado nem acesso por CPF somente com base na situação de cobrança.
+- Se pendência não tiver correspondência exata não ambígua, manter `customerId=null` para revisão, sem criar vínculo presumido.

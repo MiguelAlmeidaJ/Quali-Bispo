@@ -123,3 +123,33 @@ A página `src/screens/ValidateCpfPage.tsx` aplica máscara de CPF `000.000.000-
 A tela de Rede Credenciada usa o componente isolado `src/components/PartnerModal.tsx`, com cabeçalho e rodapé fixos, corpo rolável, grupos de campos e seleção múltipla pesquisável. O campo `serviceTypes` armazena vários tipos de atendimento, com tags editáveis e validação de pelo menos um tipo. O campo legado `serviceType` continua atualizado com a primeira seleção para compatibilidade com outras integrações.
 
 **Após atualizar a branch:** execute `pnpm db:generate`, `pnpm db:migrate`, `pnpm build` e reinicie a API, Admin e Clube após builds bem-sucedidos. O novo campo `Partner.serviceTypes` usa array PostgreSQL com default `[]`. Registros antigos aparecem pelo tipo legado até serem editados. Não precisa recriar o cadastro ou executar seed de parceiros.
+
+## Clientes e pendências importados do controle financeiro
+
+O menu **Clientes** exibe os registros financeiros de `FinanceCustomer`, e **Inadimplência** mostra as ocorrências de `FinanceIssue`. Há busca, filtros, paginação de 20 linhas, atualização auditada de situação e opção de marcar pendências como resolvidas. Os dados são privados e acessíveis apenas a ADMIN/DEV via API Nest. Os indicadores financeiros aparecem no Dashboard em cartões separados dos indicadores de associados.
+
+### Importar a planilha privada (somente no computador local)
+
+1. Baixe o arquivo `quali_importacao_financeira_privada.json` gerado a partir do Excel anexado à conversa.
+2. Crie a pasta `private` na raiz do monorepo e coloque o JSON lá. **Não faça commit nem envie esse JSON ao GitHub.** A pasta `private/` está no `.gitignore`.
+3. Confira no `.env` a URL do banco correto e o `CPF_HASH_KEY` já utilizado pelo sistema. **Não altere esse segredo** depois da importação, pois isso impediria comparações futuras de CPF.
+4. Execute:
+```powershell
+pnpm db:generate
+pnpm db:migrate
+pnpm build
+pnpm db:import:financeiro private/quali_importacao_financeira_privada.json
+```
+5. Reinicie API e Admin **somente se o build e a importação concluírem sem erros**.
+
+O importador lê JSON exclusivamente do disco local, registra 160 linhas da aba **Controle Geral** e 21 ocorrências da aba **Pendências**. Ele utiliza chaves estáveis por aba+linha; a execução repetida não duplica entradas e não altera status que você editou pelo Admin. 15 pendências possuem correspondência exata e não ambígua com clientes; as outras 6 ficam sem vínculo para revisão. **Não fazemos associação por aproximação.**
+
+### Confidencialidade e integridade
+
+CPF original é usado apenas em memória para calcular HMAC-SHA256 com `CPF_HASH_KEY`; o banco guarda o hash e somente os últimos quatro dígitos. CPF com dígitos inválidos, ausente ou repetido não recebe hash e exige revisão. A planilha possui 18 linhas afetadas por esses casos. Nenhum CPF puro é enviado ao GitHub, mostrado pela API ou gravado no AuditLog.
+
+O importador mantém os status originais em `rawStatus` e classifica: Pago, Em aberto, Previsto, Pendente, Tratativa, Aguardando ou Sem informação. Os valores monetários são guardados como centavos; detalhes e datas são preservados. Os registros financeiros **não são automaticamente considerados beneficiários ativos** nem habilitam acesso por CPF até uma etapa de verificação de vínculo/documentos.
+
+Os valores mostrados na aba Resumo do Excel podem ter fórmulas ou cache desatualizados; as contagens usadas pelo sistema são calculadas a partir das linhas importadas no PostgreSQL.
+
+Depois de importar, guarde o Excel/JSON privado em um local protegido e considere apagar o JSON temporário, quando houver backup adequado do PostgreSQL.

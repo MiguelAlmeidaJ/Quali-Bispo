@@ -11,7 +11,8 @@
     "build": "prisma generate && tsc -p tsconfig.json",
     "seed": "tsx prisma/seed.ts",
     "seed:partners": "tsx prisma/seed-partners.ts",
-    "seed:catalog": "tsx prisma/seed-catalog.ts"
+    "seed:catalog": "tsx prisma/seed-catalog.ts",
+    "import:financeiro": "tsx prisma/import-finance.ts"
   },
   "dependencies": {
     "@prisma/client": "7.10.0",
