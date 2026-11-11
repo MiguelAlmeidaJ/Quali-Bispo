@@ -3,7 +3,10 @@
   "compilerOptions": {
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "rootDir": "src"
+    "rootDir": "src",
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "dist"
   },
   "include": [
     "src/**/*.ts"

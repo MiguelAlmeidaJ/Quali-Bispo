@@ -8,17 +8,22 @@
     "studio": "prisma studio",
     "validate": "prisma validate",
     "typecheck": "tsc --noEmit",
-    "build": "prisma generate"
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "7.10.0",
     "@prisma/adapter-pg": "7.10.0",
     "pg": "^8.16.0",
-    "dotenv": "^17.2.0"
+    "dotenv": "^17.2.0",
+    "bcryptjs": "^3.0.2"
   },
   "devDependencies": {
     "prisma": "7.10.0",
     "typescript": "^5.9.0",
-    "@types/pg": "^8.15.0"
-  }
+    "@types/pg": "^8.15.0",
+    "tsx": "^4.20.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
 }
