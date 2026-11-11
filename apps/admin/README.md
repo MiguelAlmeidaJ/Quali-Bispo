@@ -35,9 +35,9 @@ Para instalar a nova dependência após `git pull`, rode `pnpm install --no-froz
 - `src/components/AdminApp.tsx`: sessão, escolha da tela e layout (sem lógica própria de páginas).
 - `src/components/Login.tsx`: login.
 - `src/components/Sidebar.tsx`: navegação por papel.
-- `src/pages/DashboardPage.tsx`, `ValidateCpfPage.tsx`: páginas operacionais.
-- `src/pages/PlaceholderPage.tsx`: módulos ainda não implementados.
-- `src/pages/dev/`: criação de administradores, auditoria e configurações visuais.
+- `src/screens/DashboardPage.tsx`, `ValidateCpfPage.tsx`: páginas operacionais.
+- `src/screens/PlaceholderPage.tsx`: módulos ainda não implementados.
+- `src/screens/dev/`: criação de administradores, auditoria e configurações visuais.
 - `app/api/dev/[resource]/route.ts`: proxy Next server-side com allowlist.
 - `apps/api/src/dev.controller.ts`: endpoints de DEV com checagem obrigatória de papel no PostgreSQL.
 
@@ -70,7 +70,7 @@ Execute `pnpm install --no-frozen-lockfile` para instalar `sharp` e atualizar o 
 
 ## Rede credenciada (módulo operacional)
 
-- `src/pages/PartnersPage.tsx`: tabela, filtros por situação, formulário modal para criação e edição.
+- `src/screens/PartnersPage.tsx`: tabela, filtros por situação, formulário modal para criação e edição.
 - `src/types/partner.ts`: campos e tipos do cadastro.
 - `src/lib/partnersApi.ts`: chamadas HTTP e tratamento de erro.
 - `app/api/partners/route.ts` e `app/api/partners/[id]/route.ts`: proxy autenticado para a API Nest.
@@ -85,7 +85,7 @@ Novo parceiro cadastrado e ativo aparecerá na vitrine do Clube após recarregar
 
 ## Tabela de valores (Consultas + Exames)
 
-- `src/pages/CatalogPage.tsx`: listagem, busca, filtros, formulário para cadastrar/editar e situação ativa/inativa.
+- `src/screens/CatalogPage.tsx`: listagem, busca, filtros, formulário para cadastrar/editar e situação ativa/inativa.
 - `src/types/catalog.ts`: tipos de dados e conversão R$ ↔ centavos.
 - `src/lib/catalogApi.ts`: chamadas HTTP administrativas.
 - `app/api/catalog/route.ts` e `app/api/catalog/[id]/route.ts`: proxy protegido por sessão.
