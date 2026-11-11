@@ -22,7 +22,8 @@
     "pm2:delete": "pm2 delete ecosystem.config.cjs",
     "pm2:save": "pm2 save",
     "db:seed": "pnpm --filter @quali/database seed",
-    "db:seed:partners": "pnpm --filter @quali/database seed:partners"
+    "db:seed:partners": "pnpm --filter @quali/database seed:partners",
+    "db:seed:catalog": "pnpm --filter @quali/database seed:catalog"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
