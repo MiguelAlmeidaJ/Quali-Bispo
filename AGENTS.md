@@ -16,3 +16,5 @@
 
 - Identidade visual: arquivo PNG logo/favicon apenas no backend via endpoint DEV autenticado, limite 2 MB e normalização com Sharp. Não versionar arquivos enviados nem expor diretórios de armazenamento.
 - Ambos os frontends devem ler identidade visual da mesma API pública e manter fallback quando a API estiver indisponível.
+
+- Rede credenciada: fonte única no modelo Prisma `Partner` e API Nest. CRUD somente DEV/ADMIN; página pública exibe exclusivamente ativos. Inativar em vez de apagar para preservar histórico. Ações de mudança devem gerar AuditLog.
