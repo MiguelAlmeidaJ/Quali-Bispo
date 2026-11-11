@@ -47,7 +47,8 @@ async function main(){
   if(!inputPath)throw new Error("Uso: pnpm db:import:financeiro private/quali_importacao_financeira_privada.json");
   const pepper=process.env.CPF_HASH_KEY;
   if(!pepper||pepper.length<32)throw new Error("CPF_HASH_KEY deve conter pelo menos 32 caracteres.");
-  const raw=await readFile(resolve(inputPath),"utf8");
+  const repoRoot=fileURLToPath(new URL("../../../",import.meta.url));
+  const raw=await readFile(resolve(repoRoot,inputPath),"utf8");
   const input=JSON.parse(raw) as Input;
   if(input.formatVersion!==1||!Array.isArray(input.customers)||!Array.isArray(input.issues))
     throw new Error("Arquivo JSON de importação inválido.");
