@@ -81,11 +81,12 @@ export class FinanceController {
  async updateCustomer(@Headers("authorization") auth:string|undefined,@Param("id") id:string,@Body() body:{status?:unknown}){
   const actor=await requireFinanceStaff(auth);
   if(!uuid.test(id))throw new HttpException("Identificador inválido",400);
-  if(!validStatus(body?.status))throw new HttpException("Situação inválida",400);
+  const status=body?.status;
+  if(!validStatus(status))throw new HttpException("Situação inválida",400);
   const existing=await db.financeCustomer.findUnique({where:{id},select:{id:true,status:true}});
   if(!existing)throw new HttpException("Cliente não encontrado",404);
   return db.$transaction(async tx=>{
-   const item=await tx.financeCustomer.update({where:{id},data:{status:body.status},select:customerFields});
+   const item=await tx.financeCustomer.update({where:{id},data:{status},select:customerFields});
    await tx.auditLog.create({data:{actorId:actor.id,action:"FINANCE_CUSTOMER_STATUS_UPDATED",entityType:"FinanceCustomer",entityId:id,
     metadata:{from:existing.status,to:item.status}}});
    return item;
@@ -95,11 +96,13 @@ export class FinanceController {
  async updateIssue(@Headers("authorization") auth:string|undefined,@Param("id") id:string,@Body() body:{status?:unknown;resolved?:unknown}){
   const actor=await requireFinanceStaff(auth);
   if(!uuid.test(id))throw new HttpException("Identificador inválido",400);
-  if(!validStatus(body?.status)||typeof body?.resolved!=="boolean")throw new HttpException("Dados inválidos",400);
+  const status=body?.status;
+  const resolved=body?.resolved;
+  if(!validStatus(status)||typeof resolved!=="boolean")throw new HttpException("Dados inválidos",400);
   const existing=await db.financeIssue.findUnique({where:{id},select:{id:true,status:true,resolved:true}});
   if(!existing)throw new HttpException("Pendência não encontrada",404);
   return db.$transaction(async tx=>{
-   const item=await tx.financeIssue.update({where:{id},data:{status:body.status,resolved:body.resolved},select:issueFields});
+   const item=await tx.financeIssue.update({where:{id},data:{status,resolved},select:issueFields});
    await tx.auditLog.create({data:{actorId:actor.id,action:"FINANCE_ISSUE_UPDATED",entityType:"FinanceIssue",entityId:id,
     metadata:{from:existing.status,to:item.status,resolved:item.resolved}}});
    return item;
