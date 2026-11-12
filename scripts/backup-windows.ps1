@@ -10,10 +10,11 @@ Set-Location (Resolve-Path (Join-Path $PSScriptRoot ".."))
 $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
 $folder = Join-Path (Get-Location) $Destination
 New-Item -ItemType Directory -Force -Path $folder | Out-Null
-$container = (& docker compose -f compose.yaml ps -q postgres | Select-Object -First 1).Trim()
-if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($container)) {
+$containerId = (& docker compose -f compose.yaml ps -q postgres | Select-Object -First 1)
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($containerId)) {
   throw "PostgreSQL Docker não está rodando. Rode 'docker compose up -d postgres' antes."
 }
+$container = $containerId.Trim()
 $filename = "quali-$stamp.dump"
 $remote = "/tmp/$filename"
 $destinationPath = Join-Path $folder $filename
