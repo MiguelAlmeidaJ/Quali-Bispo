@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useState} from "react";
 import {FiArrowLeft,FiCheck,FiCreditCard,FiPlus,FiUser} from "react-icons/fi";
-import {blankCustomer,centsInput,formatCpf,statusLabels,type CustomerFormData,
+import {blankCustomer,centsInput,formatCpf,parseCents,statusLabels,type CustomerFormData,
  type CustomerRecord,type FinanceStatus} from "../types/customer";
 import type {CardPlan} from "./CardsPage";
 
@@ -87,7 +87,7 @@ export function CustomerFormPage({id}:{id?:string}){
     invoice:form.invoice||null,name:form.name.trim(),cpf:form.cpf.replace(/\D/g,"")||null,
     birthDate:form.birthDate||null,partnerId:form.partnerId||null,
     cardPlanId:form.cardPlanId||null,
-    planType:form.planType||null,amountCents:selected?.priceCents??null,
+    planType:form.planType||null,amountCents:selected?selected.priceCents:parseCents(form.amount),
     paymentMethod:form.paymentMethod||null,status:form.status,
     paymentDetails:form.paymentDetails||null,
     ...(selected?{dependents:dependents.map(item=>({
