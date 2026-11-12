@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   FiActivity, FiBarChart2, FiChevronLeft, FiChevronRight,
   FiClipboard, FiDollarSign, FiFileText, FiLogOut,
-  FiMenu, FiSearch, FiUsers, FiX, FiSettings, FiShield, FiUserPlus,
+  FiMenu, FiSearch, FiUsers, FiCreditCard, FiX, FiSettings, FiShield, FiUserPlus,
 } from "react-icons/fi";
 import { FaRegHospital } from "react-icons/fa";
 import { Brand } from "./Brand";
@@ -12,7 +12,7 @@ import type { IconType } from "react-icons";
 
 export type AdminView =
   | "dashboard" | "validate" | "clients" | "payments"
-  | "attendances" | "pricing" | "partners" | "reports"
+  | "attendances" | "pricing" | "partners" | "reports" | "cards"
   | "dev-users" | "dev-audit" | "dev-settings";
 type User = { name: string; role: "DEV" | "ADMIN" | "PARTNER" };
 
@@ -29,6 +29,7 @@ const items: MenuItem[] = [
   { view: "dashboard", label: "Painel", icon: FiBarChart2, group: "principal", adminOnly: true },
   { view: "validate", label: "Validar CPF", icon: FiSearch, group: "principal" },
   { view: "clients", label: "Clientes", icon: FiUsers, group: "gestao", adminOnly: true },
+  { view: "cards", label: "Cartões", icon: FiCreditCard, group: "gestao", adminOnly: true },
   { view: "payments", label: "Inadimplência", icon: FiDollarSign, group: "gestao", adminOnly: true },
   { view: "attendances", label: "Atendimentos", icon: FiActivity, group: "gestao" },
   { view: "pricing", label: "Tabela de valores", icon: FiClipboard, group: "gestao" },
