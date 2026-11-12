@@ -51,3 +51,35 @@ Exemplo de validação com os 99 registros originais, plano Familiar e seleçõe
 ## Múltiplos tipos da Rede Credenciada
 
 A API agora expõe `serviceTypes: string[]` por parceiro. O site lista os tipos selecionados; para cadastros antigos, usa `serviceType` como fallback. A alteração é feita no Admin > Rede credenciada; o campo requer migração Prisma antes da API atualizada entrar no ar.
+
+## Área do associado (`/associado`)
+
+A home agora autentica associados pelo **CPF válido e pela data de nascimento cadastrada**. A chamada pública `POST /api/associate/session` usa o proxy Next, que solicita `POST /v1/member/login` à API Nest e recebe um JWT restrito ao portal (`issuer=quali-member`, `audience=quali-member-portal`, validade de 2 horas). O JWT fica apenas no cookie HttpOnly `quali_member_session` com SameSite=Lax; nunca vai para o JavaScript do navegador. Logout apaga o cookie. O acesso é limitado por tentativas e falhas não informam qual dado está incorreto.
+
+A API somente autentica um registro `FinanceCustomer` se seu CPF possui hash confiável único (`cpfValid=true`, `cpfConflict=false`) e se `birthDate` corresponde exatamente ao nascimento informado. **A planilha histórica não continha data de nascimento:** clientes importados só conseguirão acessar depois que um ADMIN/DEV preencher esse campo no formulário de edição. O mesmo `CPF_HASH_KEY` da importação deve ser mantido.
+
+A rota `/associado` (não indexável) usa `GET /api/associate/dashboard`, que repassa a autenticação exclusivamente à API e retorna **apenas dados do próprio cadastro**. A experiência inclui cinco abas:
+
+1. **Visão geral:** resumo visual do cadastro, situação do plano, consultas médicas no mês, economia real de atendimentos não cancelados e dados pessoais disponíveis.
+2. **Meus benefícios:** informações de categorias e link para a tabela pública atualizada; não informa limites individuais que ainda não estão parametrizados.
+3. **Rede parceira:** parceiros ativos existentes na API, com endereço, serviços, desconto e horário disponíveis.
+4. **Mensalidades:** valor/situação do plano e pendências vinculadas não resolvidas. Não mostra vencimento futuro ou quitação sem documento real.
+5. **Meus atendimentos:** os 100 registros mais recentes e a economia total de todo o histórico não cancelado.
+
+### Limites desta etapa
+
+O banco atual **não possui número de cartão, dependentes, telefone de associado, vencimentos recorrentes estruturados nem comprovantes de recebimentos**. A tela não inventa esses dados; o resumo verde de identificação **não é uma carteirinha oficial**. A geração e o download do PDF da carteirinha, dependentes e segundas vias serão implementados apenas depois de estruturar os respectivos cadastros e regras de negócio. O campo `createdAt` indica data de registro no sistema, não necessariamente adesão original. Nenhuma linha fictícia do print de referência foi importada.
+
+### Implantação
+
+```powershell
+git checkout refactor
+git pull origin refactor
+pnpm --filter @quali/api build
+pnpm --filter @quali/clube build
+# somente se ambos compilarem:
+pnpm exec pm2 restart quali-api
+pnpm exec pm2 restart quali-clube
+```
+
+Não há migração Prisma nesta etapa. Antes de testar, preencha a data de nascimento de um cliente cuja situação/cadastro estejam corretos. Teste CPF+nascimento corretos e incorretos, sessão expirada, logout, isolamento entre dois clientes e a visibilidade de dados financeiros. **Para operação pública com dados pessoais sensíveis, acrescentar segundo fator por código de uso único (OTP), rate limiting compartilhado no banco/Redis e monitoramento de tentativas.** A proteção atual é uma primeira implementação e não substitui essa etapa de endurecimento.
