@@ -20,7 +20,7 @@ async function run(){
  if(!filename)throw new Error("Uso: pnpm db:import:nascimentos caminho/privado.json [--apply]. Sem --apply, somente simulação.");
  const pepper=process.env.CPF_HASH_KEY;
  if(!pepper||pepper.length<32)throw new Error("CPF_HASH_KEY não disponível. Verifique o .env.");
- const input=JSON.parse(await readFile(resolve(process.cwd(),filename),"utf8")) as Payload;
+ const input=JSON.parse(await readFile(resolve(fileURLToPath(new URL("../../../",import.meta.url)),filename),"utf8")) as Payload;
  if(input.formatVersion!==1||!Array.isArray(input.rows)||input.rows.length>2000)throw new Error("Arquivo inválido.");
  const occurrences=new Map<string,number>();
  for(const row of input.rows){
