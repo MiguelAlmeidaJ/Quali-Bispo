@@ -89,27 +89,27 @@ export class AdminController {
     const [beneficiary,financial]=await Promise.all([
       db.beneficiary.findUnique({where:{cpfHash},select:{id:true,name:true,status:true,plan:{select:{name:true}}}}),
       db.financeCustomer.findMany({where:{cpfHash,cpfValid:true,cpfConflict:false},
-        select:{id:true,name:true,status:true,planType:true,partner:{select:{name:true}}},take:2}),
+        select:{id:true,name:true,status:true,planType:true,cpfLast4:true,partner:{select:{name:true}}},take:2}),
     ]);
     const customer=financial.length===1?financial[0]:null;
     // O controle financeiro pode confirmar o cadastro, mas só situação PAID libera o uso.
     // Registros sem hash confiável ou duplicados devem ser corrigidos antes da liberação.
     const found=!!beneficiary||!!customer;
-    const eligible=beneficiary?.status==="ACTIVE"||(!beneficiary&&customer?.status==="PAID");
-    const matchedCustomer=customer&&!beneficiary;
+    const eligible=customer?customer.status==="PAID":beneficiary?.status==="ACTIVE";
+    const matchedCustomer=customer;
     await db.auditLog.create({data:{
-      actorId:user.id,action:"CPF_LOOKUP",entityType:beneficiary?"Beneficiary":"FinanceCustomer",
-      entityId:beneficiary?.id||customer?.id,
-      metadata:{matched:found,eligible:!!eligible,source:beneficiary?"beneficiary":customer?"finance":"none"},
+      actorId:user.id,action:"CPF_LOOKUP",entityType:customer?"FinanceCustomer":beneficiary?"Beneficiary":"FinanceCustomer",
+      entityId:customer?.id||beneficiary?.id,
+      metadata:{matched:found,eligible:!!eligible,source:customer?"finance":beneficiary?"beneficiary":"none"},
     }});
     return {
       found,eligible:!!eligible,
-      source:beneficiary?"beneficiary":matchedCustomer?"finance":null,
+      source:matchedCustomer?"finance":beneficiary?"beneficiary":null,
       beneficiary:beneficiary?{name:beneficiary.name,status:beneficiary.status,plan:beneficiary.plan?.name??null}:
         customer?{name:customer.name,status:customer.status==="PAID"?"ACTIVE":"OVERDUE",
           plan:customer.planType}:null,
-      customer:matchedCustomer?{id:customer.id,name:customer.name,status:customer.status,
-        plan:customer.planType,unit:customer.partner?.name??null}:null,
+      customer:matchedCustomer?{id:customer!.id,name:customer!.name,status:customer!.status,cpfLast4:customer!.cpfLast4,
+        plan:customer!.planType,unit:customer!.partner?.name??null}:null,
       message:!found?"CPF não encontrado no cadastro.":eligible?"Acesso liberado.":"Cadastro localizado, mas acesso não liberado. Verifique a situação financeira.",
     };
   }

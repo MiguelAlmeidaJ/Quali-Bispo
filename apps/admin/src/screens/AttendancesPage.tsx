@@ -25,12 +25,12 @@ async function read<T>(url:string,init?:RequestInit):Promise<T>{
  if(!r.ok)throw new Error(Array.isArray(result.message)?result.message.join(", "):result.message||result.error||"Falha de conexão");
  return result as T;
 }
-function AttendanceModal({options,onClose,onSaved}:{
- options:Options;onClose:()=>void;onSaved:()=>Promise<void>;
+function AttendanceModal({options,onClose,onSaved,initialCustomer}:{
+ options:Options;onClose:()=>void;onSaved:()=>Promise<void>;initialCustomer?:Customer|null;
 }){
- const [query,setQuery]=useState("");
- const [customers,setCustomers]=useState<Customer[]>([]);
- const [customerId,setCustomerId]=useState("");
+ const [query,setQuery]=useState(initialCustomer?.name||"");
+ const [customers,setCustomers]=useState<Customer[]>(initialCustomer?[initialCustomer]:[]);
+ const [customerId,setCustomerId]=useState(initialCustomer?.id||"");
  const [partnerId,setPartnerId]=useState(options.userPartnerId||options.partners[0]?.id||"");
  const [serviceId,setServiceId]=useState("");
  const [dateValue,setDateValue]=useState(new Date().toISOString().slice(0,10));
@@ -53,7 +53,8 @@ function AttendanceModal({options,onClose,onSaved}:{
  },[busy,onClose]);
  async function submit(event:React.FormEvent){
   event.preventDefault();setError("");
-  const selected=customers.find(item=>item.id===customerId);
+  const selected=customers.find(item=>item.id===customerId)||
+   (initialCustomer?.id===customerId?initialCustomer:null);
   if(!selected){setError("Selecione um cliente na pesquisa.");return;}
   if(selected.status!=="PAID"){setError("O cliente precisa estar com situação Pago para registrar um atendimento.");return;}
   setBusy(true);
@@ -104,11 +105,12 @@ function AttendanceModal({options,onClose,onSaved}:{
  </div>;
 }
 function csvValue(value:string){const safe=/^[=+@-]/.test(value.trimStart())?"'"+value:value;return '"'+safe.replace(/"/g,'""')+'"';}
-export function AttendancesPage({user}:{user:User}){
+export function AttendancesPage({user,preselectedCustomer,onPrefillConsumed}:{user:User;preselectedCustomer?:Customer|null;onPrefillConsumed?:()=>void}){
  const [options,setOptions]=useState<Options|null>(null);
  const [month,setMonth]=useState(nowMonth()),[partnerId,setPartnerId]=useState(""),[serviceType,setServiceType]=useState(""),[search,setSearch]=useState(""),[page,setPage]=useState(1);
  const [result,setResult]=useState<AttendanceResult|null>(null);
- const [loading,setLoading]=useState(true),[error,setError]=useState(""),[modal,setModal]=useState(false),[exporting,setExporting]=useState(false);
+ const [loading,setLoading]=useState(true),[error,setError]=useState(""),[modal,setModal]=useState(!!preselectedCustomer),[exporting,setExporting]=useState(false);
+ const [initialCustomer,setInitialCustomer]=useState<Customer|null>(preselectedCustomer||null);
  const params=useMemo(()=>{
   const q=new URLSearchParams({month,page:String(page)});
   if(partnerId)q.set("partnerId",partnerId);
@@ -123,6 +125,7 @@ export function AttendancesPage({user}:{user:User}){
   finally{setLoading(false);}
  },[params]);
  useEffect(()=>{void refresh();},[refresh]);
+ useEffect(()=>{if(preselectedCustomer){setInitialCustomer(preselectedCustomer);setModal(true);onPrefillConsumed?.();}},[preselectedCustomer,onPrefillConsumed]);
  useEffect(()=>{void read<Options>("/admin/api/attendances/options").then(setOptions).catch(err=>setError(err.message));},[]);
  const pages=Math.max(1,Math.ceil((result?.total||0)/20));
  const records=result?.items||[],summary=result?.summary;
@@ -163,7 +166,7 @@ export function AttendancesPage({user}:{user:User}){
   <div className="attendance-heading"><div><h1>Atendimentos</h1><p>Uso dos benefícios na rede credenciada</p></div>
    <div className="attendance-heading-actions">
     <button className="attendance-export" type="button" disabled={exporting||!result?.total} onClick={()=>void exportCsv()}><FiDownload/> {exporting?"Exportando...":"Exportar CSV"}</button>
-    <button className="attendance-new" type="button" disabled={!options?.partners.length||!options.services.length} onClick={()=>setModal(true)}><FiPlus/> Novo atendimento</button>
+    <button className="attendance-new" type="button" disabled={!options?.partners.length||!options.services.length} onClick={()=>{setInitialCustomer(null);setModal(true);}}><FiPlus/> Novo atendimento</button>
    </div>
   </div>
   <div className="attendance-filters">
@@ -198,6 +201,6 @@ export function AttendancesPage({user}:{user:User}){
    <span>Economia aos associados <b className="attendance-green">{money(summary?.savingsCents||0)}</b></span>
    <span>Consultas (contam no limite) <b>{summary?.consultations||0}</b></span>
   </div>
-  {modal&&options&&<AttendanceModal options={options} onClose={()=>setModal(false)} onSaved={refresh}/>}
+  {modal&&options&&<AttendanceModal options={options} onClose={()=>{setModal(false);setInitialCustomer(null);}} onSaved={refresh} initialCustomer={initialCustomer}/>}
  </div>;
 }
