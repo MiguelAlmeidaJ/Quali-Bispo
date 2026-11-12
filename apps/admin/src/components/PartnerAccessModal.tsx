@@ -53,7 +53,8 @@ export function PartnerAccessModal({partner,onClose}:{partner:Partner;onClose:()
     <button type="button" aria-label="Fechar" disabled={saving} onClick={onClose}><FiX size={20}/></button>
    </header>
    {loading?<p className="partner-access-loading">Carregando credenciais...</p>:
-    data?.accounts.length&&data.accounts.length>1?<p className="notice error">Mais de um usuário está vinculado a esta unidade. Solicite regularização à administração.</p>:
+    !data?<p className="notice error" role="alert">{error||"Não foi possível carregar os dados de acesso."}</p>:
+    data.accounts.length>1?<p className="notice error">Mais de um usuário está vinculado a esta unidade. Solicite regularização à administração.</p>:
     <form className="partner-access-form" onSubmit={save}>
      <p className="partner-access-info"><FiShield/> Cada unidade tem seu próprio login para Validar CPF, Atendimentos e consultar a Tabela de Valores.</p>
      <label>Nome do responsável <input required minLength={3} maxLength={100} value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></label>
@@ -74,7 +75,7 @@ export function PartnerAccessModal({partner,onClose}:{partner:Partner;onClose:()
      <footer><button type="button" disabled={saving} onClick={onClose}>Fechar</button>
       <button type="submit" className="partner-primary-btn" disabled={saving||(!partner.active&&form.active)}>{saving?"Salvando...":existing?"Salvar acesso":"Criar login"}</button></footer>
     </form>}
-   {loading&&error&&<p className="notice error" role="alert">{error}</p>}
+
   </section>
  </div>;
 }
