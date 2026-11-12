@@ -39,7 +39,7 @@ export class BrandingUploadController {
     @UploadedFile() file?: Express.Multer.File,
   ) {
     const user = await requireDev(authorization);
-    if (kind !== "logo" && kind !== "favicon") throw new BadRequestException("Tipo de imagem inválido");
+    if (kind !== "logo" && kind !== "logo-white" && kind !== "favicon") throw new BadRequestException("Tipo de imagem inválido");
     if (!file?.buffer?.length) throw new BadRequestException("Selecione uma imagem de até 2 MB");
     try { return await storeBrandAsset(kind as AssetKind, file.buffer, user.id); }
     catch (error) {
