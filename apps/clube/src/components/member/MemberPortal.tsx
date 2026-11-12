@@ -81,7 +81,7 @@ export function MemberPortal(){
     </aside>
     <div className="member-right">
      <div className="member-metrics">
-      <article><small>CONSULTAS NESTE MÊS</small><strong>{data.consultationsThisMonth}</strong><span>Sem limite configurado no sistema</span></article>
+      <article><small>CONSULTAS MÉDICAS NO MÊS</small><strong>{data.consultationsThisMonth}</strong><span>Sem limite configurado no sistema</span></article>
       <article><small>VOCÊ JÁ ECONOMIZOU</small><strong className="green">{money(data.savingsCents)}</strong><span>Atendimentos registrados</span></article>
       <article><small>PRÓXIMO VENCIMENTO</small><strong>Não informado</strong><span>Data não disponível no cadastro</span></article>
      </div>
