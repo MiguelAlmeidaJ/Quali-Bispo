@@ -140,7 +140,7 @@ export function CustomerFormPage({id}:{id?:string}){
         <option value={p.id} key={p.id}>{p.name} — {p.maxDependents?"Familiar":"Individual"}</option>)}
       </select>
       {!selected&&original?.planType&&<small>Plano histórico da planilha: {original.planType}. Selecione um cartão cadastrado para migrar o cliente.</small>}
-      <small><a href="/admin/?view=cards">Gerenciar tipos de cartão</a></small>
+      <small><a href="/admin/cartoes">Gerenciar tipos de cartão</a></small>
      </label>
      <label>Valor do plano (R$)<input readOnly value={selected?planPrice(selected.priceCents):form.amount}
       placeholder="Selecione um cartão" /><small>Atualizado automaticamente pela tabela de cartões.</small></label>
