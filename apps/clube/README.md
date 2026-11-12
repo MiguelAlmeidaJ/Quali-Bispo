@@ -91,3 +91,26 @@ O portal autenticado do associado agora exibe o número do titular (quando emiti
 ## Logo branca do cartão
 
 O cartão verde na rota `/associado` utiliza `whiteLogoUrl` da identidade visual (imagem `/v1/branding/assets/logo-white`), administrada no painel DEV. O arquivo é convertido para branco com transparência na API e não recebe background/filtro visual. Se o ativo não estiver cadastrado, usa fallback tipográfico branco; o restante da marca do Clube continua com o logo principal. Alterar a imagem em Configurações deve refletir no cartão após recarregar a página, sem recompilar.
+
+## Abas modernas do Portal do Associado
+
+As quatro abas da área privada foram separadas em componentes próprios: `MemberBenefitsTab.tsx`, `MemberPartnersTab.tsx`, `MemberBillingTab.tsx` e `MemberAttendancesTab.tsx`, com tipos/formatadores compartilhados em `member-types.ts`.
+
+- **Meus benefícios** mostra três categorias, descontos máximos calculados pelos procedimentos ativos do `CatalogItem`, até três preços normais riscados e preços Quali em destaque por card. Lista também os benefícios configurados no cartão do associado e aponta para `/valores`.
+- **Rede parceira** mostra nome, categorias, descrição de serviços, endereço, horários, contato, desconto e link de mapa de cada parceiro ativo; oferece busca sem diferenciar acentos, filtro por cidade/tipo e ordenação por nome/cidade/desconto.
+- **Mensalidades** usa o valor real do plano, status atual e `FinanceIssue` não resolvidas. **Não inventa mensalidades pagas, competências, vencimentos nem pagamentos históricos**; esses dados exigem futuro modelo de cobrança/recebimento com eventos reais. A contagem de pagamentos mostra indisponível.
+- **Meus atendimentos** resume os valores do **histórico completo** via agregação SQL/Prisma e apresenta até 100 registros recentes com beneficiário titular, serviço, parceiro, preços e economia. Atendimentos de dependentes ainda não são lançados individualmente no modelo atual.
+
+`GET /v1/member/dashboard` inclui somente dados do titular autenticado; acrescenta `catalog` de itens públicos ativos, `partners.services` e `attendanceTotals`. A página usa o proxy protegido existente `/api/associate/dashboard`, sem fornecer dados financeiros de outros usuários.
+
+### Implantação
+```powershell
+git checkout refactor
+git pull origin refactor
+pnpm --filter @quali/api build
+pnpm --filter @quali/clube build
+# Se ambos compilarem:
+pnpm exec pm2 restart quali-api
+pnpm exec pm2 restart quali-clube
+```
+Não requer migração Prisma, seed, nem reimportação de planilha. Teste as quatro abas em desktop/mobile, preços cadastrados, parceiros e filtros, cliente com/sem pendências, histórico vazio e com atendimentos. Os dados dos prints do sistema antigo não foram inseridos artificialmente.

@@ -2,20 +2,13 @@
 import {useCallback,useEffect,useState} from "react";
 import {Brand} from "../layout/Brand";
 
-type Status="PAID"|"OPEN"|"EXPECTED"|"PENDING"|"IN_REVIEW"|"AWAITING"|"UNSPECIFIED";
-type Attendance={id:string;performedAt:string;serviceName:string;serviceType:string;fullPriceCents:number;chargedCents:number;partner:{name:string}};
-type Issue={id:string;status:Status;rawStatus:string|null;amountCents:number|null;referenceDate:string|null;paymentMethod:string|null};
-type Partner={id:string;name:string;city:string;address:string;phone:string|null;businessHours:string;
- serviceType:string;serviceTypes:string[];discountPercent:number};
-type Dashboard={
- member:{name:string;cpfLast4:string|null;birthDate:string|null;planType:string|null;amountCents:number|null;
- status:Status;unit:string|null;joinedAt:string;referenceDate:string|null;
- cardNumber:string|null;cardPlan:{name:string;priceCents:number;maxDependents:number;benefits:string[]}|null};
- consultationsThisMonth:number;savingsCents:number;attendances:Attendance[];issues:Issue[];partners:Partner[];
- dependentsAvailable:boolean;cardNumber:string|null;
- dependents:{id:string;name:string;cpfLast4:string;birthDate:string;cardNumber:string}[];
- phone:null;nextDueDate:null;consultationLimit:null;
-};
+import type {Dashboard} from "./member-types";
+import {statuses as labels,money,date} from "./member-types";
+import {MemberBenefitsTab} from "./MemberBenefitsTab";
+import {MemberPartnersTab} from "./MemberPartnersTab";
+import {MemberBillingTab} from "./MemberBillingTab";
+import {MemberAttendancesTab} from "./MemberAttendancesTab";
+
 type Tab="overview"|"benefits"|"partners"|"payments"|"attendances";
 const labels:Record<Status,string>={PAID:"Pago",OPEN:"Em aberto",EXPECTED:"Previsto",
  PENDING:"Pendente",IN_REVIEW:"Em tratativa",AWAITING:"Aguardando",UNSPECIFIED:"Não informado"};
@@ -31,7 +24,6 @@ export function MemberPortal(){
  const [data,setData]=useState<Dashboard|null>(null);
  const [tab,setTab]=useState<Tab>("overview");
  const [busy,setBusy]=useState(true),[error,setError]=useState(""),[unauthorized,setUnauthorized]=useState(false);
- const [search,setSearch]=useState("");
  const load=useCallback(async()=>{
   setBusy(true);setError("");
   try{
@@ -53,12 +45,10 @@ export function MemberPortal(){
   <p>Entre novamente com CPF e data de nascimento.</p><a className="btn" href="/#acesso">Voltar ao acesso</a></main>;
  if(error||!data)return <main className="member-loading"><h1>Não foi possível carregar seus dados</h1>
   <p>{error||"Tente novamente."}</p><button className="btn" onClick={()=>void load()}>Tentar novamente</button></main>;
- const {member,attendances,issues,partners}=data;
+ const {member}=data;
  const firstName=member.name.split(" ")[0].toLocaleLowerCase("pt-BR");
  const greeting=firstName.charAt(0).toLocaleUpperCase("pt-BR")+firstName.slice(1);
  const statusOk=member.status==="PAID";
- const filteredPartners=partners.filter(p=>[p.name,p.city,p.address,...p.serviceTypes]
-  .some(x=>x.toLocaleLowerCase("pt-BR").includes(search.toLocaleLowerCase("pt-BR"))));
  return <div className="member-portal">
   <header className="member-top"><div className="wrap member-top-inner">
    <a href="/" className="member-brand" aria-label="Início do Clube Quali"><Brand/></a>
@@ -125,41 +115,11 @@ export function MemberPortal(){
      </section>
     </div>
    </div>}
-   {tab==="benefits"&&<section className="member-panel"><h2>Meus benefícios</h2>
-    <p className="member-muted">Consulte a rede credenciada e a tabela atualizada de valores Quali. A disponibilidade e as regras de uso dependem de confirmação com a unidade.</p>
-    <div className="member-benefit-grid">{(member.cardPlan?.benefits.length?member.cardPlan.benefits:["Consulte os benefícios do seu plano com o suporte Quali."]).map(item=><article key={item}><h3>{item}</h3></article>)}</div>
-    <a className="btn" href="/valores">Consultar tabela de valores</a>
-    <p className="member-muted">Consultas registradas neste mês: <b>{data.consultationsThisMonth}</b>. O limite mensal depende do plano e ainda não está parametrizado no sistema.</p>
-   </section>}
-   {tab==="partners"&&<section className="member-panel"><h2>Rede parceira</h2>
-    <p className="member-muted">Unidades ativas que participam da rede Quali.</p>
-    <input aria-label="Pesquisar unidade credenciada" className="member-search" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por unidade, cidade ou serviço"/>
-    <div className="member-partners-grid">{filteredPartners.map(p=><article key={p.id}>
-     <h3>{p.name}</h3><p>{p.address}{p.city?` · ${p.city}`:""}</p><p>{p.serviceTypes.length?p.serviceTypes.join(" · "):p.serviceType}</p>
-     <b>Até {p.discountPercent}% de desconto</b>{p.phone&&<p>Telefone: {p.phone}</p>}
-     {p.businessHours&&<p>Horário: {p.businessHours}</p>}
-    </article>)}</div>
-    {!filteredPartners.length&&<p className="member-muted">Nenhuma unidade encontrada.</p>}
-   </section>}
-   {tab==="payments"&&<section className="member-panel"><h2>Mensalidades</h2>
-    <div className="member-pay-summary"><div><small>PLANO</small><b>{member.planType||"Não informado"}</b></div>
-     <div><small>VALOR CADASTRADO</small><b>{money(member.amountCents)}</b></div>
-     <div><small>SITUAÇÃO ATUAL</small><b>{labels[member.status]}</b></div></div>
-    <p className="member-muted">A plataforma ainda não possui histórico completo de pagamentos bancários nem geração de segunda via. Os registros abaixo são pendências de acompanhamento vinculadas ao seu cadastro.</p>
-    {issues.length?<div className="member-table-wrap"><table><thead><tr><th>SITUAÇÃO</th><th>VALOR</th><th>DATA DE REFERÊNCIA</th><th>FORMA</th></tr></thead>
-     <tbody>{issues.map(issue=><tr key={issue.id}><td>{labels[issue.status]}</td><td>{money(issue.amountCents)}</td>
-      <td>{date(issue.referenceDate)}</td><td>{issue.paymentMethod||"—"}</td></tr>)}</tbody></table></div>:
-     <p className="member-muted">Não há pendências não resolvidas vinculadas a este cadastro. Isso não constitui comprovante de quitação.</p>}
-   </section>}
-   {tab==="attendances"&&<section className="member-panel"><h2>Meus atendimentos</h2>
-    <p className="member-muted">Histórico registrado na rede Quali, com valores da época de cada atendimento.</p>
-    {attendances.length?<div className="member-table-wrap"><table><thead><tr><th>DATA</th><th>PROCEDIMENTO</th><th>PARCEIRO</th><th>VALOR CHEIO</th><th>VALOR QUALI</th><th>ECONOMIA</th></tr></thead>
-     <tbody>{attendances.map(item=><tr key={item.id}><td>{date(item.performedAt)}</td>
-      <td>{item.serviceName}</td><td>{item.partner.name}</td><td>{money(item.fullPriceCents)}</td>
-      <td>{money(item.chargedCents)}</td><td className="green">{money(item.fullPriceCents-item.chargedCents)}</td></tr>)}</tbody></table></div>:
-     <p className="member-muted">Ainda não há atendimentos registrados no seu cadastro.</p>}
-    {attendances.length===100&&<p className="member-muted">Mostrando os 100 atendimentos mais recentes. Para histórico anterior, consulte o suporte Quali.</p>}
-   </section>}
+   {tab==="benefits"&&<MemberBenefitsTab data={data}/>}
+   {tab==="partners"&&<MemberPartnersTab partners={data.partners}/>}
+   {tab==="payments"&&<MemberBillingTab data={data}/>}
+   {tab==="attendances"&&<MemberAttendancesTab data={data}/>}
+
   </main>
  </div>;
 }
