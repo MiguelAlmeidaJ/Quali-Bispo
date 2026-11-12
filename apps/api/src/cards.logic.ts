@@ -33,8 +33,9 @@ export function parseDependents(raw:unknown):DependentInput[]{
 export const cardDigits=(value:string)=>value.replace(/\D/g,"");
 export function assembleCardNumber(created:Date,birth:Date,cpfLast4:string,sequence:number){
  if(sequence<1||sequence>9999)return fail("Limite de numeração de cartões atingido. Contate o administrador.",409);
- const year=String(created.getUTCFullYear()).slice(-2);
- const month=String(created.getUTCMonth()+1).padStart(2,"0");
+ const local=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"America/Sao_Paulo",year:"2-digit",month:"2-digit"})
+  .formatToParts(created).filter(part=>part.type==="year"||part.type==="month").map(part=>[part.type,part.value]));
+ const year=local.year,month=local.month;
  const born=String(birth.getUTCFullYear()).slice(-2);
  const lastCpf=cpfLast4.slice(-2);
  if(lastCpf.length!==2)return fail("CPF insuficiente para gerar número do cartão.");
@@ -43,7 +44,17 @@ export function assembleCardNumber(created:Date,birth:Date,cpfLast4:string,seque
 // Reservar próximo número de forma atômica na mesma transação que grava a carteirinha.
 // O cartão só será emitido após confirmar a data de nascimento e os dois últimos dígitos de CPF.
 export async function nextCardNumber(tx:Prisma.TransactionClient,created:Date,birth:Date,last4:string):Promise<string>{
- const counter=await tx.cardSequence.upsert({where:{key:"global"},create:{key:"global",lastValue:1},
-  update:{lastValue:{increment:1}},select:{lastValue:true}});
- return assembleCardNumber(created,birth,last4,counter.lastValue);
+ for(let i=0;i<100;i++){
+  const counter=await tx.cardSequence.upsert({where:{key:"global"},create:{key:"global",lastValue:1},
+   update:{lastValue:{increment:1}},select:{lastValue:true}});
+  const candidate=assembleCardNumber(created,birth,last4,counter.lastValue);
+  // Verifica também a tabela legada de beneficiários, que possui numeração própria.
+  const [legacy,holder,dependent]=await Promise.all([
+   tx.beneficiary.findUnique({where:{cardNumber:candidate},select:{id:true}}),
+   tx.financeCustomer.findUnique({where:{cardNumber:candidate},select:{id:true}}),
+   tx.cardDependent.findUnique({where:{cardNumber:candidate},select:{id:true}}),
+  ]);
+  if(!legacy&&!holder&&!dependent)return candidate;
+ }
+ throw new HttpException("Não foi possível reservar um número livre. Contate o administrador.",409);
 }
