@@ -96,31 +96,38 @@ export class AdminController {
     const cpf=typeof body?.cpf==="string"?body.cpf.replace(/\D/g,""):"";
     if(!validCpf(cpf))throw new HttpException("CPF inválido",400);
     const cpfHash=cpfFingerprint(cpf);
-    const [beneficiary,financial]=await Promise.all([
+    const [beneficiary,financial,dependent]=await Promise.all([
       db.beneficiary.findUnique({where:{cpfHash},select:{id:true,name:true,status:true,plan:{select:{name:true}}}}),
       db.financeCustomer.findMany({where:{cpfHash,cpfValid:true,cpfConflict:false},
-        select:{id:true,name:true,status:true,planType:true,cpfLast4:true,partner:{select:{name:true}}},take:2}),
+        select:{id:true,name:true,status:true,benefitActive:true,planType:true,cpfLast4:true,
+         partner:{select:{name:true}}},take:20}),
+      db.cardDependent.findMany({where:{cpfHash},
+        select:{id:true,name:true,benefitActive:true,
+         customer:{select:{id:true,benefitActive:true,status:true,planType:true}}},take:20}),
     ]);
-    const customer=financial.length===1?financial[0]:null;
-    // O controle financeiro pode confirmar o cadastro, mas só situação PAID libera o uso.
-    // Registros sem hash confiável ou duplicados devem ser corrigidos antes da liberação.
-    const found=!!beneficiary||!!customer;
-    const eligible=customer?customer.status==="PAID":beneficiary?.status==="ACTIVE";
+    const activeCustomers=financial.filter(item=>item.benefitActive);
+    const customer=activeCustomers.length===1?activeCustomers[0]:
+      activeCustomers.length===0&&financial.length===1?financial[0]:null;
+    const activeDependents=dependent.filter(item=>item.benefitActive&&item.customer.benefitActive);
+    const child=activeDependents.length===1?activeDependents[0]:null;
+    const found=!!beneficiary||!!customer||!!child;
+    const eligible=customer?customer.benefitActive&&customer.status==="PAID":
+      child?child.customer.status==="PAID":beneficiary?.status==="ACTIVE";
     const matchedCustomer=customer;
     await db.auditLog.create({data:{
-      actorId:user.id,action:"CPF_LOOKUP",entityType:customer?"FinanceCustomer":beneficiary?"Beneficiary":"FinanceCustomer",
-      entityId:customer?.id||beneficiary?.id,
-      metadata:{matched:found,eligible:!!eligible,source:customer?"finance":beneficiary?"beneficiary":"none"},
+      actorId:user.id,action:"CPF_LOOKUP",entityType:customer?"FinanceCustomer":child?"CardDependent":beneficiary?"Beneficiary":"FinanceCustomer",
+      entityId:customer?.id||child?.id||beneficiary?.id,
+      metadata:{matched:found,eligible:!!eligible,source:customer?"finance":child?"dependent":beneficiary?"beneficiary":"none"},
     }});
     return {
       found,eligible:!!eligible,
-      source:matchedCustomer?"finance":beneficiary?"beneficiary":null,
+      source:matchedCustomer?"finance":child?"dependent":beneficiary?"beneficiary":null,
       beneficiary:beneficiary?{name:beneficiary.name,status:beneficiary.status,plan:beneficiary.plan?.name??null}:
-        customer?{name:customer.name,status:customer.status==="PAID"?"ACTIVE":"OVERDUE",
-          plan:customer.planType}:null,
+        child?{name:child.name,status:eligible?"ACTIVE":"OVERDUE",plan:child.customer.planType}:
+        customer?{name:customer.name,status:eligible?"ACTIVE":"OVERDUE",plan:customer.planType}:null,
       customer:matchedCustomer?{id:customer!.id,name:customer!.name,status:customer!.status,cpfLast4:customer!.cpfLast4,
         plan:customer!.planType,unit:customer!.partner?.name??null}:null,
-      message:!found?"CPF não encontrado no cadastro.":eligible?"Acesso liberado.":"Cadastro localizado, mas acesso não liberado. Verifique a situação financeira.",
+      message:!found?"CPF não encontrado no cadastro.":eligible?"Acesso liberado.":"Cadastro localizado, mas benefício não liberado. Verifique cancelamento ou situação financeira.",
     };
   }
 }
