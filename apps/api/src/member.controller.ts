@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Headers, HttpException, Post, Req, UnauthorizedException } from "@nestjs/common";
+import { Body, Controller, Get, Headers, HttpException, Post, Req, Res, UnauthorizedException } from "@nestjs/common";
 import { createPrismaClient } from "@quali/database";
 import { createHmac } from "node:crypto";
 import { config as loadEnv } from "dotenv";
 import jwt from "jsonwebtoken";
-import type { Request } from "express";
+import type { Request, Response } from "express";
+import { makeMemberCardPdf } from "./member-card-pdf";
 import { cpfFingerprint, validCpf } from "./finance-customer.validation";
 
 loadEnv({path:"../../.env"});
@@ -79,6 +80,24 @@ export class MemberController{
    status:member.status,partner:member.partner,unit:member.partner?.name||member.unit,
    joinedAt:member.createdAt,referenceDate:member.referenceDate,
   };
+ }
+ @Get("card.pdf")
+ async downloadCard(@Headers("authorization") auth:string|undefined,@Res() response:Response){
+  // Mesmo JWT dedicado ao associado; nunca aceitar token de ADMIN/PARTNER.
+  const id=verifySession(auth);
+  const member=await db.financeCustomer.findUnique({where:{id},
+   select:{name:true,cardNumber:true,cpfLast4:true,birthDate:true,cpfValid:true,cpfConflict:true}});
+  if(!member||!member.cpfValid||member.cpfConflict||!member.birthDate)
+   throw new UnauthorizedException("Cadastro indisponível. Procure a central Quali.");
+  if(!member.cardNumber||!member.cpfLast4)
+   throw new HttpException("Cartão ainda não emitido. Regularize o cadastro.",409);
+  const pdf=await makeMemberCardPdf({name:member.name,number:member.cardNumber,
+   cpfLast4:member.cpfLast4,birthDate:member.birthDate});
+  response.setHeader("Content-Type","application/pdf");
+  response.setHeader("Content-Disposition",`attachment; filename="quali-cartao-${member.cardNumber}.pdf"`);
+  response.setHeader("Cache-Control","private, no-store, max-age=0");
+  response.setHeader("X-Content-Type-Options","nosniff");
+  response.end(pdf);
  }
  @Get("dashboard")
  async dashboard(@Headers("authorization") auth?:string){

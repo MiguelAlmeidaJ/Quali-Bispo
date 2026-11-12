@@ -114,3 +114,26 @@ pnpm exec pm2 restart quali-api
 pnpm exec pm2 restart quali-clube
 ```
 Não requer migração Prisma, seed, nem reimportação de planilha. Teste as quatro abas em desktop/mobile, preços cadastrados, parceiros e filtros, cliente com/sem pendências, histórico vazio e com atendimentos. Os dados dos prints do sistema antigo não foram inseridos artificialmente.
+
+## Baixar Cartão de Benefícios em PDF
+
+Na aba **Visão geral** do portal do associado, o cartão verde não exibe mais o selo Individual/Familiar nem a situação de pagamento. O rodapé contém **CPF mascarado, vínculo (Titular) e data de nascimento**. A situação financeira continua disponível nas demais partes do portal e não interfere no layout impresso.
+
+Quando o titular já possui um `cardNumber` de 12 dígitos, CPF confiável e `birthDate`, aparece o botão **Baixar Cartão de Benefícios (PDF)**. Ele chama `GET /api/associate/card`, um proxy Next que repassa o cookie HttpOnly ao endpoint Nest protegido `GET /v1/member/card.pdf`. Apenas o próprio titular autenticado pode emitir esse documento; registros sem numeração permanecem pendentes. A resposta tem `Content-Disposition: attachment`, `application/pdf` e `Cache-Control: private, no-store`.
+
+A API gera um PDF de **uma única página**, formato físico padrão **ID-1 / ISO 7810 (85,60 × 53,98 mm)**, integralmente preenchida pelo cartão, sem margens, rodapé do navegador, marcas de corte ou molduras externas. O desenho vetorial inclui fundo verde, marca branca configurada em Configurações DEV (PNG transparente preservado no PDF), número de cartão, nome, CPF parcial, vínculo e nascimento. Sem logo branca cadastrada, utiliza uma marca textual de fallback. Não há dependência adicional do npm: o gerador fica em `apps/api/src/member-card-pdf.ts` e usa o `sharp` já empregado pela API.
+
+**Para imprimir:** no diálogo de impressão de PDFs, escolha **Escala: 100% / Tamanho real**, sem ajustar à página. O arquivo já tem as dimensões finais de recorte. Não é necessário nem recomendado imprimir como A4 com ajuste automático.
+
+### Publicação desta funcionalidade
+
+```powershell
+git pull origin refactor
+pnpm --filter @quali/api build
+pnpm --filter @quali/clube build
+# Se ambos terminarem sem erros:
+pnpm exec pm2 restart quali-api
+pnpm exec pm2 restart quali-clube
+```
+
+Não há migração ou seed. Testar em um cartão emitido e outro pendente, verificar PDF com tamanho 85,60 × 53,98 mm e a logo branca em fundo transparente. Validar também uma sessão expirada ou de outro associado.
