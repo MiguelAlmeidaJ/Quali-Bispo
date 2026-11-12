@@ -77,7 +77,7 @@ export function CatalogPage({readonly=false}:{readonly?:boolean}){
  const displayed=filtered.slice((currentPage-1)*pageSize,currentPage*pageSize);
  function changeFilters(action:()=>void){action();setPage(1);}
  return <div className="catalog-page">
-  <div className="catalog-heading"><div><span>GESTÃO DE PREÇOS</span><h1>Tabela de valores</h1><p>Consultas, exames e procedimentos. {readonly?"Consulta de procedimentos e preços disponíveis no Clube.":"Alterações aparecem no Clube Quali."}</p></div>
+  <div className="catalog-heading"><div><span>GESTÃO DE PREÇOS</span><h1>Tabela de valores</h1><p>{readonly?"Consulte os procedimentos e preços vigentes da rede Quali.":"Consultas, exames e procedimentos. Alterações aparecem no Clube Quali."}</p></div>
    {!readonly&&<button className="catalog-save" type="button" onClick={()=>setModal({open:true,item:null})}><FiPlus size={18}/> Novo procedimento</button>}
   </div>
   <div className="catalog-stats"><article><span>Itens cadastrados</span><b>{items.length}</b></article><article><span>Disponíveis no Clube</span><b>{items.filter(x=>x.active).length}</b></article><article><span>Categorias</span><b>{new Set(items.map(x=>x.category)).size}</b></article></div>
