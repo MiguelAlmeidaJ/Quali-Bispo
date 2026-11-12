@@ -67,7 +67,7 @@ export function PartnerAccessModal({partner,onClose}:{partner:Partner;onClose:()
       placeholder={existing?"Deixe vazio para manter a senha atual":"Mínimo de 12 caracteres"}
       value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/>
       <small>{existing?"Preencha apenas se quiser redefinir a senha.":"Use uma senha exclusiva para esta unidade."}</small></label>
-     <label className="partner-access-check"><input type="checkbox" checked={form.active} disabled={!partner.active}
+     <label className="partner-access-check"><input type="checkbox" checked={form.active}
       onChange={e=>setForm({...form,active:e.target.checked})}/> Habilitar login desta unidade</label>
      {!partner.active&&<p className="notice error">A unidade está inativa. Ative-a antes de habilitar o login.</p>}
      {error&&<p className="notice error" role="alert">{error}</p>}
