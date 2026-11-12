@@ -1,6 +1,7 @@
 import {createPrismaClient} from "@quali/database";
 import {HttpException} from "@nestjs/common";
 import {cpfFingerprint,validCpf} from "./finance-customer.validation";
+import type {Prisma} from "@quali/database";
 
 export const cardDb=createPrismaClient();
 const fail=(msg:string,status=400):never=>{throw new HttpException(msg,status);};
@@ -43,7 +44,7 @@ export function assembleCardNumber(created:Date,birth:Date,cpfLast4:string,seque
 }
 // Reservar próximo número de forma atômica na mesma transação que grava a carteirinha.
 // O cartão só será emitido após confirmar a data de nascimento e os dois últimos dígitos de CPF.
-export async function nextCardNumber(tx:any,created:Date,birth:Date,last4:string):Promise<string>{
+export async function nextCardNumber(tx:Prisma.TransactionClient,created:Date,birth:Date,last4:string):Promise<string>{
  const counter=await tx.cardSequence.upsert({where:{key:"global"},create:{key:"global",lastValue:1},
   update:{lastValue:{increment:1}},select:{lastValue:true}});
  return assembleCardNumber(created,birth,last4,counter.lastValue);
