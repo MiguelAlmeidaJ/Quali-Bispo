@@ -22,6 +22,7 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
  const[user,setUser]=useState<User|null>(null);
  const[loading,setLoading]=useState(true);
  const[view,setView]=useState<AdminView>(initialView||"dashboard");
+ const[attendanceCustomer,setAttendanceCustomer]=useState<{id:string;name:string;status:string;cpfLast4:string|null;partner:{name:string}|null}|null>(null);
  const[collapsed,setCollapsed]=useState(false);
  useEffect(()=>{
    fetch("/admin/api/session",{cache:"no-store"})
@@ -31,18 +32,20 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
      .finally(()=>setLoading(false));
  },[]);
  async function logout(){
-   try {await fetch("/admin/api/session",{method:"DELETE"});} finally {setUser(null);setView("dashboard");}
+   try {await fetch("/admin/api/session",{method:"DELETE"});} finally {setUser(null);setAttendanceCustomer(null);setView("dashboard");}
  }
  if(loading)return <div className="splash">Carregando painel Quali...</div>;
  if(!user)return <Login onLogin={u=>{setUser(u);setView(customerRoute?"clients":u.role==="PARTNER"?"validate":initialView||(new URLSearchParams(window.location.search).get("view") as AdminView)||"dashboard");}}/>;
  const allowedView:AdminView = user.role!=="DEV"&&privileged.has(view)?"dashboard":user.role==="PARTNER"&&view==="dashboard"?"validate":view;
  return <div className={`app-layout ${collapsed?"sidebar-collapsed":""}`}>
-   <Sidebar user={user} view={allowedView} setView={next=>{if(customerRoute){window.location.assign(`/admin/?view=${next}`);}else setView(next);}} logout={logout} collapsed={collapsed} setCollapsed={setCollapsed}/>
+   <Sidebar user={user} view={allowedView} setView={next=>{setAttendanceCustomer(null);if(customerRoute){window.location.assign(`/admin/?view=${next}`);}else setView(next);}} logout={logout} collapsed={collapsed} setCollapsed={setCollapsed}/>
    <main className="app-main">
      {customerRoute&&user.role!=="PARTNER"?<CustomerFormPage id={customerRoute.mode==="edit"?customerRoute.id:undefined}/>:
       allowedView==="dashboard"&&user.role!=="PARTNER"?<DashboardPage/>:
-      allowedView==="validate"?<ValidateCpfPage/>:
-      allowedView==="attendances"?<AttendancesPage user={user}/>:
+      allowedView==="validate"?<ValidateCpfPage onCreateAttendance={customer=>{
+       setAttendanceCustomer(customer);setView("attendances");
+      }}/>:
+      allowedView==="attendances"?<AttendancesPage user={user} preselectedCustomer={attendanceCustomer} onPrefillConsumed={()=>setAttendanceCustomer(null)}/>:
       allowedView==="reports"&&user.role!=="PARTNER"?<ReportsPage/>:
       allowedView==="cards"&&user.role!=="PARTNER"?<CardsPage/>:
       allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
