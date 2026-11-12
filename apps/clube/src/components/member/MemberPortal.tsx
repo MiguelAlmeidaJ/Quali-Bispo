@@ -10,10 +10,6 @@ import {MemberBillingTab} from "./MemberBillingTab";
 import {MemberAttendancesTab} from "./MemberAttendancesTab";
 
 type Tab="overview"|"benefits"|"partners"|"payments"|"attendances";
-const labels:Record<Status,string>={PAID:"Pago",OPEN:"Em aberto",EXPECTED:"Previsto",
- PENDING:"Pendente",IN_REVIEW:"Em tratativa",AWAITING:"Aguardando",UNSPECIFIED:"Não informado"};
-const money=(value:number|null)=>value===null?"Não informado":new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(value/100);
-const date=(value:string|null|undefined)=>value?new Date(value).toLocaleDateString("pt-BR",{timeZone:"UTC"}):"Não informado";
 const tabs:{key:Tab;label:string}[]=[
  {key:"overview",label:"Visão geral"},{key:"benefits",label:"Meus benefícios"},
  {key:"partners",label:"Rede parceira"},{key:"payments",label:"Mensalidades"},
