@@ -67,7 +67,7 @@ export function MemberPortal(){
         <img className="member-card-white-logo" src="/v1/branding/assets/logo-white" alt="Quali Benefícios" />
         <span className="member-card-logo-fallback"><Brand/></span>
        </span>
-       <span className="member-card-plan">{member.cardPlan?.name||member.planType||"PLANO QUALI"}</span>
+       
       </div>
       <div className="member-card-main">
        <div className={`member-card-number ${member.cardNumber?"":"member-card-number-pending"}`}>
@@ -78,10 +78,15 @@ export function MemberPortal(){
       <div className="member-card-bottom">
        <span>CPF (final)<b>•••• {member.cpfLast4||"—"}</b></span>
        <span>Vínculo<b>Titular</b></span>
-       <span>Situação<b className="member-card-status">{labels[member.status]}</b></span>
+       <span>Nascimento<b>{date(member.birthDate)}</b></span>
       </div>
      </div>
-     <div className="member-card-warning">{member.cardNumber?"Número de cartão gerado e registrado no sistema. A versão PDF ainda não foi implementada.":"Número pendente: confira CPF e data de nascimento no cadastro administrativo."}</div>
+     {member.cardNumber&&member.birthDate?
+      <a href="/api/associate/card" className="member-download-card">
+       <span aria-hidden="true">↓</span> Baixar Cartão de Benefícios (PDF)
+      </a>:
+      <div className="member-card-warning">Emissão pendente: confirme CPF e data de nascimento no cadastro administrativo.</div>}
+     <p className="member-card-print-note">PDF em tamanho real de cartão (85,60 × 53,98 mm), sem margens ou informações adicionais.</p>
     </aside>
     <div className="member-right">
      <div className="member-metrics">
