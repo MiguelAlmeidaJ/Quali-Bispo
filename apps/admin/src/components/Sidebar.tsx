@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   FiActivity, FiBarChart2, FiChevronLeft, FiChevronRight,
   FiClipboard, FiDollarSign, FiFileText, FiLogOut,
-  FiMenu, FiSearch, FiUsers, FiCreditCard, FiX, FiSettings, FiShield, FiUserPlus,
+  FiMenu, FiSearch, FiUsers, FiAlertCircle, FiCreditCard, FiX, FiSettings, FiShield, FiUserPlus,
 } from "react-icons/fi";
 import { FaRegHospital } from "react-icons/fa";
 import { Brand } from "./Brand";
@@ -12,7 +12,7 @@ import type { IconType } from "react-icons";
 
 export type AdminView =
   | "dashboard" | "validate" | "clients" | "payments"
-  | "attendances" | "pricing" | "partners" | "reports" | "cards"
+  | "attendances" | "pricing" | "partners" | "reports" | "cards" | "depara"
   | "dev-users" | "dev-audit" | "dev-settings";
 type User = { name: string; role: "DEV" | "ADMIN" | "PARTNER" };
 
@@ -29,6 +29,7 @@ const items: MenuItem[] = [
   { view: "validate", label: "Validar CPF", icon: FiSearch },
   { view: "clients", label: "Clientes", icon: FiUsers, adminOnly: true },
   { view: "cards", label: "Cartões", icon: FiCreditCard, adminOnly: true },
+  { view: "depara", label: "De-para de clientes", icon: FiAlertCircle, adminOnly: true },
   { view: "payments", label: "Inadimplência", icon: FiDollarSign, adminOnly: true },
   { view: "attendances", label: "Atendimentos", icon: FiActivity },
   { view: "pricing", label: "Tabela de valores", icon: FiClipboard },
