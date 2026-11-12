@@ -163,6 +163,9 @@ model FinanceCustomer {
   cpfLast4       String?
   cpfValid       Boolean        @default(false)
   cpfConflict    Boolean        @default(false)
+  benefitActive  Boolean        @default(true)
+  benefitCancelledAt DateTime?
+  benefitCancelReason String?
   planType       String?
   cardPlanId     String?        @db.Uuid
   cardPlan       CardPlan?      @relation(fields: [cardPlanId], references: [id], onDelete: SetNull)
@@ -187,6 +190,7 @@ model FinanceCustomer {
   @@index([name])
   @@index([cpfHash])
   @@index([partnerId])
+  @@index([benefitActive])
 }
 
 model FinanceIssue {
@@ -208,6 +212,7 @@ model FinanceIssue {
 
   @@index([status, resolved])
   @@index([customerId])
+  @@index([cpfHash])
 }
 
 model FinanceAttendance {
@@ -257,10 +262,11 @@ model CardDependent {
   customerId  String          @db.Uuid
   customer    FinanceCustomer @relation(fields: [customerId], references: [id], onDelete: Restrict)
   name        String
-  cpfHash     String          @unique
+  cpfHash     String
   cpfLast4    String
   birthDate   DateTime        @db.Date
   cardNumber  String          @unique
+  benefitActive Boolean       @default(true)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 

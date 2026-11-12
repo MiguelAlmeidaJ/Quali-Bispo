@@ -6,7 +6,7 @@ import {readBrandAsset} from "./branding.service";
 // não existem margens, marcas de corte, cabeçalhos ou páginas extras.
 const WIDTH=85.6*72/25.4;
 const HEIGHT=53.98*72/25.4;
-type CardData={name:string;number:string;cpfLast4:string;birthDate:Date};
+type CardData={name:string;number:string;cpfLast4:string;birthDate:Date;relationship?:"Titular"|"Dependente"};
 type Font="F1"|"F2"|"F3";
 
 class PdfDocument {
@@ -128,7 +128,7 @@ export async function makeMemberCardPdf(card:CardData):Promise<Buffer>{
  content+=textCommand("Vínculo",95,32,6.7,"F1",[0.77,0.90,0.84]);
  content+=textCommand("Nascimento",155,32,6.7,"F1",[0.77,0.90,0.84]);
  content+=textCommand("•••• "+card.cpfLast4,19,20,8,"F2");
- content+=textCommand("Titular",95,20,8,"F2");
+ content+=textCommand(card.relationship||"Titular",95,20,7.5,"F2");
  content+=textCommand(pdfDate(card.birthDate),155,20,8,"F2");
  const stream=pdf.add(pdf.stream("",Buffer.from(content,"ascii")));
  const resources=`/Font << /F1 ${regular} 0 R /F2 ${bold} 0 R /F3 ${mono} 0 R >> /Shading << /Sh1 ${gradient} 0 R >>${logo?` /XObject << /Logo ${logo.image} 0 R >>`:""}`;

@@ -25,6 +25,7 @@ async function requireFinanceStaff(header?:string){
 }
 const customerFields={
  id:true,importKey:true,name:true,birthDate:true,cpfLast4:true,cpfValid:true,cpfConflict:true,planType:true,
+ benefitActive:true,benefitCancelledAt:true,benefitCancelReason:true,
  cardPlanId:true,cardPlan:{select:{id:true,name:true,priceCents:true,maxDependents:true,benefits:true,active:true}},cardNumber:true,
  dependents:{select:{id:true,name:true,cpfLast4:true,birthDate:true,cardNumber:true},orderBy:{createdAt:"asc"}},
  amountCents:true,paymentMethod:true,paymentDetails:true,referenceDate:true,
@@ -87,8 +88,8 @@ export class FinanceController {
   const assigned=await db.partner.findUnique({where:{id:payload.partnerId},select:{id:true,name:true,active:true}});
   if(!assigned?.active)throw new HttpException("Unidade credenciada não encontrada ou inativa.",400);
   const cpfHash=cpfFingerprint(cpf);
-  if(await db.financeCustomer.findFirst({where:{cpfHash},select:{id:true}})||
-     await db.cardDependent.findUnique({where:{cpfHash},select:{id:true}}))
+  if(await db.financeCustomer.findFirst({where:{cpfHash,benefitActive:true},select:{id:true}})||
+     await db.cardDependent.findFirst({where:{cpfHash,benefitActive:true,customer:{benefitActive:true}},select:{id:true}}))
     throw new HttpException("CPF já vinculado a outro beneficiário.",409);
   // Valida a lista antes da transação.
   parseDependents(input.dependents);
@@ -162,8 +163,8 @@ export class FinanceController {
   }else if(previous.partnerId)throw new HttpException("Selecione uma unidade credenciada.",400);
   const cpfHash=payload.cpf?cpfFingerprint(payload.cpf):previous.cpfHash;
   if(payload.cpf){
-   if(await db.financeCustomer.findFirst({where:{cpfHash,id:{not:id}},select:{id:true}})||
-      await db.cardDependent.findUnique({where:{cpfHash:cpfHash!},select:{id:true}}))
+   if(await db.financeCustomer.findFirst({where:{cpfHash,benefitActive:true,id:{not:id}},select:{id:true}})||
+      await db.cardDependent.findFirst({where:{cpfHash:cpfHash!,benefitActive:true,customer:{benefitActive:true}},select:{id:true}}))
     throw new HttpException("CPF já utilizado por outro beneficiário.",409);
   }
   try{return await db.$transaction(async tx=>{

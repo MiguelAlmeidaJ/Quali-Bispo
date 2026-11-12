@@ -581,3 +581,30 @@
 .partner-access-form footer button:not(.partner-primary-btn){border:1px solid #dce6f0;border-radius:10px;background:#fff;color:#456580;padding:11px 17px;font-weight:900}
 .partner-access-loading{padding:30px;color:#59758c}
 @media(max-width:600px){.partner-access-dialog{max-height:96dvh}.partner-access-heading,.partner-access-form{padding:19px}.partner-row-actions{flex-direction:column;align-items:stretch}}
+
+
+/* Revisão cadastral, pré-validação de CPF e controle reversível do benefício */
+.customer-review-eyebrow{font-size:10px;font-weight:900;letter-spacing:.1em;color:#13884c}
+.customer-review-refresh{display:flex;align-items:center;gap:8px;border:1px solid #d4e5f0;border-radius:10px;padding:11px 15px;color:#13628f;background:#fff;font-size:12px;font-weight:900}
+.customer-review-stats{display:grid;grid-template-columns:1fr 1.5fr;gap:15px;margin:18px 0}
+.customer-review-stats article{display:flex;align-items:center;gap:15px;background:white;border:1px solid #d7e5ef;border-radius:15px;padding:20px}
+.customer-review-stats article svg{color:#1676ae;font-size:24px;flex-shrink:0}
+.customer-review-stats article div{display:flex;flex-direction:column;gap:6px}
+.customer-review-stats article strong{font-size:22px;color:#174a70}
+.customer-review-stats article span{font-size:12px;color:#69829b}
+.customer-review-tags{display:flex;flex-wrap:wrap;gap:6px}
+.customer-review-tags span{background:#fff1df;color:#9f6216;border-radius:7px;padding:6px 8px;font-size:11px;font-weight:800}
+.customer-review-empty{text-align:center;padding:48px 20px;color:#17794a}
+.customer-review-empty svg{margin:auto}
+.customer-review-empty h2{font-size:20px;margin:8px 0}
+.customer-review-empty p{font-size:13px;color:#6b8398}
+.customer-review-hint{margin-top:17px;font-size:12px;color:#6f8294;line-height:1.65}
+.customer-benefit-management{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;background:#f6f9fc;border-top:1px solid #e3edf5}
+.customer-benefit-management p{margin:8px 0;color:#567189;font-size:13px}
+.customer-benefit-management small{color:#68849a;line-height:1.55}
+.customer-benefit-cancel,.customer-benefit-restore{border-radius:10px;padding:12px 15px;font-weight:900;font-size:12px;border:1px solid #b71f32;color:#a21d31;background:#fff;cursor:pointer}
+.customer-benefit-restore{background:#178249;color:#fff;border-color:#178249}
+.benefit-enabled{color:#158347}.benefit-disabled{color:#bd3545}
+.customer-cpf-blocked{color:#b92135!important;font-weight:900}
+.customer-cpf-checked{color:#147d4c!important}
+@media(max-width:720px){.customer-review-stats{grid-template-columns:1fr}}

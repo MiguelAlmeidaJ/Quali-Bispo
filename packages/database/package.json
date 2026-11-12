@@ -13,6 +13,7 @@
     "seed:partners": "tsx prisma/seed-partners.ts",
     "seed:catalog": "tsx prisma/seed-catalog.ts",
     "import:financeiro": "tsx prisma/import-finance.ts",
+    "import:nascimentos": "tsx prisma/import-birthdates.ts",
     "vincular:unidades": "tsx prisma/link-imported-units.ts"
   },
   "dependencies": {

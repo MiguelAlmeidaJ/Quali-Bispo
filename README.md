@@ -85,3 +85,7 @@ está em [docs/deploy-linux.md](docs/deploy-linux.md).
 
 Não use `db:seed` nem `prisma migrate dev` no banco restaurado. Não envie
 dumps nem `.env` ao GitHub; o .gitignore exclui arquivos sensíveis.
+
+## Gestão reversível de benefícios e atualização de nascimentos
+
+Consulte [docs/beneficios-clientes.md](docs/beneficios-clientes.md) para importar a planilha atualizada sem expor CPFs no GitHub, validar CPF de titulares/dependentes, cancelar e reativar benefícios preservando o histórico e utilizar o novo De-para de clientes.
