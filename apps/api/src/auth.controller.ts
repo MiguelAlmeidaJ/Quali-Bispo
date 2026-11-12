@@ -109,10 +109,11 @@ export class AdminController {
     const customer=activeCustomers.length===1?activeCustomers[0]:
       activeCustomers.length===0&&financial.length===1?financial[0]:null;
     const activeDependents=dependent.filter(item=>item.benefitActive&&item.customer.benefitActive);
-    const child=activeDependents.length===1?activeDependents[0]:null;
+    const child=activeDependents.length===1?activeDependents[0]:
+      activeDependents.length===0&&dependent.length===1?dependent[0]:null;
     const found=!!beneficiary||!!customer||!!child;
     const eligible=customer?customer.benefitActive&&customer.status==="PAID":
-      child?child.customer.status==="PAID":beneficiary?.status==="ACTIVE";
+      child?child.benefitActive&&child.customer.benefitActive&&child.customer.status==="PAID":beneficiary?.status==="ACTIVE";
     const matchedCustomer=customer;
     await db.auditLog.create({data:{
       actorId:user.id,action:"CPF_LOOKUP",entityType:customer?"FinanceCustomer":child?"CardDependent":beneficiary?"Beneficiary":"FinanceCustomer",
