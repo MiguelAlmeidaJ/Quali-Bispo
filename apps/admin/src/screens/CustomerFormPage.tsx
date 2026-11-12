@@ -162,10 +162,10 @@ export function CustomerFormPage({id}:{id?:string}){
      {dependents.map((item,index)=><div className="customer-dependent-row" key={item.id||`new-${index}`}>
       <label>Nome do dependente <input required maxLength={180} value={item.name} placeholder={`Dependente ${index+1}`}
        onChange={e=>updateDependent(index,"name",e.target.value)}/></label>
-      <label>CPF <input required={!item.id} value={item.cpf} inputMode="numeric" maxLength={14}
+      <label>CPF <input required={!item.id} disabled={!!item.cardNumber} value={item.cpf} inputMode="numeric" maxLength={14}
        placeholder={item.id?`Cadastrado: final ${item.cpfLast4}`:"000.000.000-00"}
        onChange={e=>updateDependent(index,"cpf",formatCpf(e.target.value))}/></label>
-      <label>Nascimento <input required type="date" max={new Date().toISOString().slice(0,10)}
+      <label>Nascimento <input required type="date" disabled={!!item.cardNumber} max={new Date().toISOString().slice(0,10)}
        value={item.birthDate} onChange={e=>updateDependent(index,"birthDate",e.target.value)}/></label>
       {!item.id&&<button type="button" className="customer-cancel" onClick={()=>setDependents(current=>current.filter((_,i)=>i!==index))}>Remover novo dependente</button>}
       {item.cardNumber&&<small>Cartão: {item.cardNumber.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3")}</small>}
