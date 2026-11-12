@@ -1,9 +1,7 @@
-import {createPrismaClient} from "@quali/database";
 import {HttpException} from "@nestjs/common";
 import {cpfFingerprint,validCpf} from "./finance-customer.validation";
 import type {Prisma} from "@quali/database";
 
-export const cardDb=createPrismaClient();
 const fail=(msg:string,status=400):never=>{throw new HttpException(msg,status);};
 export const cardUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export type DependentInput={id?:string;name:string;cpf?:string;birthDate:string};
