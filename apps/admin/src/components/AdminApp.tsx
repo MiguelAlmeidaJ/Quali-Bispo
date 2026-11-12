@@ -18,15 +18,15 @@ import {SettingsPage} from "../screens/dev/SettingsPage";
 import type {User} from "../types/admin";
 
 const privileged = new Set<AdminView>(["dev-users","dev-audit","dev-settings"]);
-export function AdminApp({customerRoute}:{customerRoute?:{mode:"new"}|{mode:"edit";id:string}}){
+export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"}|{mode:"edit";id:string};initialView?:AdminView}){
  const[user,setUser]=useState<User|null>(null);
  const[loading,setLoading]=useState(true);
- const[view,setView]=useState<AdminView>("dashboard");
+ const[view,setView]=useState<AdminView>(initialView||"dashboard");
  const[collapsed,setCollapsed]=useState(false);
  useEffect(()=>{
    fetch("/admin/api/session",{cache:"no-store"})
      .then(r=>r.ok?r.json():null)
-     .then(data=>{if(data?.user){setUser(data.user);setView(customerRoute?"clients":data.user.role==="PARTNER"?"validate":new URLSearchParams(window.location.search).get("view") as AdminView||"dashboard");}})
+     .then(data=>{if(data?.user){setUser(data.user);setView(customerRoute?"clients":data.user.role==="PARTNER"?"validate":initialView||new URLSearchParams(window.location.search).get("view") as AdminView||"dashboard");}})
      .catch(()=>{})
      .finally(()=>setLoading(false));
  },[]);
