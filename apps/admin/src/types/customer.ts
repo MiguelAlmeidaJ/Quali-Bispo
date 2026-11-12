@@ -5,6 +5,7 @@ export const statusLabels:Record<FinanceStatus,string>={
 };
 export type CustomerRecord={
  id:string;invoice:string|null;name:string;cpfLast4:string|null;cpfValid:boolean;cpfConflict:boolean;
+ benefitActive:boolean;benefitCancelledAt:string|null;benefitCancelReason:string|null;
  birthDate:string|null;cardNumber:string|null;cardPlanId:string|null;
  cardPlan:{id:string;name:string;priceCents:number;maxDependents:number;benefits:string[];active:boolean}|null;
  dependents:{id:string;name:string;cpfLast4:string;birthDate:string;cardNumber:string}[];unit:string|null;partnerId:string|null;partner:{id:string;name:string;active:boolean}|null;planType:string|null;amountCents:number|null;
