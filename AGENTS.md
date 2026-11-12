@@ -37,3 +37,6 @@
 
 - CPF na validação: consultar beneficiários e clientes financeiros pelo mesmo HMAC; não confundir `found` com `eligible`. Nunca liberar acesso com `cpfValid=false`, `cpfConflict=true` ou `FinanceStatus != PAID` no FinanceCustomer.
 - Atendimentos financeiros: utilizar `FinanceAttendance` com snapshot de preços e cancelamento lógico. Usuário PARTNER acessa apenas o partnerId do próprio usuário, ADMIN/DEV toda a rede. Nunca copiar dados de atendimento do HTML legado como se fossem reais.
+
+- Cartões: `CardPlan` é fonte canônica para preço e benefícios, `CardDependent` possui CPF HMAC e número próprio, `CardSequence` reserva sequência global de 4 dígitos em transação. Números não devem ser alterados após emissão, nem CPFs completos expostos em API. Não deduzir aniversário ausente.
+- Não trocar para plano individual se já houver dependentes; bloqueie mudanças de CPF/nascimento após emissão até fluxo auditado de reemissão. Não criar/excluir dependentes silenciosamente.
