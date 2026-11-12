@@ -109,8 +109,21 @@ export async function makeMemberCardPdf(card:CardData):Promise<Buffer>{
  const formatted=card.number.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3");
  content+=textCommand(formatted,19,78,13.3,"F3");
  const fullName=escapeName(card.name).toLocaleUpperCase("pt-BR");
- const size=nameSize(fullName);
- content+=textCommand(fullName,19,52,size,"F2");
+ if(fullName.length<=40){
+  content+=textCommand(fullName,19,52,nameSize(fullName),"F2");
+ }else{
+  // Até duas linhas, sem encostar nos dados inferiores do cartão.
+  const words=fullName.split(" "),lines=["",""];
+  for(const word of words){
+   const left=lines[0]?lines[0]+" "+word:word;
+   if(left.length<=Math.ceil(fullName.length/2)||!lines[0])lines[0]=left;
+   else lines[1]=lines[1]?lines[1]+" "+word:word;
+  }
+  const longest=Math.max(lines[0].length,lines[1].length);
+  const size=Math.max(6.5,Math.min(9.3,197/(longest*.58)));
+  content+=textCommand(lines[0],19,57,size,"F2");
+  if(lines[1])content+=textCommand(lines[1],19,46,size,"F2");
+ }
  content+=textCommand("CPF (final)",19,32,6.7,"F1",[0.77,0.90,0.84]);
  content+=textCommand("Vínculo",95,32,6.7,"F1",[0.77,0.90,0.84]);
  content+=textCommand("Nascimento",155,32,6.7,"F1",[0.77,0.90,0.84]);
