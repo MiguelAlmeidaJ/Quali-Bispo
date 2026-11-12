@@ -116,11 +116,11 @@ export function CustomerFormPage({id}:{id?:string}){
      <label className="wide"><span className="customer-field-title">Nome completo <em>*</em></span>
       <input required minLength={2} maxLength={180} value={form.name} onChange={e=>update("name",e.target.value)}/></label>
      <label><span className="customer-field-title">CPF {!editing&&<em>*</em>}</span>
-      <input required={!editing} maxLength={14} inputMode="numeric" autoComplete="off"
+      <input required={!editing} disabled={!!original?.cardNumber} maxLength={14} inputMode="numeric" autoComplete="off"
        value={form.cpf} placeholder="000.000.000-00" onChange={e=>update("cpf",formatCpf(e.target.value))}/>
-      <small>{original?.cpfLast4?`CPF cadastrado: final ${original.cpfLast4}. Deixe vazio para manter.`:"O CPF é protegido no banco."}</small></label>
+      <small>{original?.cpfLast4?`CPF cadastrado: final ${original.cpfLast4}. Deixe vazio para manter. Após emissão, CPF/nascimento exigem reemissão administrativa.`:"O CPF é protegido no banco."}</small></label>
      <label><span className="customer-field-title">Data de nascimento {!editing&&<em>*</em>}</span>
-      <input type="date" required={!editing} value={form.birthDate}
+      <input type="date" required={!editing} disabled={!!original?.cardNumber} value={form.birthDate}
        max={new Date().toISOString().slice(0,10)} onChange={e=>update("birthDate",e.target.value)}/></label>
      {original?.cardNumber&&<label>Número do cartão do titular<input readOnly value={original.cardNumber.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3")}/>
       <small>Gerado pelo sistema. Não pode ser alterado.</small></label>}
