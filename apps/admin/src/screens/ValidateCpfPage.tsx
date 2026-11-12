@@ -54,7 +54,7 @@ export function ValidateCpfPage({onCreateAttendance}:{onCreateAttendance?:(custo
    {result&&<div className={`notice ${result.eligible?"success":"error"}`} role="status">
     <strong>{result.message}</strong>
     {result.found&&<div style={{marginTop:8}}>
-     <b>{result.beneficiary?.name}</b> · Plano: {result.beneficiary?.plan||"Não informado"} ·
+     <b>{result.customer?.name||result.beneficiary?.name}</b> · Plano: {result.customer?.plan||result.beneficiary?.plan||"Não informado"} ·
      Situação: {result.customer?.status==="PAID"?"Pago":result.customer?.status||result.beneficiary?.status||"Não informada"}
      {result.customer?.unit&&<> · Unidade: {result.customer.unit}</>}
      {result.customer&&<p style={{margin:"8px 0 0"}}>{result.eligible?
