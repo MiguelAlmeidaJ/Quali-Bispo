@@ -167,6 +167,7 @@ export function CustomerFormPage({id}:{id?:string}){
        onChange={e=>updateDependent(index,"cpf",formatCpf(e.target.value))}/></label>
       <label>Nascimento <input required type="date" max={new Date().toISOString().slice(0,10)}
        value={item.birthDate} onChange={e=>updateDependent(index,"birthDate",e.target.value)}/></label>
+      {!item.id&&<button type="button" className="customer-cancel" onClick={()=>setDependents(current=>current.filter((_,i)=>i!==index))}>Remover novo dependente</button>}
       {item.cardNumber&&<small>Cartão: {item.cardNumber.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3")}</small>}
      </div>)}
      {dependents.length<maximum&&<button type="button" className="customer-add-dependent" onClick={()=>setDependents(prev=>[...prev,emptyDependent()])}>
