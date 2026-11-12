@@ -301,3 +301,11 @@ pnpm exec pm2 restart quali-clube
 Depois, em Admin → Cartões, cadastre os planos oficiais (preços e benefícios). Somente então selecione-os no cadastro dos clientes. A migração preserva os clientes e CPF/hash já existentes. Não é necessário reimportar planilha. **Não execute seed de clientes novamente.**
 
 Verifique: dois cartões com tipos diferentes, seleção automática de preço, zero/até 3 dependentes, CPF duplicado, criação/edição de titular, número de 12 dígitos, edição de cliente histórico sem data de nascimento, e visibilidade de cartão/dependentes na área do associado. O código e a migração ainda precisam de build/teste no Windows.
+
+## Logo branca do cartão do associado
+
+Em **Configurações do sistema → Arquivos da marca** (somente perfil DEV), há um terceiro campo: **Logo branca do cartão**. Envie um PNG ou WebP com fundo realmente **transparente** (até 2 MB). A API converte os pixels visíveis da arte para branco puro, preserva o canal alpha e rejeita imagens opacas, evitando o retângulo branco no cartão verde.
+
+O ativo é independente da logo colorida usada nos menus, do favicon e das cores. Ele é persistido no diretório `BRAND_ASSET_DIR` como `logo-white.png`, com URL pública `/v1/branding/assets/logo-white`. A configuração `whiteLogoUrl` é armazenada no JSON de identidade visual já existente, com auditoria `WHITE_LOGO_UPDATED`; não requer migração Prisma. O Clube seleciona essa imagem na área do associado somente quando estiver cadastrada. Antes do upload, mantém a marca branca tipográfica como fallback sem o quadro branco.
+
+Para atualizar essa funcionalidade, faça build de **API, Admin e Clube**, e reinicie os três serviços após os builds. Em seguida, faça o upload no perfil DEV e atualize a página `/associado`. Não há necessidade de rebuild a cada troca posterior de logo.
