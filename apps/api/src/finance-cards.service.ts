@@ -24,7 +24,7 @@ export async function issueHolderCard(tx:Tx,customer:{
 export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacity:number,actorId:string){
  if(raw===undefined)return;
  const inputs=parseDependents(raw);
- const current=await tx.cardDependent.findMany({where:{customerId},select:{id:true,cpfHash:true,cardNumber:true}});
+ const current=await tx.cardDependent.findMany({where:{customerId},select:{id:true,cpfHash:true,cardNumber:true,birthDate:true}});
  // Sem exclusão implícita: os dependentes omitidos permanecem cadastrados.
  const additions=inputs.filter(item=>!item.id);
  if(current.length+additions.length>capacity)return error(`Este cartão permite até ${capacity} dependente(s). Remova ou revise os registros existentes antes de continuar.`);
@@ -33,6 +33,9 @@ export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacit
   if(input.id){
    const own=current.find(item=>item.id===input.id);
    if(!own)return error("Dependente não pertence ao cliente.",403);
+   if(own.cardNumber&&(own.birthDate.toISOString().slice(0,10)!==input.birthDate||
+      (input.cpf&&cpfFingerprint(input.cpf)!==own.cpfHash)))
+    return error("O dependente já possui cartão emitido. CPF ou nascimento exigem reemissão controlada.",409);
    let hash=own.cpfHash,last4:string|undefined;
    if(input.cpf){hash=cpfFingerprint(input.cpf);last4=input.cpf.slice(-4);}
    const duplicate=await tx.cardDependent.findFirst({where:{cpfHash:hash,id:{not:input.id}},select:{id:true}});
