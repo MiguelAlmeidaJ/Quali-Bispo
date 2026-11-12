@@ -92,7 +92,7 @@ export function MemberPortal(){
        <div><small>NASCIMENTO</small><b>{date(member.birthDate)}</b></div>
        <div><small>PLANO</small><b>{member.planType||"Não informado"} {member.amountCents!==null?`· ${money(member.amountCents)}`:""}</b></div>
        <div><small>SITUAÇÃO</small><b>{labels[member.status]}</b></div>
-       <div><small>CLIENTE DESDE</small><b>{date(member.joinedAt)}</b></div>
+       <div><small>CADASTRO NO SISTEMA</small><b>{date(member.joinedAt)}</b></div>
        <div><small>UNIDADE</small><b>{member.unit||"Não informada"}</b></div>
       </div>
       {!statusOk&&<div className="member-warning">Identificamos uma situação que precisa de acompanhamento. Consulte a aba Mensalidades ou fale com o suporte Quali para regularizar seu cadastro.</div>}
