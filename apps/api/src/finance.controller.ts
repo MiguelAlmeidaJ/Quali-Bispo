@@ -146,6 +146,12 @@ export class FinanceController {
   }
   const payload=parseCustomerPayload(input);
   parseDependents(input.dependents);
+  if(previous.cardNumber){
+   const changedBirth=(payload.birthDate?.toISOString().slice(0,10)||null)!==(previous.birthDate?.toISOString().slice(0,10)||null);
+   const changedCpf=!!payload.cpf&&cpfFingerprint(payload.cpf)!==previous.cpfHash;
+   if(changedBirth||changedCpf)throw new HttpException(
+    "O cartão já foi emitido. A correção de CPF ou nascimento exige reemissão administrativa controlada.",409);
+  }
   let partnerId=previous.partnerId;
   if(payload.partnerId){
    const partner=await db.partner.findUnique({where:{id:payload.partnerId},select:{id:true,active:true}});
