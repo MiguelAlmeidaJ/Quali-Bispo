@@ -72,3 +72,16 @@ Para reiniciar processos após reboot do Linux, use `pnpm exec pm2 startup`, sig
 ## Estado
 
 Base de infraestrutura inicial. As páginas são provisórias e a migração funcional/visual ainda não foi concluída. HTML legado e credenciais embutidas não foram publicados.
+
+## Migrar a base Windows para servidor Linux
+
+O procedimento de dump PostgreSQL 17, transferência por SSH, restauração segura,
+arquivos de identidade visual, preservação de `CPF_HASH_KEY`, build, PM2 e HTTPS
+está em [docs/deploy-linux.md](docs/deploy-linux.md).
+
+**No Windows:** `powershell -ExecutionPolicy Bypass -File .\\scripts\\backup-windows.ps1`.
+
+**No Linux (banco novo/vazio):** `bash scripts/restore-linux.sh /caminho/quali-AAAAMMDD-HHMMSS.dump`.
+
+Não use `db:seed` nem `prisma migrate dev` no banco restaurado. Não envie
+dumps nem `.env` ao GitHub; o .gitignore exclui arquivos sensíveis.
