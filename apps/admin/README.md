@@ -234,3 +234,30 @@ pnpm exec pm2 restart quali-api
 pnpm exec pm2 restart quali-admin
 ```
 Não é necessário executar novamente a importação de clientes. Mantenha a mesma `CPF_HASH_KEY` que foi utilizada na importação. Teste consulta de CPF existente pago, CPF com situação não paga, CPF duplicado, criação e cancelamento de atendimento, restrição do parceiro e exportação.
+
+## Relatórios operacionais (CSV)
+
+A tela **Relatórios** usa `src/screens/ReportsPage.tsx` e apresenta seis exportações conectadas ao banco PostgreSQL, com contagens atuais obtidas em `GET /v1/admin/reports/summary?month=AAAA-MM`. Cada botão baixa o CSV diretamente, sem buscar milhares de registros no navegador.
+
+- **Base de clientes:** todos os `FinanceCustomer`, NF, nome, CPF apenas com 4 últimos dígitos, unidade, plano, valor, pagamento e situação.
+- **Atendimentos:** `FinanceAttendance` não cancelados no mês selecionado, com preço histórico, valor cobrado, economia, parceiro e operador.
+- **Uso de consultas:** quantidade mensal de `FinanceAttendance` do tipo `CONSULTA` agrupada por cliente; 3 consultas é **referência ilustrativa** da tela legada, não é uma regra de bloqueio ou limite legal aplicado por esta exportação.
+- **Inadimplentes:** `FinanceCustomer` cujo status atual é `OPEN`, `PENDING`, `IN_REVIEW` ou `AWAITING`; não inclui `EXPECTED` (Previsto).
+- **Validações de CPF:** `AuditLog` com `CPF_LOOKUP`, resultado, elegibilidade, origem, operador e data; **nunca exporta CPFs completos**.
+- **Atualizações para Pago:** eventos auditados `FINANCE_CUSTOMER_STATUS_UPDATED` com mudança para `PAID`. **Isso não é um extrato de pagamento**, pois não existe atualmente modelo de recebimentos/baixas financeiras. O rótulo foi alterado intencionalmente para não declarar pagamentos que não estão comprovados pelo sistema.
+
+API: `apps/api/src/reports.controller.ts`; BFF Next: `app/api/reports/summary/route.ts` e `app/api/reports/export/[kind]/route.ts`. Apenas `DEV` e `ADMIN` podem consultar e exportar; `PARTNER` recebe 403. CSVs são `UTF-8 BOM`, delimitados por ponto e vírgula e com neutralização de fórmulas. Limite de 20.000 registros por exportação. Sem dados simulados nem mudança de esquema Prisma.
+
+### Instalação
+
+```powershell
+git checkout refactor
+git pull origin refactor
+pnpm --filter @quali/api build
+pnpm --filter @quali/admin build
+# se ambos passarem:
+pnpm exec pm2 restart quali-api
+pnpm exec pm2 restart quali-admin
+```
+
+Não exige `pnpm db:migrate`, seed nem nova importação de clientes. Verifique a página Relatórios com sessão ADMIN/DEV, mês corrente, arquivo CSV importado no Excel, contagens, mês sem atendimentos e tentativa de acesso com perfil PARTNER.
