@@ -430,3 +430,5 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
  .member-card-preview .member-card-bottom b{font-size:10px}
  .member-download-card{font-size:12px}
 }
+
+.member-dependent-note{background:#eef8f3;border:1px solid #d0e7d8;border-radius:14px;color:#376e4e;font-size:12px;line-height:1.6;padding:16px 18px;margin-bottom:15px}
