@@ -38,7 +38,7 @@ function checkMax(count:number){
 const paymentAuditWhere={
  action:"FINANCE_CUSTOMER_STATUS_UPDATED",
  metadata:{path:["to"],equals:"PAID"},
-} as const;
+};
 
 @Controller("admin/reports")
 export class ReportsController {
