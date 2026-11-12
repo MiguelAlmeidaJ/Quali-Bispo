@@ -1,7 +1,7 @@
 import {NextRequest,NextResponse} from "next/server";
 const cookieName="quali_member_session";
 const api=()=>process.env.INTERNAL_API_URL||"http://127.0.0.1:4002/v1";
-const memberCookie={httpOnly:true,secure:process.env.NODE_ENV==="production"&&process.env.COOKIE_SECURE!=="false",
+const memberCookie={httpOnly:true,secure:process.env.NODE_ENV==="production"&&process.env.COOKIE_SECURE==="true",
  sameSite:"lax" as const,path:"/",maxAge:7200};
 export async function POST(request:NextRequest){
  const site=request.headers.get("sec-fetch-site");
