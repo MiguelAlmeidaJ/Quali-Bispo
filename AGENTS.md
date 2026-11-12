@@ -42,3 +42,7 @@
 - Não trocar para plano individual se já houver dependentes; bloqueie mudanças de CPF/nascimento após emissão até fluxo auditado de reemissão. Não criar/excluir dependentes silenciosamente.
 
 - Portal do associado: as quatro abas modernas usam `MemberBenefitsTab`, `MemberPartnersTab`, `MemberBillingTab` e `MemberAttendancesTab` com `member-types.ts`; preços do `CatalogItem`, parceiros ativos da rede e atendimentos do próprio titular. Não inventar meses pagos, datas de vencimento, limites de consultas ou registros de dependentes sem modelo e dados reais.
+
+- Benefício ativo é campo separado de status financeiro: FinanceCustomer.benefitActive. Cancelamento desativa dependentes e sessões sem excluir histórico/cartões; reativação exige checagem de colisão de CPF ativo.
+- Dados pessoais da planilha só em /private/ (gitignored), importação de nascimentos por CPF HMAC + nome idêntico e simulação obrigatória antes de --apply; nunca publicar CPF ou planilhas no GitHub.
+- De-para de clientes lista pendências de CPF/nascimento/unidade/plano/número do cartão, calculadas pelo banco, sem mutação automática.
