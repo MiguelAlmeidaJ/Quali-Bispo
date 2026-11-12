@@ -333,3 +333,76 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
 @media(max-width:460px){
  .member-card-white-logo{width:116px;height:43px}
 }
+
+
+/* Portal do associado: abas modernas com dados financeiros reais */
+.member-modern-tab{display:flex;flex-direction:column;gap:19px;animation:member-tab-in .18s ease}
+@keyframes member-tab-in{from{opacity:.45;transform:translateY(5px)}to{opacity:1;transform:none}}
+.member-section-intro{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.member-section-intro h2{font-size:23px;line-height:1.25;color:#103f6c;margin:5px 0 5px;font-weight:900}
+.member-section-intro p{font-size:13px;line-height:1.6;color:#657d93;margin:0}
+.member-eyebrow{font-size:10px;font-weight:900;letter-spacing:.12em;color:#18864f}
+.member-outline-link{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:10px 14px;background:#fff;border:1px solid #d6e5f1;border-radius:10px;text-decoration:none;color:#096ba9;font-weight:900;font-size:12px}
+.member-benefits-grid,.member-partner-grid,.member-stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.member-benefit-card,.member-partner-card,.member-data-card,.member-stat{background:#fff;border:1px solid #dae6f0;border-radius:17px;min-width:0;box-shadow:0 2px 10px rgba(21,61,96,.025)}
+.member-benefit-card{display:flex;flex-direction:column;padding:20px;min-height:355px}
+.member-benefit-top,.member-partner-card-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.member-benefit-icon{display:grid;place-items:center;background:#edf5fc;border-radius:13px;width:47px;height:47px;font-size:25px}
+.member-discount-tag{padding:6px 9px;border-radius:9px;background:#e3f3e9;color:#168348;font-weight:900;font-size:11px}
+.member-benefit-card h3{font-size:17px;color:#183f60;margin:17px 0 6px;font-weight:900}
+.member-benefit-card>p{font-size:12px;line-height:1.6;color:#6a7f92;margin:0 0 14px;min-height:42px}
+.member-benefit-items{border-top:1px solid #e5edf4;margin-top:auto}
+.member-benefit-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid #edf2f6;font-size:12px;color:#3c5770}
+.member-benefit-item>span{flex:1;min-width:0;overflow-wrap:anywhere}
+.member-benefit-price{display:flex;align-items:flex-end;justify-content:flex-end;gap:5px;flex-wrap:wrap;text-align:right;white-space:nowrap}
+.member-benefit-price del{color:#9aaaba;font-size:11px}
+.member-benefit-price strong{color:#13864a;font-size:12px}
+.member-benefit-link{display:inline-flex;margin-top:17px;color:#096bad;font-size:12px;font-weight:900;text-underline-offset:3px}
+.member-empty-mini{font-size:12px;color:#70869a;margin:15px 0}
+.member-plan-includes{display:flex;align-items:flex-start;gap:9px;flex-wrap:wrap;border:1px solid #d4e8df;border-radius:12px;background:#f3faf5;padding:14px 17px;color:#365d48;font-size:12px;line-height:1.6}
+.member-plan-includes strong{color:#127847}
+.member-helper{font-size:12px;color:#627c91;line-height:1.7;margin:1px 0}
+.member-result-count{font-size:12px;font-weight:900;color:#4b7692;background:#e5f2fc;border-radius:20px;padding:8px 12px;white-space:nowrap}
+.member-partner-filters{display:grid;grid-template-columns:minmax(240px,2fr) minmax(135px,.8fr) minmax(140px,.8fr);gap:13px}
+.member-partner-filters label{display:flex;flex-direction:column;gap:7px;min-width:0;font-size:11px;color:#5a7590;font-weight:900}
+.member-partner-filters input,.member-partner-filters select{height:46px;width:100%;min-width:0;border:1px solid #d9e5f0;background:#fff;border-radius:11px;padding:10px 13px;color:#315671;font-size:13px;outline:none}
+.member-partner-filters input:focus,.member-partner-filters select:focus{border-color:#116ea8;box-shadow:0 0 0 3px #1279bb1c}
+.member-type-chips{display:flex;flex-wrap:wrap;gap:8px}
+.member-type-chips button{background:#fff;border:1px solid #dce7f1;border-radius:999px;color:#4b6882;padding:9px 15px;font-size:12px;font-weight:900;cursor:pointer}
+.member-type-chips button.active{background:#0c6aa9;border-color:#0c6aa9;color:#fff}
+.member-partner-card{display:flex;flex-direction:column;gap:12px;padding:19px;min-height:268px}
+.member-category-pill{background:#e9f6ec;color:#187c49;border-radius:999px;padding:6px 10px;font-weight:900;font-size:10px;overflow-wrap:anywhere}
+.member-partner-card-head>strong{font-size:13px;color:#128348;white-space:nowrap}
+.member-partner-card h3{font-size:16px;color:#1c4363;margin:0;font-weight:900}
+.member-partner-services{font-size:12px;line-height:1.55;color:#698197;margin:0}
+.member-partner-info{display:flex;flex-direction:column;gap:8px}
+.member-partner-info span{font-size:12px;line-height:1.55;color:#59758d;overflow-wrap:anywhere}
+.member-partner-info b{display:block;font-size:10px;color:#195a85;letter-spacing:.02em}
+.member-map-link{margin-top:auto;padding-top:4px;color:#0a6aaa;text-decoration:underline;text-underline-offset:3px;font-size:12px;font-weight:900}
+.member-stat{padding:20px;min-height:130px;display:flex;flex-direction:column;gap:7px}
+.member-stat small{font-size:10px;font-weight:900;letter-spacing:.03em;color:#5b7691}
+.member-stat strong{color:#173e5e;font-size:27px;line-height:1.2;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.member-stat span{font-size:11px;color:#71869b;line-height:1.4}
+.member-stat strong.member-stat-success,.member-stat-success{color:#11864b!important;font-weight:900}
+.member-stat strong.member-stat-alert{color:#c25c33}
+.member-data-card{overflow:hidden}
+.member-data-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px}
+.member-data-heading h3{margin:0;font-size:16px;color:#174364}
+.member-data-heading>span{font-size:11px;color:#6a8196}
+.member-data-scroll{width:100%;overflow-x:auto}
+.member-data-table{width:100%;min-width:650px;text-align:left;border-collapse:collapse}
+.member-data-table th{background:#f5f8fb;padding:13px 16px;color:#617c95;font-size:10px;letter-spacing:.03em;white-space:nowrap}
+.member-data-table td{font-size:12px;padding:15px 16px;border-top:1px solid #e7eef4;color:#30536f;line-height:1.55;vertical-align:middle}
+.member-data-table tbody tr:hover{background:#fafcff}
+.member-data-table .member-number{white-space:nowrap;font-variant-numeric:tabular-nums}
+.member-status-pill{display:inline-block;border-radius:20px;background:#eef2f5;color:#5e7184;padding:6px 10px;font-size:11px;font-weight:900;white-space:nowrap}
+.member-status-pill.paid{background:#e3f4e9;color:#167e47}
+.member-status-pill.pending{background:#fff0db;color:#ae6a19}
+.member-no-results{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;padding:35px 16px;text-align:center;color:#5a7187;background:#fff;border:1px dashed #d9e5ef;border-radius:13px}
+.member-data-card .member-no-results{border:0;border-radius:0}
+.member-no-results strong{color:#244e6f;font-size:14px}
+.member-no-results p{font-size:12px;line-height:1.5;margin:0}
+.member-no-results button{border:1px solid #c7deed;border-radius:10px;padding:9px 12px;font-size:12px;font-weight:900;color:#0b6ca9;background:#eef7fc;cursor:pointer}
+@media(max-width:1060px){.member-benefits-grid,.member-partner-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:770px){.member-benefits-grid,.member-partner-grid,.member-stat-grid{grid-template-columns:1fr}.member-partner-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.member-partner-filters label:first-child{grid-column:1/-1}.member-section-intro{align-items:flex-start;flex-direction:column}.member-benefit-card{min-height:300px}.member-stat{min-height:115px}}
+@media(max-width:450px){.member-partner-filters{grid-template-columns:1fr}.member-partner-filters label:first-child{grid-column:auto}.member-modern-tab{gap:15px}.member-benefit-card,.member-partner-card{padding:16px}.member-section-intro h2{font-size:21px}.member-stat strong{font-size:24px}}
