@@ -102,9 +102,9 @@ export function MemberPortal(){
       {!statusOk&&<div className="member-warning">Identificamos uma situação que precisa de acompanhamento. Consulte a aba Mensalidades ou fale com o suporte Quali para regularizar seu cadastro.</div>}
      </section>
      <section className="member-panel"><h2>Beneficiários</h2>
-      <div className="member-table-wrap"><table><thead><tr><th>NOME</th><th>VÍNCULO</th><th>CPF</th><th>CONSULTAS NO MÊS</th></tr></thead><tbody>
-       <tr><td>{member.name}</td><td>Titular</td><td>Final {member.cpfLast4||"—"}</td><td>{data.consultationsThisMonth}</td></tr>
-       {data.dependents.map(item=><tr key={item.id}><td>{item.name}</td><td>Dependente</td><td>Final {item.cpfLast4}</td><td>Sem registros</td></tr>)}
+      <div className="member-table-wrap"><table><thead><tr><th>NOME</th><th>VÍNCULO</th><th>CPF</th><th>Nº DO CARTÃO</th><th>CONSULTAS NO MÊS</th></tr></thead><tbody>
+       <tr><td>{member.name}</td><td>Titular</td><td>Final {member.cpfLast4||"—"}</td><td>{member.cardNumber||"Pendente"}</td><td>{data.consultationsThisMonth}</td></tr>
+       {data.dependents.map(item=><tr key={item.id}><td>{item.name}</td><td>Dependente</td><td>Final {item.cpfLast4}</td><td>{item.cardNumber}</td><td>Sem registros</td></tr>)}
       </tbody></table></div>
       <p className="member-muted">{data.dependents.length===0?"Nenhum dependente cadastrado neste cartão.":"Os dependentes estão vinculados ao titular. O uso individual de consultas será conectado aos atendimentos em uma próxima etapa."}</p>
      </section>
