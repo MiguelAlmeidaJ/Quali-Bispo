@@ -9,9 +9,12 @@ type Partner={id:string;name:string;city:string;address:string;phone:string|null
  serviceType:string;serviceTypes:string[];discountPercent:number};
 type Dashboard={
  member:{name:string;cpfLast4:string|null;birthDate:string|null;planType:string|null;amountCents:number|null;
- status:Status;unit:string|null;joinedAt:string;referenceDate:string|null};
+ status:Status;unit:string|null;joinedAt:string;referenceDate:string|null;
+ cardNumber:string|null;cardPlan:{name:string;priceCents:number;maxDependents:number;benefits:string[]}|null};
  consultationsThisMonth:number;savingsCents:number;attendances:Attendance[];issues:Issue[];partners:Partner[];
- dependentsAvailable:boolean;cardNumber:null;phone:null;nextDueDate:null;consultationLimit:null;
+ dependentsAvailable:boolean;cardNumber:string|null;
+ dependents:{id:string;name:string;cpfLast4:string;birthDate:string;cardNumber:string}[];
+ phone:null;nextDueDate:null;consultationLimit:null;
 };
 type Tab="overview"|"benefits"|"partners"|"payments"|"attendances";
 const labels:Record<Status,string>={PAID:"Pago",OPEN:"Em aberto",EXPECTED:"Previsto",
@@ -74,10 +77,10 @@ export function MemberPortal(){
     <aside className="member-left">
      <div className="member-card-preview">
       <div className="member-card-head"><Brand/><span>{member.planType||"PLANO QUALI"}</span></div>
-      <strong>{member.name}</strong><div className="member-card-bottom"><span>CPF (final)<b>•••• {member.cpfLast4||"—"}</b></span>
+      <div><div className="member-card-number">{member.cardNumber?member.cardNumber.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3"):"Número ainda não emitido"}</div><strong>{member.name}</strong></div><div className="member-card-bottom"><span>CPF (final)<b>•••• {member.cpfLast4||"—"}</b></span>
        <span>Vínculo<b>Titular</b></span><span>Situação<b>{labels[member.status]}</b></span></div>
      </div>
-     <div className="member-card-warning">A identificação acima é um resumo digital do cadastro, não uma carteirinha oficial. A emissão da carteirinha em PDF depende da habilitação do número do cartão.</div>
+     <div className="member-card-warning">{member.cardNumber?"Número de cartão gerado e registrado no sistema. A versão PDF ainda não foi implementada.":"Número pendente: confira CPF e data de nascimento no cadastro administrativo."}</div>
     </aside>
     <div className="member-right">
      <div className="member-metrics">
@@ -90,26 +93,26 @@ export function MemberPortal(){
        <div><small>TITULAR</small><b>{member.name}</b></div>
        <div><small>CPF</small><b>Final {member.cpfLast4||"não informado"}</b></div>
        <div><small>NASCIMENTO</small><b>{date(member.birthDate)}</b></div>
-       <div><small>PLANO</small><b>{member.planType||"Não informado"} {member.amountCents!==null?`· ${money(member.amountCents)}`:""}</b></div>
+       <div><small>PLANO</small><b>{member.cardPlan?.name||member.planType||"Não informado"} {member.amountCents!==null?`· ${money(member.amountCents)}`:""}</b></div>
        <div><small>SITUAÇÃO</small><b>{labels[member.status]}</b></div>
        <div><small>CADASTRO NO SISTEMA</small><b>{date(member.joinedAt)}</b></div>
        <div><small>UNIDADE</small><b>{member.unit||"Não informada"}</b></div>
+       <div><small>Nº DO CARTÃO</small><b>{member.cardNumber||"Não emitido"}</b></div>
       </div>
       {!statusOk&&<div className="member-warning">Identificamos uma situação que precisa de acompanhamento. Consulte a aba Mensalidades ou fale com o suporte Quali para regularizar seu cadastro.</div>}
      </section>
      <section className="member-panel"><h2>Beneficiários</h2>
       <div className="member-table-wrap"><table><thead><tr><th>NOME</th><th>VÍNCULO</th><th>CPF</th><th>CONSULTAS NO MÊS</th></tr></thead><tbody>
        <tr><td>{member.name}</td><td>Titular</td><td>Final {member.cpfLast4||"—"}</td><td>{data.consultationsThisMonth}</td></tr>
+       {data.dependents.map(item=><tr key={item.id}><td>{item.name}</td><td>Dependente</td><td>Final {item.cpfLast4}</td><td>Sem registros</td></tr>)}
       </tbody></table></div>
-      <p className="member-muted">Dependentes não constam na base atual. Quando forem cadastrados, aparecerão aqui com acesso individual.</p>
+      <p className="member-muted">{data.dependents.length===0?"Nenhum dependente cadastrado neste cartão.":"Os dependentes estão vinculados ao titular. O uso individual de consultas será conectado aos atendimentos em uma próxima etapa."}</p>
      </section>
     </div>
    </div>}
    {tab==="benefits"&&<section className="member-panel"><h2>Meus benefícios</h2>
     <p className="member-muted">Consulte a rede credenciada e a tabela atualizada de valores Quali. A disponibilidade e as regras de uso dependem de confirmação com a unidade.</p>
-    <div className="member-benefit-grid"><article><h3>Consultas médicas</h3><p>Valores diferenciados nas especialidades disponíveis.</p></article>
-     <article><h3>Exames e check-ups</h3><p>Confira o catálogo atualizado antes de agendar.</p></article>
-     <article><h3>Psicologia e nutrição</h3><p>Consulte profissionais e condições na rede credenciada.</p></article></div>
+    <div className="member-benefit-grid">{(member.cardPlan?.benefits.length?member.cardPlan.benefits:["Consulte os benefícios do seu plano com o suporte Quali."]).map(item=><article key={item}><h3>{item}</h3></article>)}</div>
     <a className="btn" href="/valores">Consultar tabela de valores</a>
     <p className="member-muted">Consultas registradas neste mês: <b>{data.consultationsThisMonth}</b>. O limite mensal depende do plano e ainda não está parametrizado no sistema.</p>
    </section>}
