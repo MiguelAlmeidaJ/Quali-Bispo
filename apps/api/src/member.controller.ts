@@ -30,7 +30,7 @@ function verifySession(auth?:string):{id:string;kind:"holder"|"dependent"}{
  }catch{throw new UnauthorizedException("Sessão expirada ou inválida");}
 }
 const selectMember={
- id:true,name:true,cpfLast4:true,birthDate:true,planType:true,amountCents:true,cardNumber:true,
+ id:true,name:true,cpfLast4:true,birthDate:true,benefitActive:true,planType:true,amountCents:true,cardNumber:true,
  cardPlan:{select:{name:true,priceCents:true,maxDependents:true,benefits:true}},
  dependents:{select:{id:true,name:true,cpfLast4:true,birthDate:true,cardNumber:true},orderBy:{createdAt:"asc"}},
  status:true,partner:{select:{id:true,name:true,city:true}},unit:true,
