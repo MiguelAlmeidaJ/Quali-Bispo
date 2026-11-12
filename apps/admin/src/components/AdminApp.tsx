@@ -26,7 +26,7 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
  useEffect(()=>{
    fetch("/admin/api/session",{cache:"no-store"})
      .then(r=>r.ok?r.json():null)
-     .then(data=>{if(data?.user){setUser(data.user);setView(customerRoute?"clients":data.user.role==="PARTNER"?"validate":initialView||new URLSearchParams(window.location.search).get("view") as AdminView||"dashboard");}})
+     .then(data=>{if(data?.user){setUser(data.user);setView(customerRoute?"clients":data.user.role==="PARTNER"?"validate":initialView||(initialView||(new URLSearchParams(window.location.search).get("view") as AdminView)||"dashboard"));}})
      .catch(()=>{})
      .finally(()=>setLoading(false));
  },[]);
