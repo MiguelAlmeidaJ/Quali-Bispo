@@ -26,6 +26,8 @@ export function CustomerFormPage({id}:{id?:string}){
  const [dependents,setDependents]=useState<DependentForm[]>([]);
  const [loading,setLoading]=useState(editing),[loadingOptions,setLoadingOptions]=useState(true);
  const [saving,setSaving]=useState(false),[error,setError]=useState("");
+ const [cpfChecks,setCpfChecks]=useState<Record<string,string>>({});
+ const [changingBenefit,setChangingBenefit]=useState(false);
  useEffect(()=>{
   const controller=new AbortController();
   Promise.all([
@@ -62,6 +64,33 @@ export function CustomerFormPage({id}:{id?:string}){
   const plan=plans.find(item=>item.id===id);
   setForm(current=>({...current,cardPlanId:id,planType:plan?.name||current.planType,
    amount:plan?planPrice(plan.priceCents):current.amount}));
+ }
+ async function checkCpf(cpf:string,key:string){
+  const digits=cpf.replace(/\D/g,"");
+  if(digits.length!==11)return;
+  try{
+   const r=await fetch(`/admin/api/customer-benefits/check-cpf?cpf=${digits}`,{cache:"no-store"});
+   const result=await r.json();
+   setCpfChecks(old=>({...old,[key]:r.ok?result.reason:result.message||result.error||"Não foi possível validar o CPF"}));
+  }catch{setCpfChecks(old=>({...old,[key]:"Verificação indisponível. A validação será repetida ao salvar."}));}
+ }
+ async function changeBenefit(){
+  if(!original||!id)return;
+  const next=!original.benefitActive;
+  const reason=window.prompt(next?"Informe o motivo para reativar os benefícios da família:":"Informe o motivo do cancelamento (titular e dependentes):");
+  if(reason===null)return;
+  if(reason.trim().length<8){setError("Informe um motivo de pelo menos 8 caracteres.");return;}
+  if(!window.confirm(next?"Confirma reativar os benefícios da família?":"Confirma cancelar o acesso de toda a família, preservando os cadastros?"))return;
+  setChangingBenefit(true);setError("");
+  try{
+   const r=await fetch(`/admin/api/customer-benefits/${id}`,{method:"PATCH",headers:{"content-type":"application/json"},
+    body:JSON.stringify({active:next,reason})});
+   const response=await r.json();
+   if(!r.ok)throw new Error(response.message||response.error||"Falha ao alterar benefício");
+   setOriginal(old=>old?{...old,benefitActive:next,
+    benefitCancelledAt:next?null:new Date().toISOString(),benefitCancelReason:next?null:reason}:old);
+  }catch(e){setError(e instanceof Error?e.message:"Falha na atualização");}
+  finally{setChangingBenefit(false);}
  }
  function updateDependent(index:number,key:keyof DependentForm,value:string){
   setDependents(current=>current.map((item,i)=>i===index?{...item,[key]:value}:item));
@@ -117,7 +146,8 @@ export function CustomerFormPage({id}:{id?:string}){
       <input required minLength={2} maxLength={180} value={form.name} onChange={e=>update("name",e.target.value)}/></label>
      <label><span className="customer-field-title">CPF {!editing&&<em>*</em>}</span>
       <input required={!editing} disabled={!!original?.cardNumber} maxLength={14} inputMode="numeric" autoComplete="off"
-       value={form.cpf} placeholder="000.000.000-00" onChange={e=>update("cpf",formatCpf(e.target.value))}/>
+       onBlur={()=>{if(form.cpf)void checkCpf(form.cpf,"holder");}} value={form.cpf} placeholder="000.000.000-00" onChange={e=>update("cpf",formatCpf(e.target.value))}/>
+      {cpfChecks.holder&&<small className={cpfChecks.holder.includes("já possui")?"customer-cpf-blocked":"customer-cpf-checked"}>{cpfChecks.holder}</small>}
       <small>{original?.cpfLast4?`CPF cadastrado: final ${original.cpfLast4}. Deixe vazio para manter. Após emissão, CPF/nascimento exigem reemissão administrativa.`:"O CPF é protegido no banco."}</small></label>
      <label><span className="customer-field-title">Data de nascimento {!editing&&<em>*</em>}</span>
       <input type="date" required={!editing} disabled={!!original?.cardNumber} value={form.birthDate}
@@ -140,14 +170,7 @@ export function CustomerFormPage({id}:{id?:string}){
         <option value={p.id} key={p.id}>{p.name} — {p.maxDependents?"Familiar":"Individual"}</option>)}
       </select>
       {!selected&&original?.planType&&<small>Plano histórico da planilha: {original.planType}. Selecione um cartão cadastrado para migrar o cliente.</small>}
-      <small><a href="/admin/cartoes">Gerenciar tipos de cartão</a></small>
      </label>
-     <label>Valor do plano (R$)<input readOnly value={selected?planPrice(selected.priceCents):form.amount}
-      placeholder="Selecione um cartão" /><small>Atualizado automaticamente pela tabela de cartões.</small></label>
-     {selected&&<div className="wide customer-plan-benefits"><b>Benefícios do cartão {selected.name}</b>
-      {selected.benefits.length?<ul>{selected.benefits.map(item=><li key={item}>{item}</li>)}</ul>:<p>Benefícios ainda não cadastrados neste cartão.</p>}
-      <small>{maximum===0?"Individual: somente titular.":`Familiar: titular + até ${maximum} dependentes.`}</small>
-     </div>}
      <label>Forma de pagamento<input maxLength={140} value={form.paymentMethod} placeholder="Pix, cartão ou boleto"
       onChange={e=>update("paymentMethod",e.target.value)}/></label>
      <label>Status<select value={form.status} onChange={e=>update("status",e.target.value as FinanceStatus)}>
@@ -163,8 +186,10 @@ export function CustomerFormPage({id}:{id?:string}){
       <label>Nome do dependente <input required maxLength={180} value={item.name} placeholder={`Dependente ${index+1}`}
        onChange={e=>updateDependent(index,"name",e.target.value)}/></label>
       <label>CPF <input required={!item.id} disabled={!!item.cardNumber} value={item.cpf} inputMode="numeric" maxLength={14}
+       onBlur={()=>{if(!item.id)void checkCpf(item.cpf,`dependent-${index}`);}}
        placeholder={item.id?`Cadastrado: final ${item.cpfLast4}`:"000.000.000-00"}
-       onChange={e=>updateDependent(index,"cpf",formatCpf(e.target.value))}/></label>
+       onChange={e=>updateDependent(index,"cpf",formatCpf(e.target.value))}/>
+       {cpfChecks[`dependent-${index}`]&&<small className={cpfChecks[`dependent-${index}`].includes("já possui")?"customer-cpf-blocked":"customer-cpf-checked"}>{cpfChecks[`dependent-${index}`]}</small>}</label>
       <label>Nascimento <input required type="date" disabled={!!item.cardNumber} max={new Date().toISOString().slice(0,10)}
        value={item.birthDate} onChange={e=>updateDependent(index,"birthDate",e.target.value)}/></label>
       {!item.id&&<button type="button" className="customer-cancel" onClick={()=>setDependents(current=>current.filter((_,i)=>i!==index))}>Remover novo dependente</button>}
@@ -173,6 +198,15 @@ export function CustomerFormPage({id}:{id?:string}){
      {dependents.length<maximum&&<button type="button" className="customer-add-dependent" onClick={()=>setDependents(prev=>[...prev,emptyDependent()])}>
       <FiPlus/> Adicionar dependente</button>}
      <small>Dependentes existentes não são excluídos ao mudar o cartão. A exclusão exigirá procedimento específico para preservar o histórico.</small>
+    </section>}
+    {editing&&original&&<section className="customer-benefit-management">
+     <div><h2>Benefício da família</h2>
+      <p><strong className={original.benefitActive?"benefit-enabled":"benefit-disabled"}>
+       {original.benefitActive?"Benefício ativo":"Benefício cancelado"}</strong>
+       {original.benefitCancelReason&&!original.benefitActive?` · Motivo: ${original.benefitCancelReason}`:""}</p>
+      <small>Cancelamento não apaga os dados nem os cartões de titular ou dependentes. Acesso e atendimentos serão bloqueados.</small></div>
+     <button type="button" disabled={changingBenefit||saving} className={original.benefitActive?"customer-benefit-cancel":"customer-benefit-restore"}
+      onClick={()=>void changeBenefit()}>{changingBenefit?"Atualizando...":original.benefitActive?"Cancelar benefício da família":"Reativar benefício da família"}</button>
     </section>}
     {error&&<p className="notice error" role="alert">{error}</p>}
     <footer className="customer-editor-footer"><button type="button" className="customer-cancel" onClick={returnToClients} disabled={saving}>Cancelar</button>
