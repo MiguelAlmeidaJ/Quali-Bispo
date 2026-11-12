@@ -88,7 +88,7 @@ export class MemberController{
    throw new UnauthorizedException("Cadastro indisponível. Procure a central Quali.");
   const today=new Date(),start=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),1));
   const next=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth()+1,1));
-  const [attendances,consultations,savings,issues,partners]=await Promise.all([
+  const [attendances,consultations,savings,attendanceCount,issues,partners,catalog]=await Promise.all([
    db.financeAttendance.findMany({where:{customerId:id,voidedAt:null},orderBy:{performedAt:"desc"},
     take:100,select:{id:true,performedAt:true,serviceName:true,serviceType:true,
      fullPriceCents:true,chargedCents:true,partner:{select:{name:true}}}}),
@@ -96,11 +96,14 @@ export class MemberController{
     performedAt:{gte:start,lt:next}}}),
    db.financeAttendance.aggregate({where:{customerId:id,voidedAt:null},
     _sum:{fullPriceCents:true,chargedCents:true}}),
+   db.financeAttendance.count({where:{customerId:id,voidedAt:null}}),
    db.financeIssue.findMany({where:{customerId:id,resolved:false},orderBy:{createdAt:"desc"},take:30,
     select:{id:true,rawStatus:true,status:true,amountCents:true,referenceDate:true,paymentMethod:true}}),
    db.partner.findMany({where:{active:true},orderBy:{name:"asc"},take:100,
     select:{id:true,name:true,city:true,address:true,phone:true,businessHours:true,
-     serviceType:true,serviceTypes:true,discountPercent:true}}),
+     serviceType:true,serviceTypes:true,services:true,discountPercent:true}}),
+   db.catalogItem.findMany({where:{active:true},orderBy:[{displayOrder:"asc"},{name:"asc"}],take:500,
+    select:{id:true,name:true,category:true,group:true,normalPriceCents:true,qualiPriceCents:true,professional:true}}),
   ]);
   const saved=(savings._sum.fullPriceCents||0)-(savings._sum.chargedCents||0);
   return {
@@ -109,7 +112,9 @@ export class MemberController{
     planType:member.planType,amountCents:member.amountCents,status:member.status,
     unit:member.partner?.name||member.unit,joinedAt:member.createdAt,
     referenceDate:member.referenceDate},
-   consultationsThisMonth:consultations,savingsCents:saved,attendances,issues,partners,
+   consultationsThisMonth:consultations,savingsCents:saved,attendances,issues,partners,catalog,
+   attendanceTotals:{count:attendanceCount,fullPriceCents:savings._sum.fullPriceCents||0,
+    chargedCents:savings._sum.chargedCents||0,savingsCents:saved},
    // Dados não registrados de forma confiável na base financeira.
    dependentsAvailable:member.dependents.length>0,dependents:member.dependents,
    cardNumber:member.cardNumber,phone:null,nextDueDate:null,
