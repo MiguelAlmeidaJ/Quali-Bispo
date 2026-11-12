@@ -18,3 +18,11 @@ apps/api/storage/
 **/private/
 *Controle_Financeiro_QualiBeneficios*.xlsx
 quali_importacao_financeira_privada.json
+
+# Backups locais sensíveis de PostgreSQL, arquivos de marca e metadados
+/backups/
+*.dump
+*.dump.sha256
+branding-*.zip
+*.backup
+*.sql.gz
