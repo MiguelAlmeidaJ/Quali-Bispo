@@ -81,11 +81,12 @@ export class FinanceController {
   const actor=await requireFinanceStaff(auth);
   const payload=parseCustomerPayload(body);
   const input=body as Record<string,unknown>;
-  if(!payload.cpf||!payload.birthDate)throw new HttpException("CPF e data de nascimento são obrigatórios para emitir o cartão.",400);
+  const cpf=payload.cpf;
+  if(!cpf||!payload.birthDate)throw new HttpException("CPF e data de nascimento são obrigatórios para emitir o cartão.",400);
   if(!payload.partnerId)throw new HttpException("Selecione uma unidade da Rede Credenciada.",400);
   const assigned=await db.partner.findUnique({where:{id:payload.partnerId},select:{id:true,name:true,active:true}});
   if(!assigned?.active)throw new HttpException("Unidade credenciada não encontrada ou inativa.",400);
-  const cpfHash=cpfFingerprint(payload.cpf);
+  const cpfHash=cpfFingerprint(cpf);
   if(await db.financeCustomer.findFirst({where:{cpfHash},select:{id:true}})||
      await db.cardDependent.findUnique({where:{cpfHash},select:{id:true}}))
     throw new HttpException("CPF já vinculado a outro beneficiário.",409);
@@ -99,7 +100,7 @@ export class FinanceController {
     birthDate:payload.birthDate,partnerId:assigned.id,unit:assigned.name,
     planType:plan.name,cardPlanId:plan.id,amountCents:plan.priceCents,
     paymentMethod:payload.paymentMethod,status:payload.status,paymentDetails:payload.paymentDetails,
-    cpfHash,cpfLast4:payload.cpf.slice(-4),cpfValid:true,cpfConflict:false,
+    cpfHash,cpfLast4:cpf.slice(-4),cpfValid:true,cpfConflict:false,
    },select:{id:true,createdAt:true,birthDate:true,cpfValid:true,cpfConflict:true,cpfLast4:true,cardNumber:true}});
    await issueHolderCard(tx,record);
    await saveDependents(tx,record.id,input.dependents,plan.maxDependents,actor.id);
