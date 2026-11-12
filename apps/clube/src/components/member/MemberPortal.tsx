@@ -77,7 +77,10 @@ export function MemberPortal(){
     <aside className="member-left">
      <div className="member-card-preview" aria-label="Cartão digital de identificação do associado">
       <div className="member-card-head">
-       <span className="member-card-logo"><Brand/></span>
+       <span className="member-card-logo">
+        <img className="member-card-white-logo" src="/v1/branding/assets/logo-white" alt="Quali Benefícios" />
+        <span className="member-card-logo-fallback"><Brand/></span>
+       </span>
        <span className="member-card-plan">{member.cardPlan?.name||member.planType||"PLANO QUALI"}</span>
       </div>
       <div className="member-card-main">
