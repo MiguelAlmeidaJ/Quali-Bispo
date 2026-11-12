@@ -57,7 +57,7 @@ function CatalogModal({item,onClose,onSaved}:{item:CatalogItem|null;onClose:()=>
  </div>;
 }
 
-export function CatalogPage(){
+export function CatalogPage({readonly=false}:{readonly?:boolean}){
  const [items,setItems]=useState<CatalogItem[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState("");
  const [search,setSearch]=useState(""),[category,setCategory]=useState(""),[status,setStatus]=useState("active");
  const [modal,setModal]=useState<{open:boolean;item:CatalogItem|null}>({open:false,item:null});
@@ -77,8 +77,8 @@ export function CatalogPage(){
  const displayed=filtered.slice((currentPage-1)*pageSize,currentPage*pageSize);
  function changeFilters(action:()=>void){action();setPage(1);}
  return <div className="catalog-page">
-  <div className="catalog-heading"><div><span>GESTÃO DE PREÇOS</span><h1>Tabela de valores</h1><p>Consultas, exames e procedimentos. Alterações aparecem no Clube Quali.</p></div>
-   <button className="catalog-save" type="button" onClick={()=>setModal({open:true,item:null})}><FiPlus size={18}/> Novo procedimento</button>
+  <div className="catalog-heading"><div><span>GESTÃO DE PREÇOS</span><h1>Tabela de valores</h1><p>Consultas, exames e procedimentos. {readonly?"Consulta de procedimentos e preços disponíveis no Clube.":"Alterações aparecem no Clube Quali."}</p></div>
+   {!readonly&&<button className="catalog-save" type="button" onClick={()=>setModal({open:true,item:null})}><FiPlus size={18}/> Novo procedimento</button>}
   </div>
   <div className="catalog-stats"><article><span>Itens cadastrados</span><b>{items.length}</b></article><article><span>Disponíveis no Clube</span><b>{items.filter(x=>x.active).length}</b></article><article><span>Categorias</span><b>{new Set(items.map(x=>x.category)).size}</b></article></div>
   <div className="catalog-card"><div className="catalog-toolbar">
@@ -88,10 +88,10 @@ export function CatalogPage(){
   </div>
   {error&&<p className="notice error" role="alert">{error}</p>}
   {loading?<p className="catalog-empty">Carregando catálogo...</p>:filtered.length===0?<p className="catalog-empty">Nenhum procedimento encontrado.</p>:
-  <div className="catalog-scroll"><table className="catalog-table"><thead><tr><th>PROCEDIMENTO</th><th>CATEGORIA / GRUPO</th><th>VALOR NORMAL</th><th>VALOR QUALI</th><th>DESCONTO</th><th>STATUS</th><th>AÇÕES</th></tr></thead>
-   <tbody>{displayed.map(item=><tr key={item.id}><td><b>{item.name}</b>{item.professional&&<small>{item.professional}</small>}{item.notes&&<small title={item.notes}>ⓘ {item.notes}</small>}</td><td>{categories[item.category]}<small>{item.group}</small></td><td>{money(item.normalPriceCents)}</td><td className="catalog-price">{money(item.qualiPriceCents)}</td><td>{Math.round((1-item.qualiPriceCents/item.normalPriceCents)*100)}%</td><td><span className={item.active?"catalog-active":"catalog-inactive"}>{item.active?"Ativo":"Inativo"}</span></td><td><button className="catalog-edit" onClick={()=>setModal({open:true,item})} type="button"><FiEdit2/> Editar</button></td></tr>)}</tbody>
+  <div className="catalog-scroll"><table className="catalog-table"><thead><tr><th>PROCEDIMENTO</th><th>CATEGORIA / GRUPO</th><th>VALOR NORMAL</th><th>VALOR QUALI</th><th>DESCONTO</th><th>STATUS</th>{!readonly&&<th>AÇÕES</th>}</tr></thead>
+   <tbody>{displayed.map(item=><tr key={item.id}><td><b>{item.name}</b>{item.professional&&<small>{item.professional}</small>}{item.notes&&<small title={item.notes}>ⓘ {item.notes}</small>}</td><td>{categories[item.category]}<small>{item.group}</small></td><td>{money(item.normalPriceCents)}</td><td className="catalog-price">{money(item.qualiPriceCents)}</td><td>{Math.round((1-item.qualiPriceCents/item.normalPriceCents)*100)}%</td><td><span className={item.active?"catalog-active":"catalog-inactive"}>{item.active?"Ativo":"Inativo"}</span></td>{!readonly&&<td><button className="catalog-edit" onClick={()=>setModal({open:true,item})} type="button"><FiEdit2/> Editar</button></td>}</tr>)}</tbody>
   </table></div>}
   <footer className="catalog-footer catalog-pagination"><span>{filtered.length===0?"Nenhum registro":`Exibindo ${(currentPage-1)*pageSize+1}–${Math.min(currentPage*pageSize,filtered.length)} de ${filtered.length} registros`} · 20 por página</span><nav aria-label="Paginação da tabela de valores"><button type="button" disabled={currentPage===1||loading} onClick={()=>setPage(p=>Math.max(1,p-1))}>Anterior</button><span>Página {currentPage} de {totalPages}</span><button type="button" disabled={currentPage===totalPages||loading} onClick={()=>setPage(p=>Math.min(totalPages,p+1))}>Próxima</button></nav></footer></div>
-  {modal.open&&<CatalogModal item={modal.item} onClose={()=>setModal({open:false,item:null})} onSaved={load}/>}
+  {!readonly&&modal.open&&<CatalogModal item={modal.item} onClose={()=>setModal({open:false,item:null})} onSaved={load}/>}
  </div>;
 }
