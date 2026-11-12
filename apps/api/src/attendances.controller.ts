@@ -48,7 +48,7 @@ export class AttendancesController {
   const q=typeof raw==="string"?raw.trim().slice(0,100):"";
   if(q.length<2)return [];
   return db.financeCustomer.findMany({
-   where:{name:{contains:q,mode:"insensitive"},cpfValid:true,cpfConflict:false,
+   where:{name:{contains:q,mode:"insensitive"},cpfValid:true,cpfConflict:false,benefitActive:true,
     ...(user.role==="PARTNER"?{status:"PAID" as const}:{})},
    select:{id:true,name:true,status:true,cpfLast4:true,partner:{select:{name:true}}},
    orderBy:{name:"asc"},take:20,
@@ -91,12 +91,12 @@ export class AttendancesController {
   const catalogItemId=assertUuid(input.catalogItemId,"Procedimento");
   if(actor.role==="PARTNER"&&partnerId!==actor.partnerId)throw new ForbiddenException("É permitido registrar apenas para a sua unidade.");
   const [customer,partner,service]=await Promise.all([
-   db.financeCustomer.findUnique({where:{id:customerId},select:{id:true,status:true,cpfValid:true,cpfConflict:true,name:true}}),
+   db.financeCustomer.findUnique({where:{id:customerId},select:{id:true,status:true,cpfValid:true,cpfConflict:true,benefitActive:true,name:true}}),
    db.partner.findUnique({where:{id:partnerId},select:{id:true,active:true}}),
    db.catalogItem.findUnique({where:{id:catalogItemId},select:{id:true,name:true,category:true,active:true,normalPriceCents:true,qualiPriceCents:true}}),
   ]);
   if(!customer)throw new HttpException("Cliente não encontrado.",404);
-  if(customer.status!=="PAID"||!customer.cpfValid||customer.cpfConflict)
+  if(customer.status!=="PAID"||!customer.benefitActive||!customer.cpfValid||customer.cpfConflict)
    throw new HttpException("Cliente sem acesso confirmado. Revise CPF e situação financeira.",403);
   if(!partner?.active)throw new HttpException("Unidade credenciada inativa ou inexistente.",400);
   if(!service?.active)throw new HttpException("Procedimento não disponível.",400);
