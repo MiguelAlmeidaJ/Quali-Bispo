@@ -24,7 +24,7 @@ export async function issueHolderCard(tx:Tx,customer:{
 export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacity:number,actorId:string){
  if(raw===undefined)return;
  const inputs=parseDependents(raw);
- const current=await tx.cardDependent.findMany({where:{customerId},select:{id:true,cpfHash:true,cardNumber:true,birthDate:true}});
+ const current=await tx.cardDependent.findMany({where:{customerId},select:{id:true,cpfHash:true,cardNumber:true,birthDate:true,benefitActive:true}});
  // Sem exclusão implícita: os dependentes omitidos permanecem cadastrados.
  const additions=inputs.filter(item=>!item.id);
  if(current.length+additions.length>capacity)return error(`Este cartão permite até ${capacity} dependente(s). Remova ou revise os registros existentes antes de continuar.`);
@@ -38,21 +38,21 @@ export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacit
     return error("O dependente já possui cartão emitido. CPF ou nascimento exigem reemissão controlada.",409);
    let hash=own.cpfHash,last4:string|undefined;
    if(input.cpf){hash=cpfFingerprint(input.cpf);last4=input.cpf.slice(-4);}
-   const duplicate=await tx.cardDependent.findFirst({where:{cpfHash:hash,id:{not:input.id}},select:{id:true}});
-   const holder=await tx.financeCustomer.findFirst({where:{cpfHash:hash},select:{id:true}});
+   const duplicate=await tx.cardDependent.findFirst({where:{cpfHash:hash,benefitActive:true,id:{not:input.id}},select:{id:true}});
+   const holder=await tx.financeCustomer.findFirst({where:{cpfHash:hash,benefitActive:true},select:{id:true}});
    if(duplicate||holder)return error("CPF já cadastrado para outro beneficiário.",409);
    await tx.cardDependent.update({where:{id:input.id},data:{name:input.name,birthDate:birthday,
      ...(last4?{cpfHash:hash,cpfLast4:last4}: {})}});
   }else{
    const hash=cpfFingerprint(input.cpf!);
    const [dependent,holder]=await Promise.all([
-    tx.cardDependent.findUnique({where:{cpfHash:hash},select:{id:true}}),
-    tx.financeCustomer.findFirst({where:{cpfHash:hash},select:{id:true}}),
+    tx.cardDependent.findFirst({where:{cpfHash:hash,benefitActive:true},select:{id:true}}),
+    tx.financeCustomer.findFirst({where:{cpfHash:hash,benefitActive:true},select:{id:true}}),
    ]);
    if(dependent||holder)return error("CPF já cadastrado para outro beneficiário.",409);
    const customer=await tx.financeCustomer.findUniqueOrThrow({where:{id:customerId},select:{createdAt:true}});
    const number=await nextCardNumber(tx,customer.createdAt,birthday,input.cpf!.slice(-4));
-   const created=await tx.cardDependent.create({data:{customerId,name:input.name,
+   const created=await tx.cardDependent.create({data:{customerId,name:input.name,benefitActive:true,
     cpfHash:hash,cpfLast4:input.cpf!.slice(-4),birthDate:birthday,cardNumber:number},select:{id:true}});
    await tx.auditLog.create({data:{actorId,action:"CARD_DEPENDENT_CREATED",entityType:"CardDependent",
     entityId:created.id,metadata:{customerId}}});
