@@ -465,3 +465,28 @@
 
 .attendance-form .attendance-label-title{display:inline-flex;align-items:baseline;gap:4px;flex-wrap:nowrap;white-space:nowrap}
 .attendance-form .attendance-label-title em{display:inline;color:#bf3d3d;font-weight:900}
+
+
+/* Relatórios: cards com seis exportações reais */
+.reports-page{max-width:1550px;margin:0 auto}
+.reports-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin:0 0 24px}
+.reports-heading h1{font-size:29px;letter-spacing:-.4px;color:var(--text);margin:0 0 4px}
+.reports-heading p{color:var(--muted);font-size:14px;margin:0}
+.reports-month{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:#52708b;white-space:nowrap}
+.reports-month input{border:1px solid var(--border);border-radius:10px;background:white;padding:10px 12px;min-height:43px;color:#244865;font:inherit}
+.reports-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.reports-card{display:flex;align-items:center;gap:17px;min-width:0;min-height:133px;padding:22px;background:#fff;border:1px solid var(--border);border-radius:17px}
+.reports-icon{display:grid;place-items:center;flex:0 0 54px;width:54px;height:54px;border-radius:14px;background:#e8f3fc;color:#176eb3}
+.reports-card:nth-child(4) .reports-icon{color:#ae7620;background:#fff4e4}
+.reports-card:nth-child(6) .reports-icon{color:#198a54;background:#e8f6ed}
+.reports-copy{min-width:0;flex:1}
+.reports-copy h2{margin:0 0 5px;font-size:16px;font-weight:900;color:#214563}
+.reports-copy p{margin:0 0 6px;font-size:12px;line-height:1.5;color:#73869a}
+.reports-copy small{font-size:12px;font-weight:900;color:#4d6b86}
+.reports-download{display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;min-width:74px;padding:10px 12px;border:0;border-radius:9px;color:#fff;background:#0867ad;font-size:13px;font-weight:900;cursor:pointer}
+.reports-download:hover:not(:disabled){background:#07568e}
+.reports-download:disabled{opacity:.5;cursor:not-allowed}
+.reports-footnote{margin-top:22px;padding:14px 17px;border-top:1px solid var(--border)}
+.reports-footnote p{color:#6e8498;font-size:12px;line-height:1.6;margin:6px 0}
+@media(max-width:1050px){.reports-grid{grid-template-columns:1fr}}
+@media(max-width:650px){.reports-heading{align-items:stretch;flex-direction:column}.reports-month{align-self:flex-start}.reports-card{align-items:flex-start;padding:17px;gap:11px}.reports-icon{flex-basis:40px;width:40px;height:40px}.reports-download{min-width:65px;padding:9px 10px}.reports-copy h2{font-size:14px}}
