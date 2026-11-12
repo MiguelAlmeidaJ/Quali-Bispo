@@ -26,7 +26,7 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
  useEffect(()=>{
    fetch("/admin/api/session",{cache:"no-store"})
      .then(r=>r.ok?r.json():null)
-     .then(data=>{if(data?.user){setUser(data.user);setView(customerRoute?"clients":data.user.role==="PARTNER"?"validate":initialView||(initialView||(new URLSearchParams(window.location.search).get("view") as AdminView)||"dashboard"));}})
+     .then(data=>{if(data?.user){setUser(data.user);setView(customerRoute?"clients":data.user.role==="PARTNER"?"validate":initialView||(new URLSearchParams(window.location.search).get("view") as AdminView)||"dashboard");}})
      .catch(()=>{})
      .finally(()=>setLoading(false));
  },[]);
@@ -34,7 +34,7 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
    try {await fetch("/admin/api/session",{method:"DELETE"});} finally {setUser(null);setView("dashboard");}
  }
  if(loading)return <div className="splash">Carregando painel Quali...</div>;
- if(!user)return <Login onLogin={u=>{setUser(u);setView(customerRoute?"clients":u.role==="PARTNER"?"validate":new URLSearchParams(window.location.search).get("view") as AdminView||"dashboard");}}/>;
+ if(!user)return <Login onLogin={u=>{setUser(u);setView(customerRoute?"clients":u.role==="PARTNER"?"validate":initialView||(new URLSearchParams(window.location.search).get("view") as AdminView)||"dashboard");}}/>;
  const allowedView:AdminView = user.role!=="DEV"&&privileged.has(view)?"dashboard":user.role==="PARTNER"&&view==="dashboard"?"validate":view;
  return <div className={`app-layout ${collapsed?"sidebar-collapsed":""}`}>
    <Sidebar user={user} view={allowedView} setView={next=>{if(customerRoute){window.location.assign(`/admin/?view=${next}`);}else setView(next);}} logout={logout} collapsed={collapsed} setCollapsed={setCollapsed}/>
