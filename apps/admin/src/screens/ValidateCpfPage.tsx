@@ -9,10 +9,11 @@ export const formatCpf=(value:string)=>{
 type Lookup={
  found:boolean;eligible:boolean;message:string;source:"finance"|"beneficiary"|null;
  beneficiary?:{name:string;status:string;plan:string|null}|null;
- customer?:{id:string;name:string;status:string;plan:string|null;unit:string|null}|null;
+ customer?:{id:string;name:string;status:string;plan:string|null;unit:string|null;cpfLast4:string|null}|null;
 };
 type Validation={id:string;at:string;actor:string;matched:boolean;eligible:boolean;source:string|null};
-export function ValidateCpfPage(){
+type AttendanceCustomer={id:string;name:string;status:string;cpfLast4:string|null;partner:{name:string}|null};
+export function ValidateCpfPage({onCreateAttendance}:{onCreateAttendance?:(customer:AttendanceCustomer)=>void}){
  const [cpf,setCpf]=useState(""),[loading,setLoading]=useState(false);
  const [result,setResult]=useState<Lookup|null>(null),[error,setError]=useState("");
  const [history,setHistory]=useState<Validation[]>([]);
@@ -60,6 +61,14 @@ export function ValidateCpfPage(){
       "Cadastro financeiro confirmado e acesso liberado.":
       "Cadastro identificado, mas o pagamento/situação precisa de revisão antes do atendimento."}</p>}
     </div>}
+    {result.eligible&&result.customer&&onCreateAttendance&&<div className="cpf-attendance-actions">
+     <button type="button" className="cpf-create-attendance" onClick={()=>onCreateAttendance({
+      id:result.customer!.id,name:result.customer!.name,status:result.customer!.status,
+      cpfLast4:result.customer!.cpfLast4,partner:result.customer!.unit?{name:result.customer!.unit}:null
+     })}>Registrar atendimento <span aria-hidden="true">→</span></button>
+     <span>O associado será selecionado automaticamente. Escolha a unidade e o procedimento na próxima etapa.</span>
+    </div>}
+    {result.eligible&&!result.customer&&<p className="cpf-attendance-hint">Este cadastro é da base antiga de beneficiários. Para registrar atendimentos no módulo financeiro, vincule-o primeiro ao cadastro de Clientes.</p>}
    </div>}
   </section>
   <section className="panel gap-panel"><h2>Últimas validações</h2>
