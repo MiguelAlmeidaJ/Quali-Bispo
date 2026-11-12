@@ -45,6 +45,7 @@ export function MemberPortal(){
  const firstName=member.name.split(" ")[0].toLocaleLowerCase("pt-BR");
  const greeting=firstName.charAt(0).toLocaleUpperCase("pt-BR")+firstName.slice(1);
  const statusOk=member.status==="PAID";
+ const isDependent=data.accessKind==="dependent";
  return <div className="member-portal">
   <header className="member-top"><div className="wrap member-top-inner">
    <a href="/" className="member-brand" aria-label="Início do Clube Quali"><Brand/></a>
@@ -54,7 +55,7 @@ export function MemberPortal(){
    <div className="member-banner-line"><div><span>Bem-vindo(a),</span><h1>{greeting}!</h1></div>
     <span className={`member-status ${statusOk?"is-paid":"is-pending"}`}>● {labels[member.status]}</span>
    </div>
-   <nav aria-label="Menu do associado" className="member-tabs">{tabs.map(item=>
+   <nav aria-label="Menu do associado" className="member-tabs">{tabs.filter(item=>!isDependent||!["payments","attendances"].includes(item.key)).map(item=>
     <button type="button" key={item.key} className={tab===item.key?"current":""}
      aria-current={tab===item.key?"page":undefined} onClick={()=>setTab(item.key)}>{item.label}</button>)}</nav>
   </div></div>
@@ -77,7 +78,7 @@ export function MemberPortal(){
       </div>
       <div className="member-card-bottom">
        <span>CPF (final)<b>•••• {member.cpfLast4||"—"}</b></span>
-       <span>Vínculo<b>Titular</b></span>
+       <span>Vínculo<b>{isDependent?"Dependente":"Titular"}</b></span>
        <span>Nascimento<b>{date(member.birthDate)}</b></span>
       </div>
      </div>
@@ -89,31 +90,32 @@ export function MemberPortal(){
      <p className="member-card-print-note">PDF em tamanho real de cartão (85,60 × 53,98 mm), sem margens ou informações adicionais.</p>
     </aside>
     <div className="member-right">
-     <div className="member-metrics">
+     {!isDependent&&<div className="member-metrics">
       <article><small>CONSULTAS MÉDICAS NO MÊS</small><strong>{data.consultationsThisMonth}</strong><span>Sem limite configurado no sistema</span></article>
       <article><small>VOCÊ JÁ ECONOMIZOU</small><strong className="green">{money(data.savingsCents)}</strong><span>Atendimentos registrados</span></article>
       <article><small>PRÓXIMO VENCIMENTO</small><strong>Não informado</strong><span>Data não disponível no cadastro</span></article>
-     </div>
+     </div>}
+     {isDependent&&<div className="member-dependent-note">Cartão de dependente vinculado ao titular. Seus benefícios podem ser consultados nas abas Meus benefícios e Rede parceira.</div>}
      <section className="member-panel"><h2>Meus dados</h2>
       <div className="member-details">
        <div><small>TITULAR</small><b>{member.name}</b></div>
        <div><small>CPF</small><b>Final {member.cpfLast4||"não informado"}</b></div>
        <div><small>NASCIMENTO</small><b>{date(member.birthDate)}</b></div>
-       <div><small>PLANO</small><b>{member.cardPlan?.name||member.planType||"Não informado"} {member.amountCents!==null?`· ${money(member.amountCents)}`:""}</b></div>
+       <div><small>PLANO</small><b>{member.cardPlan?.name||member.planType||"Não informado"} {!isDependent&&member.amountCents!==null?`· ${money(member.amountCents)}`:""}</b></div>
        <div><small>SITUAÇÃO</small><b>{labels[member.status]}</b></div>
        <div><small>CADASTRO NO SISTEMA</small><b>{date(member.joinedAt)}</b></div>
        <div><small>UNIDADE</small><b>{member.unit||"Não informada"}</b></div>
        <div><small>Nº DO CARTÃO</small><b>{member.cardNumber||"Não emitido"}</b></div>
       </div>
-      {!statusOk&&<div className="member-warning">Identificamos uma situação que precisa de acompanhamento. Consulte a aba Mensalidades ou fale com o suporte Quali para regularizar seu cadastro.</div>}
+      {!isDependent&&!statusOk&&<div className="member-warning">Identificamos uma situação que precisa de acompanhamento. Consulte a aba Mensalidades ou fale com o suporte Quali para regularizar seu cadastro.</div>}
      </section>
-     <section className="member-panel"><h2>Beneficiários</h2>
+     {!isDependent&&<section className="member-panel"><h2>Beneficiários</h2>
       <div className="member-table-wrap"><table><thead><tr><th>NOME</th><th>VÍNCULO</th><th>CPF</th><th>Nº DO CARTÃO</th><th>CONSULTAS NO MÊS</th></tr></thead><tbody>
        <tr><td>{member.name}</td><td>Titular</td><td>Final {member.cpfLast4||"—"}</td><td>{member.cardNumber||"Pendente"}</td><td>{data.consultationsThisMonth}</td></tr>
        {data.dependents.map(item=><tr key={item.id}><td>{item.name}</td><td>Dependente</td><td>Final {item.cpfLast4}</td><td>{item.cardNumber}</td><td>Sem registros</td></tr>)}
       </tbody></table></div>
       <p className="member-muted">{data.dependents.length===0?"Nenhum dependente cadastrado neste cartão.":"Os dependentes estão vinculados ao titular. O uso individual de consultas será conectado aos atendimentos em uma próxima etapa."}</p>
-     </section>
+     </section>}
     </div>
    </div>}
    {tab==="benefits"&&<MemberBenefitsTab data={data}/>}
