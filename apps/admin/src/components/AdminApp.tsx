@@ -18,6 +18,7 @@ import {SettingsPage} from "../screens/dev/SettingsPage";
 import type {User} from "../types/admin";
 
 const privileged = new Set<AdminView>(["dev-users","dev-audit","dev-settings"]);
+const partnerViews = new Set<AdminView>(["validate","attendances","pricing"]);
 export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"}|{mode:"edit";id:string};initialView?:AdminView}){
  const[user,setUser]=useState<User|null>(null);
  const[loading,setLoading]=useState(true);
@@ -36,7 +37,7 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
  }
  if(loading)return <div className="splash">Carregando painel Quali...</div>;
  if(!user)return <Login onLogin={u=>{setUser(u);setView(customerRoute?"clients":u.role==="PARTNER"?"validate":initialView||(new URLSearchParams(window.location.search).get("view") as AdminView)||"dashboard");}}/>;
- const allowedView:AdminView = user.role!=="DEV"&&privileged.has(view)?"dashboard":user.role==="PARTNER"&&view==="dashboard"?"validate":view;
+ const allowedView:AdminView = user.role==="PARTNER"&&!partnerViews.has(view)?"validate":user.role!=="DEV"&&privileged.has(view)?"dashboard":view;
  return <div className={`app-layout ${collapsed?"sidebar-collapsed":""}`}>
    <Sidebar user={user} view={allowedView} setView={next=>{setAttendanceCustomer(null);if(customerRoute){window.location.assign(`/admin/?view=${next}`);}else setView(next);}} logout={logout} collapsed={collapsed} setCollapsed={setCollapsed}/>
    <main className="app-main">
@@ -49,7 +50,7 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
       allowedView==="reports"&&user.role!=="PARTNER"?<ReportsPage/>:
       allowedView==="cards"&&user.role!=="PARTNER"?<CardsPage/>:
       allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
-      allowedView==="pricing"&&user.role!=="PARTNER"?<CatalogPage/>:
+      allowedView==="pricing"?<CatalogPage readonly={user.role==="PARTNER"}/>:
       allowedView==="clients"&&user.role!=="PARTNER"?<FinancePage type="customers"/>:
       allowedView==="payments"&&user.role!=="PARTNER"?<FinancePage type="issues"/>:
       allowedView==="dev-users"&&user.role==="DEV"?<AdminUsersPage/>:
