@@ -1,5 +1,5 @@
 import {Body,Controller,ForbiddenException,Get,Headers,HttpException,Param,Patch,Query} from "@nestjs/common";
-import {createPrismaClient} from "@quali/database";
+import {createPrismaClient,type Prisma} from "@quali/database";
 import {currentUser} from "./auth.controller";
 import {cpfFingerprint,validCpf} from "./finance-customer.validation";
 
@@ -10,10 +10,10 @@ async function administrator(auth?:string){
  if(user.role!=="ADMIN"&&user.role!=="DEV")throw new ForbiddenException("Apenas a administração pode gerir benefícios.");
  return user;
 }
-const missingWhere={
+const missingWhere:Prisma.FinanceCustomerWhereInput={
  benefitActive:true,
  OR:[{birthDate:null},{cpfValid:false},{cpfConflict:true},{partnerId:null},{cardPlanId:null},{cardNumber:null}],
-} as const;
+};
 function missing(record:{birthDate:Date|null;cpfValid:boolean;cpfConflict:boolean;partnerId:string|null;cardPlanId:string|null;cardNumber:string|null}){
  const result:string[]=[];
  if(!record.cpfValid||record.cpfConflict)result.push("CPF inválido ou repetido");
