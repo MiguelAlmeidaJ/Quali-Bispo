@@ -309,3 +309,26 @@ Em **Configurações do sistema → Arquivos da marca** (somente perfil DEV), h�
 O ativo é independente da logo colorida usada nos menus, do favicon e das cores. Ele é persistido no diretório `BRAND_ASSET_DIR` como `logo-white.png`, com URL pública `/v1/branding/assets/logo-white`. A configuração `whiteLogoUrl` é armazenada no JSON de identidade visual já existente, com auditoria `WHITE_LOGO_UPDATED`; não requer migração Prisma. O Clube seleciona essa imagem na área do associado somente quando estiver cadastrada. Antes do upload, mantém a marca branca tipográfica como fallback sem o quadro branco.
 
 Para atualizar essa funcionalidade, faça build de **API, Admin e Clube**, e reinicie os três serviços após os builds. Em seguida, faça o upload no perfil DEV e atualize a página `/associado`. Não há necessidade de rebuild a cada troca posterior de logo.
+
+## Acessos individuais da Rede Credenciada
+
+Em **Admin → Rede credenciada**, cada linha possui o botão **Acesso**. ADMIN e DEV podem criar e atualizar um login exclusivo vinculado à unidade `Partner.id`, sem duplicar os parceiros existentes. Nome, usuário (3–40 caracteres), e-mail e senha inicial (mínimo 12 caracteres) são configurados diretamente no painel; a senha é armazenada somente com hash bcrypt. Ao editar um login existente, deixar a senha vazia a mantém; informar uma nova senha a redefine. É possível desativar o usuário. As alterações são auditadas (`PARTNER_ACCESS_CREATED`, `PARTNER_ACCESS_UPDATED`, `PARTNER_ACCESS_PASSWORD_RESET`).
+
+A API usa `GET /v1/admin/partners/:id/access` e `PUT /v1/admin/partners/:id/access`; o Next possui BFF autenticado correspondente em `/admin/api/partners/[id]/access`. Senhas nunca são devolvidas por GET/PUT e não aparecem nos logs. Se uma unidade já tiver vários usuários PARTNER legados, o painel pede regularização e não altera silenciosamente as contas existentes. Usuários repetidos por nome ou e-mail são rejeitados.
+
+Ao autenticar em `/admin`, o papel `PARTNER` exibe somente **Validar CPF**, **Atendimentos** e **Tabela de valores**. A tabela fica **somente leitura**, mostrando apenas procedimentos ativos; os endpoints de criação/edição continuam exigindo ADMIN/DEV. O parceiro só pode criar e consultar atendimentos da própria unidade vinculada. Inativar o usuário **ou** a unidade invalida login e sessões mesmo com JWT não expirado. A consulta de CPF continua auditada.
+
+A sidebar não exibe mais os títulos de grupos GESTÃO/SISTEMA; seu tamanho e as áreas de clique foram ampliados, mantendo botão de recolhimento.
+
+### Implantação
+```powershell
+git checkout refactor
+git pull origin refactor
+pnpm --filter @quali/api build
+pnpm --filter @quali/admin build
+# Se ambos concluírem:
+pnpm exec pm2 restart quali-api
+pnpm exec pm2 restart quali-admin
+```
+
+Sem migração Prisma ou importação: usa a relação User.partnerId já existente. Para cada unidade ativa, entre com ADMIN/DEV em Rede credenciada → Acesso e defina nome, usuário, e-mail e **senha forte e única**; compartilhe por canal seguro. Testar login do parceiro, somente três menus, tabela sem botão Editar, validação CPF, atendimento restrito à própria unidade e bloqueio após desativar o acesso. Build e testes locais Windows pendentes.

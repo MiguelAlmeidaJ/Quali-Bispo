@@ -34,7 +34,7 @@ function parseInput(raw:unknown){
   active:b.active,
  };
 }
-async function requireAdmin(header?:string){
+async function requireAdmin(header?:string,allowPartner=false){
  if(!header?.startsWith("Bearer "))throw new UnauthorizedException();
  let claims:{sub?:string};
  try {claims=jwt.verify(header.slice(7),secret!,{issuer:"quali-api",audience:"quali-admin"}) as {sub?:string};}
@@ -42,7 +42,13 @@ async function requireAdmin(header?:string){
  if(!claims.sub)throw new UnauthorizedException();
  const user=await db.user.findUnique({where:{id:claims.sub},select:{id:true,role:true,active:true}});
  if(!user?.active)throw new UnauthorizedException();
- if(!["DEV","ADMIN"].includes(user.role))throw new ForbiddenException();
+ if(!["DEV","ADMIN"].includes(user.role)&&!(allowPartner&&user.role==="PARTNER"))throw new ForbiddenException();
+ if(user.role==="PARTNER"&&allowPartner){
+  const account=await db.user.findUnique({where:{id:user.id},select:{partnerId:true}});
+  if(!account?.partnerId)throw new ForbiddenException();
+  const partner=await db.partner.findUnique({where:{id:account.partnerId},select:{active:true}});
+  if(!partner?.active)throw new ForbiddenException();
+ }
  return user;
 }
 const fields={id:true,name:true,category:true,group:true,professional:true,notes:true,normalPriceCents:true,qualiPriceCents:true,active:true,displayOrder:true,sourceDocument:true,createdAt:true,updatedAt:true} as const;
@@ -58,8 +64,8 @@ export class PublicCatalogController {
 export class AdminCatalogController {
  @Get()
  async list(@Headers("authorization") auth?:string){
-  await requireAdmin(auth);
-  return db.catalogItem.findMany({select:fields,orderBy:[{displayOrder:"asc"},{name:"asc"}],take:1000});
+  const user=await requireAdmin(auth,true);
+  return db.catalogItem.findMany({where:user.role==="PARTNER"?{active:true}:{},select:fields,orderBy:[{displayOrder:"asc"},{name:"asc"}],take:1000});
  }
  @Post()
  async create(@Headers("authorization") auth:string|undefined,@Body() data:unknown){

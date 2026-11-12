@@ -20,6 +20,11 @@ export async function currentUser(auth?:string) {
   if (!decoded.sub || !['DEV','ADMIN','PARTNER'].includes(decoded.role)) throw unauthorized();
   const user = await db.user.findUnique({where:{id:decoded.sub},select:{id:true,name:true,username:true,role:true,active:true,partnerId:true}});
   if (!user?.active || user.role !== decoded.role) throw unauthorized();
+  if(user.role==="PARTNER"){
+    if(!user.partnerId)throw unauthorized();
+    const partner=await db.partner.findUnique({where:{id:user.partnerId},select:{active:true}});
+    if(!partner?.active)throw unauthorized();
+  }
   return user;
 }
 @Controller('auth')
@@ -34,6 +39,11 @@ export class AuthController {
     if(typeof body?.username!=='string'||typeof body?.password!=='string'||body.username.length>80||body.password.length>128) throw unauthorized();
     const user=await db.user.findUnique({where:{username:body.username.trim().toLowerCase()}});
     if(!user || !user.active || !['DEV','ADMIN','PARTNER'].includes(user.role) || !(await compare(body.password,user.passwordHash))) throw unauthorized();
+    if(user.role==="PARTNER"){
+      if(!user.partnerId)throw unauthorized();
+      const linked=await db.partner.findUnique({where:{id:user.partnerId},select:{active:true}});
+      if(!linked?.active)throw unauthorized();
+    }
     limits.delete(key);
     const token=jwt.sign({role:user.role,username:user.username},secret!,{subject:user.id,expiresIn:'8h',issuer:'quali-api',audience:'quali-admin'});
     return {token,user:{id:user.id,name:user.name,username:user.username,role:user.role}};

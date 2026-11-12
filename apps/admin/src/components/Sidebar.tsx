@@ -20,24 +20,23 @@ type MenuItem = {
   view: AdminView;
   label: string;
   icon: IconType;
-  group: "principal" | "gestao" | "sistema";
   adminOnly?: boolean;
   devOnly?: boolean;
 };
 
 const items: MenuItem[] = [
-  { view: "dashboard", label: "Painel", icon: FiBarChart2, group: "principal", adminOnly: true },
-  { view: "validate", label: "Validar CPF", icon: FiSearch, group: "principal" },
-  { view: "clients", label: "Clientes", icon: FiUsers, group: "gestao", adminOnly: true },
-  { view: "cards", label: "Cartões", icon: FiCreditCard, group: "gestao", adminOnly: true },
-  { view: "payments", label: "Inadimplência", icon: FiDollarSign, group: "gestao", adminOnly: true },
-  { view: "attendances", label: "Atendimentos", icon: FiActivity, group: "gestao" },
-  { view: "pricing", label: "Tabela de valores", icon: FiClipboard, group: "gestao" },
-  { view: "partners", label: "Rede credenciada", icon: FaRegHospital, group: "gestao", adminOnly: true },
-  { view: "reports", label: "Relatórios", icon: FiFileText, group: "sistema", adminOnly: true },
-  { view: "dev-users", label: "Administradores", icon: FiUserPlus, group: "sistema", devOnly: true },
-  { view: "dev-audit", label: "Auditoria", icon: FiShield, group: "sistema", devOnly: true },
-  { view: "dev-settings", label: "Configurações", icon: FiSettings, group: "sistema", devOnly: true },
+  { view: "dashboard", label: "Painel", icon: FiBarChart2, adminOnly: true },
+  { view: "validate", label: "Validar CPF", icon: FiSearch },
+  { view: "clients", label: "Clientes", icon: FiUsers, adminOnly: true },
+  { view: "cards", label: "Cartões", icon: FiCreditCard, adminOnly: true },
+  { view: "payments", label: "Inadimplência", icon: FiDollarSign, adminOnly: true },
+  { view: "attendances", label: "Atendimentos", icon: FiActivity },
+  { view: "pricing", label: "Tabela de valores", icon: FiClipboard },
+  { view: "partners", label: "Rede credenciada", icon: FaRegHospital, adminOnly: true },
+  { view: "reports", label: "Relatórios", icon: FiFileText, adminOnly: true },
+  { view: "dev-users", label: "Administradores", icon: FiUserPlus, devOnly: true },
+  { view: "dev-audit", label: "Auditoria", icon: FiShield, devOnly: true },
+  { view: "dev-settings", label: "Configurações", icon: FiSettings, devOnly: true },
 ];
 
 export function Sidebar({
@@ -89,14 +88,10 @@ export function Sidebar({
           </button>
         </div>
         <nav className="sidebar-navigation" aria-label="Menu administrativo">
-          {allowedItems.map((item, index) => {
+          {allowedItems.map(item => {
             const Icon = item.icon;
-            const firstInGroup = index === 0 || allowedItems[index - 1].group !== item.group;
             return (
               <div key={item.view}>
-                {firstInGroup && item.group !== "principal" && (
-                  <p className="nav-group">{item.group === "gestao" ? "GESTÃO" : "SISTEMA"}</p>
-                )}
                 <button type="button" onClick={() => navigate(item.view)}
                   className={`sidebar-link ${view === item.view ? "active" : ""}`}
                   aria-current={view === item.view ? "page" : undefined}

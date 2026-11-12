@@ -1,7 +1,8 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
-import {FiEdit2,FiMapPin,FiPlus,FiRefreshCw,FiSearch} from "react-icons/fi";
+import {FiEdit2,FiKey,FiMapPin,FiPlus,FiRefreshCw,FiSearch} from "react-icons/fi";
 import {PartnerModal} from "../components/PartnerModal";
+import {PartnerAccessModal} from "../components/PartnerAccessModal";
 import type {Partner} from "../types/partner";
 import {partnersApi} from "../lib/partnersApi";
 
@@ -9,6 +10,7 @@ export function PartnersPage(){
  const[items,setItems]=useState<Partner[]>([]);
  const[loading,setLoading]=useState(true),[error,setError]=useState(""),[search,setSearch]=useState(""),[status,setStatus]=useState("all");
  const[modal,setModal]=useState<{open:boolean;partner:Partner|null}>({open:false,partner:null});
+ const[accessPartner,setAccessPartner]=useState<Partner|null>(null);
  async function refresh(){
   try{const list=await partnersApi.list();setItems(list);setError("");}
   catch(e){setError(e instanceof Error?e.message:"Não foi possível carregar");}
@@ -55,11 +57,12 @@ export function PartnersPage(){
      <td><span className="partner-discount-badge">até {p.discountPercent}%</span></td>
      <td>{p.monthlyAttendances}</td>
      <td><span className={`partner-status ${p.active?"is-active":"is-inactive"}`}>{p.active?"Ativo":"Inativo"}</span></td>
-     <td><button type="button" className="partner-edit-btn" onClick={()=>setModal({open:true,partner:p})}><FiEdit2 size={14}/>Editar</button></td>
+     <td><div className="partner-row-actions"><button type="button" className="partner-edit-btn" onClick={()=>setAccessPartner(p)}><FiKey size={14}/>Acesso</button><button type="button" className="partner-edit-btn" onClick={()=>setModal({open:true,partner:p})}><FiEdit2 size={14}/>Editar</button></div></td>
     </tr>)}</tbody>
    </table></div>}
    <div className="partners-table-footer">Exibindo {filtered.length} de {items.length} parceiros</div>
   </section>
+  {accessPartner&&<PartnerAccessModal partner={accessPartner} onClose={()=>setAccessPartner(null)}/>}
   {modal.open&&<PartnerModal partner={modal.partner} onClose={()=>setModal({open:false,partner:null})} onSaved={refresh}/>}
  </div>;
 }
