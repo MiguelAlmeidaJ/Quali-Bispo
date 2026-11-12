@@ -25,6 +25,7 @@
     "db:seed:partners": "pnpm --filter @quali/database seed:partners",
     "db:seed:catalog": "pnpm --filter @quali/database seed:catalog",
     "db:import:financeiro": "pnpm --filter @quali/database import:financeiro",
+    "db:import:nascimentos": "pnpm --filter @quali/database import:nascimentos",
     "db:vincular:unidades": "pnpm --filter @quali/database vincular:unidades"
   },
   "devDependencies": {
