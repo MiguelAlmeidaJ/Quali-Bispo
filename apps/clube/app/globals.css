@@ -171,3 +171,142 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
 @media(max-width:460px){.member-metrics{grid-template-columns:1fr}.member-banner-line h1{font-size:22px}.member-status{font-size:11px}.member-details{grid-template-columns:1fr 1fr}}
 
 .member-card-number{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:900;font-size:19px;letter-spacing:1.1px;margin:0 0 20px;color:#fff}
+
+
+/* Cartão digital — composição refinada e marca legível sobre fundo escuro.
+   A marca principal do site permanece inalterada. */
+.member-card-preview{
+  isolation:isolate;
+  aspect-ratio:1.59;
+  min-height:0;
+  padding:23px 22px 21px;
+  border-radius:18px;
+  background:linear-gradient(147deg,#218d4c 0%,#157340 53%,#104d39 100%);
+  box-shadow:0 12px 30px rgba(10,71,49,.18),inset 0 1px 0 rgba(255,255,255,.15);
+}
+.member-card-preview::after{
+  width:200px;
+  height:200px;
+  top:-83px;
+  right:-65px;
+  background:rgba(255,255,255,.075);
+  pointer-events:none;
+  z-index:0;
+}
+.member-card-preview::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:linear-gradient(125deg,rgba(255,255,255,.055),transparent 42%);
+  pointer-events:none;
+  z-index:0;
+}
+.member-card-preview>*{position:relative;z-index:1}
+.member-card-head{align-items:flex-start;gap:14px}
+.member-card-logo{display:inline-flex;align-items:center;flex:0 0 125px;height:45px;overflow:visible}
+.member-card-logo .brand{
+  min-width:0;
+  width:125px;
+  height:48px;
+  transform:skew(-8deg);
+  filter:none;
+  font-style:italic;
+}
+.member-card-logo .brand-image,
+.has-brand-logo .member-card-logo .brand-image{display:none!important;background:none!important}
+.member-card-logo .brand-fallback,
+.has-brand-logo .member-card-logo .brand-fallback{display:flex!important}
+.member-card-logo .brand-word{
+  font-family:Georgia,serif;
+  font-size:37px;
+  font-weight:900;
+  letter-spacing:-3.6px;
+  color:#fff;
+  background:none;
+  -webkit-text-fill-color:#fff;
+  line-height:.89;
+}
+.member-card-logo .brand-sub{
+  color:#fff;
+  font-size:12px;
+  padding-left:42px;
+  letter-spacing:-.5px;
+  line-height:1.1;
+}
+.member-card-head .member-card-plan{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  max-width:48%;
+  min-height:25px;
+  padding:5px 11px;
+  border-radius:999px;
+  background:#fff;
+  color:#12466d;
+  font-size:10px;
+  font-weight:900;
+  line-height:1.25;
+  text-align:center;
+  overflow-wrap:anywhere;
+  text-transform:uppercase;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+.member-card-main{display:flex;flex-direction:column;gap:21px;margin:9px 0 11px}
+.member-card-number{
+  font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  font-size:clamp(17px,2.2vw,21px);
+  line-height:1.1;
+  letter-spacing:1.45px;
+  font-weight:900;
+  margin:0;
+  color:#fff;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.member-card-number-pending{
+  font-family:inherit;
+  font-size:12px;
+  letter-spacing:.08em;
+  color:rgba(255,255,255,.83);
+}
+.member-card-holder{
+  display:block;
+  font-size:15px;
+  font-weight:900;
+  line-height:1.25;
+  letter-spacing:.01em;
+  text-transform:uppercase;
+  overflow-wrap:anywhere;
+  color:#fff;
+}
+.member-card-bottom{
+  display:grid;
+  grid-template-columns:1.15fr .85fr .9fr;
+  gap:12px;
+}
+.member-card-bottom span{
+  min-width:0;
+  color:rgba(245,255,250,.72);
+  font-size:10px;
+  line-height:1.35;
+}
+.member-card-bottom b{
+  display:block;
+  color:#fff;
+  font-weight:800;
+  font-size:11px;
+  line-height:1.35;
+  margin-top:5px;
+  overflow-wrap:anywhere;
+}
+.member-card-bottom .member-card-status{font-weight:900}
+@media(max-width:460px){
+  .member-card-preview{padding:20px 18px;aspect-ratio:1.57}
+  .member-card-logo{flex-basis:113px}
+  .member-card-logo .brand{transform:skew(-8deg) scale(.92);transform-origin:top left}
+  .member-card-head .member-card-plan{font-size:9px;padding:5px 9px}
+  .member-card-main{gap:17px}
+  .member-card-bottom{gap:7px}
+  .member-card-bottom b{font-size:10px}
+}
