@@ -8,6 +8,7 @@ import {PlaceholderPage} from "../screens/PlaceholderPage";
 import {PartnersPage} from "../screens/PartnersPage";
 import {CatalogPage} from "../screens/CatalogPage";
 import {FinancePage} from "../screens/FinancePage";
+import {CustomerReviewPage} from "../screens/CustomerReviewPage";
 import {AttendancesPage} from "../screens/AttendancesPage";
 import {ReportsPage} from "../screens/ReportsPage";
 import {CardsPage} from "../screens/CardsPage";
@@ -52,6 +53,7 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
       allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
       allowedView==="pricing"?<CatalogPage readonly={user.role==="PARTNER"}/>:
       allowedView==="clients"&&user.role!=="PARTNER"?<FinancePage type="customers"/>:
+      allowedView==="depara"&&user.role!=="PARTNER"?<CustomerReviewPage/>:
       allowedView==="payments"&&user.role!=="PARTNER"?<FinancePage type="issues"/>:
       allowedView==="dev-users"&&user.role==="DEV"?<AdminUsersPage/>:
       allowedView==="dev-audit"&&user.role==="DEV"?<AuditPage/>:
