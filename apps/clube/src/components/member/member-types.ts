@@ -4,6 +4,7 @@ export type Issue={id:string;status:Status;rawStatus:string|null;amountCents:num
 export type Partner={id:string;name:string;city:string;address:string;phone:string|null;businessHours:string;serviceType:string;serviceTypes:string[];services:string;discountPercent:number};
 export type CatalogItem={id:string;name:string;category:"CONSULTA"|"CHECKUP"|"EXAME"|"PROCEDIMENTO"|"TERAPIA";group:string;normalPriceCents:number;qualiPriceCents:number;professional:string|null};
 export type Dashboard={
+ accessKind?:"holder"|"dependent";
  member:{name:string;cpfLast4:string|null;birthDate:string|null;planType:string|null;amountCents:number|null;status:Status;unit:string|null;joinedAt:string;referenceDate:string|null;cardNumber:string|null;cardPlan:{name:string;priceCents:number;maxDependents:number;benefits:string[]}|null};
  consultationsThisMonth:number;savingsCents:number;
  attendanceTotals:{count:number;fullPriceCents:number;chargedCents:number;savingsCents:number};
