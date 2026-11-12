@@ -14,5 +14,5 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 export default async function RootLayout({children}:{children:ReactNode}) {
  const brand = await getBranding();
- return <html lang="pt-BR" className={brand.logoUrl ? "has-brand-logo" : ""} style={themeStyle(brand)}><body>{children}</body></html>;
+ return <html lang="pt-BR" className={[brand.logoUrl ? "has-brand-logo" : "", brand.whiteLogoUrl ? "has-brand-white-logo" : ""].filter(Boolean).join(" ")} style={themeStyle(brand)}><body>{children}</body></html>;
 }

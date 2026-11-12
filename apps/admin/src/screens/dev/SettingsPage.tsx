@@ -7,12 +7,13 @@ type Settings = {
   primaryColor: string;
   secondaryColor: string;
   logoUrl: string;
+  whiteLogoUrl: string;
   faviconUrl: string;
 };
-type AssetKind = "logo" | "favicon";
+type AssetKind = "logo" | "logo-white" | "favicon";
 const initial: Settings = {
   appName: "Quali Benefícios", primaryColor: "#0c66aa",
-  secondaryColor: "#21834a", logoUrl: "", faviconUrl: "",
+  secondaryColor: "#21834a", logoUrl: "", whiteLogoUrl: "", faviconUrl: "",
 };
 
 function ImageUploader({ kind, url, onUploaded }: {
@@ -24,7 +25,7 @@ function ImageUploader({ kind, url, onUploaded }: {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const title = kind === "logo" ? "Logotipo" : "Favicon";
+  const title = kind === "logo" ? "Logotipo" : kind === "logo-white" ? "Logo branca do cartão" : "Favicon";
   async function upload() {
     if (!file) return;
     setPending(true); setError(""); setSuccess("");
@@ -49,11 +50,11 @@ function ImageUploader({ kind, url, onUploaded }: {
   }
   return <div className="brand-upload-card">
     <strong>{title}</strong>
-    <div className="brand-upload-preview">
+    <div className={`brand-upload-preview ${kind === "logo-white" ? "brand-upload-preview-dark" : ""}`}>
       {url ? <img src={`${url}?preview=${success.length}`} alt={`Prévia do ${title.toLowerCase()}`} /> : <span className="muted">Nenhuma imagem cadastrada</span>}
     </div>
-    <label htmlFor={`brand-upload-${kind}`} className="muted">PNG, JPG ou WebP · até 2 MB</label>
-    <input id={`brand-upload-${kind}`} type="file" accept="image/png,image/jpeg,image/webp"
+    <label htmlFor={`brand-upload-${kind}`} className="muted">{kind === "logo-white" ? "PNG ou WebP com fundo transparente · até 2 MB. O sistema transforma os elementos visíveis em branco." : "PNG, JPG ou WebP · até 2 MB"}</label>
+    <input id={`brand-upload-${kind}`} type="file" accept={kind === "logo-white" ? "image/png,image/webp" : "image/png,image/jpeg,image/webp"}
       onChange={e => {setFile(e.target.files?.[0] ?? null);setError("");}} />
     <button type="button" className="primary" disabled={!file || pending} onClick={upload}>
       {pending ? "Enviando..." : `Enviar ${title.toLowerCase()}`}
@@ -130,6 +131,7 @@ export function SettingsPage() {
       <p className="muted">Selecione as imagens no seu computador. O servidor converte os arquivos para PNG antes de armazená-los. O upload é exclusivo de usuários DEV.</p>
       <div className="brand-upload-grid">
         <ImageUploader kind="logo" url={form.logoUrl} onUploaded={setForm} />
+        <ImageUploader kind="logo-white" url={form.whiteLogoUrl} onUploaded={setForm} />
         <ImageUploader kind="favicon" url={form.faviconUrl} onUploaded={setForm} />
       </div>
     </section>

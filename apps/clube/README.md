@@ -87,3 +87,7 @@ Não há migração Prisma nesta etapa. Antes de testar, preencha a data de nasc
 ## Cartões emitidos e familiares
 
 O portal autenticado do associado agora exibe o número do titular (quando emitido), os números individuais de dependentes já cadastrados e os benefícios registrados para o tipo de cartão selecionado no Admin. A emissão é feita pelo back-end na criação/edição do cliente; usuários sem CPF confiável e nascimento confirmado permanecem com cartão pendente. A área continua sem geração de PDF oficial; esse recurso exigirá modelo de documento e validações próprias. Os cartões exibem apenas os últimos quatro dígitos do CPF no navegador.
+
+## Logo branca do cartão
+
+O cartão verde na rota `/associado` utiliza `whiteLogoUrl` da identidade visual (imagem `/v1/branding/assets/logo-white`), administrada no painel DEV. O arquivo é convertido para branco com transparência na API e não recebe background/filtro visual. Se o ativo não estiver cadastrado, usa fallback tipográfico branco; o restante da marca do Clube continua com o logo principal. Alterar a imagem em Configurações deve refletir no cartão após recarregar a página, sem recompilar.

@@ -536,3 +536,8 @@
 .customer-dependents>small{display:block;font-size:11px;color:#8596a4;margin-top:12px}
 @media(max-width:1050px){.cards-plan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.cards-plan-grid,.cards-form-grid,.customer-dependent-row{grid-template-columns:1fr}.cards-modal form,.cards-modal>header{padding:18px}.cards-page-heading{flex-direction:column;align-items:flex-start}}
+
+/* Prévia da logo branca sobre o fundo real do cartão */
+.brand-upload-preview.brand-upload-preview-dark{background:linear-gradient(135deg,#208a4a,#12563b);border-color:#26714e}
+.brand-upload-preview-dark img{background:transparent!important}
+.brand-upload-preview-dark .muted{color:#eaf8ee}

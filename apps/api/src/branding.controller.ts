@@ -15,7 +15,7 @@ export class BrandingController {
 
   @Get("assets/:kind")
   async asset(@Param("kind") kind: string, @Res() response: Response) {
-    if (kind !== "logo" && kind !== "favicon") throw new NotFoundException();
+    if (kind !== "logo" && kind !== "logo-white" && kind !== "favicon") throw new NotFoundException();
     try {
       const content = await readBrandAsset(kind);
       response.setHeader("Content-Type", "image/png");
@@ -39,10 +39,13 @@ export class BrandingUploadController {
     @UploadedFile() file?: Express.Multer.File,
   ) {
     const user = await requireDev(authorization);
-    if (kind !== "logo" && kind !== "favicon") throw new BadRequestException("Tipo de imagem inválido");
+    if (kind !== "logo" && kind !== "logo-white" && kind !== "favicon") throw new BadRequestException("Tipo de imagem inválido");
     if (!file?.buffer?.length) throw new BadRequestException("Selecione uma imagem de até 2 MB");
     try { return await storeBrandAsset(kind as AssetKind, file.buffer, user.id); }
     catch (error) {
+      if (error instanceof Error && /Logo branca precisa de fundo transparente/i.test(error.message)) {
+        throw new BadRequestException(error.message);
+      }
       if (error instanceof Error && /Formato inválido|unsupported|Input buffer|corrupt|pixel limit|warning/i.test(error.message)) {
         throw new BadRequestException("Imagem inválida. Envie PNG, JPG ou WebP com até 2 MB.");
       }

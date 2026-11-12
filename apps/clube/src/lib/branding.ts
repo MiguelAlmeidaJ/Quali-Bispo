@@ -4,11 +4,12 @@ export type Branding = {
   primaryColor: string;
   secondaryColor: string;
   logoUrl: string;
+  whiteLogoUrl: string;
   faviconUrl: string;
 };
 export const defaultBranding: Branding = {
   appName: "Quali Benefícios", primaryColor: "#0a65a8",
-  secondaryColor: "#1f8546", logoUrl: "", faviconUrl: "",
+  secondaryColor: "#1f8546", logoUrl: "", whiteLogoUrl: "", faviconUrl: "",
 };
 export async function getBranding(): Promise<Branding> {
   try {
@@ -22,6 +23,7 @@ export async function getBranding(): Promise<Branding> {
       primaryColor: isHex(value.primaryColor) ? value.primaryColor : defaultBranding.primaryColor,
       secondaryColor: isHex(value.secondaryColor) ? value.secondaryColor : defaultBranding.secondaryColor,
       logoUrl: value.logoUrl === "/v1/branding/assets/logo" ? value.logoUrl : "",
+      whiteLogoUrl: value.whiteLogoUrl === "/v1/branding/assets/logo-white" ? value.whiteLogoUrl : "",
       faviconUrl: value.faviconUrl === "/v1/branding/assets/favicon" ? value.faviconUrl : "",
     };
   } catch { return defaultBranding; }

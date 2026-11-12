@@ -310,3 +310,26 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
   .member-card-bottom{gap:7px}
   .member-card-bottom b{font-size:10px}
 }
+
+
+/* Marca branca específica do cartão, fornecida pelas Configurações DEV.
+   A imagem tem canal alpha real e nunca recebe fundo, filtros ou backgrounds globais. */
+.member-card-logo{position:relative;min-width:0}
+.member-card-white-logo{
+  display:none;
+  width:130px;
+  max-width:100%;
+  height:48px;
+  object-fit:contain;
+  object-position:left center;
+  background:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+  transform:none!important;
+}
+.has-brand-white-logo .member-card-logo .member-card-white-logo{display:block}
+.has-brand-white-logo .member-card-logo .member-card-logo-fallback{display:none}
+.member-card-logo-fallback{display:inline-flex;align-items:center}
+@media(max-width:460px){
+ .member-card-white-logo{width:116px;height:43px}
+}
