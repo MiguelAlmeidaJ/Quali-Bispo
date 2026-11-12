@@ -261,3 +261,43 @@ pnpm exec pm2 restart quali-admin
 ```
 
 Não exige `pnpm db:migrate`, seed nem nova importação de clientes. Verifique a página Relatórios com sessão ADMIN/DEV, mês corrente, arquivo CSV importado no Excel, contagens, mês sem atendimentos e tentativa de acesso com perfil PARTNER.
+
+## Cartões e dependentes — Individual / Familiar
+
+A opção **Cartões** do menu Admin usa `src/screens/CardsPage.tsx` para criar e editar os tipos de cartão, com **nome**, **mensalidade**, **benefícios por linha**, **ativo/inativo** e composição: Individual (somente titular) ou Familiar (titular + até 3 dependentes). Os tipos são mantidos no PostgreSQL por `CardPlan` e acessados apenas pelos papéis ADMIN e DEV.
+
+Em **Clientes → Novo/Editar**, o campo `Tipo de cartão` é um seletor de `CardPlan`. Ao selecionar, exibe benefícios e preenche automaticamente a mensalidade `priceCents`. A API também toma o preço e o nome **diretamente do plano** (não confia em valores enviados pelo navegador). Clientes legados preservam o plano e o preço histórico até a seleção do novo tipo.
+
+Se o cartão permite dependentes, o formulário habilita a inclusão de até três pessoas com nome, CPF e data de nascimento. Cada dependente é registrado em `CardDependent` com hash HMAC-SHA256 do CPF, últimos 4 dígitos e número de cartão exclusivo. Dependentes existentes continuam vinculados; omiti-los na edição não os exclui. Uma troca de plano que não comporte os dependentes existentes é rejeitada. Excluir ou reemitir cartões exigirá fluxo próprio para preservar histórico.
+
+### Numeração oficial do sistema
+
+A sequência de **12 dígitos** é `AAMM AACC NNNN`:
+
+- `AA`: dois últimos dígitos do ano em que o titular foi criado no sistema;
+- `MM`: mês de criação do titular;
+- `AA` (segunda parte): dois últimos dígitos do ano de nascimento de cada pessoa;
+- `CC`: dois últimos dígitos do CPF daquela pessoa;
+- `NNNN`: contador **global, crescente** de 0001 até 9999, reservado atomicamente na mesma transação da emissão.
+
+Exemplo: cadastro em novembro de 2026, nascimento em 2001, CPF terminado em 62 e primeira emissão → `2611 0162 0001`. Um dependente recebe o próximo número global de série conforme seu próprio nascimento e CPF. `cardNumber` é único no banco e não é recalculado depois de emitido. Alterar CPF ou nascimento após a emissão requer processo administrativo controlado de reemissão (bloqueado nesta etapa). Quando faltar nascimento ou CPF confiável no cliente importado, o cartão fica pendente até conferência e correção.
+
+Os números não são documento governamental nem equivalem a comprovantes de cobertura; o acesso e a elegibilidade continuam dependentes das regras financeiras. A nova sequência suporta 9999 emissões; antes de atingir esse volume será necessário expandir o esquema de serialização.
+
+### Implantação (exige migração Prisma)
+
+```powershell
+git checkout refactor
+git pull origin refactor
+pnpm db:generate
+pnpm db:migrate
+pnpm build
+# após builds concluídos:
+pnpm exec pm2 restart quali-api
+pnpm exec pm2 restart quali-admin
+pnpm exec pm2 restart quali-clube
+```
+
+Depois, em Admin → Cartões, cadastre os planos oficiais (preços e benefícios). Somente então selecione-os no cadastro dos clientes. A migração preserva os clientes e CPF/hash já existentes. Não é necessário reimportar planilha. **Não execute seed de clientes novamente.**
+
+Verifique: dois cartões com tipos diferentes, seleção automática de preço, zero/até 3 dependentes, CPF duplicado, criação/edição de titular, número de 12 dígitos, edição de cliente histórico sem data de nascimento, e visibilidade de cartão/dependentes na área do associado. O código e a migração ainda precisam de build/teste no Windows.

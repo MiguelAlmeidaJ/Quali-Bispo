@@ -83,3 +83,7 @@ pnpm exec pm2 restart quali-clube
 ```
 
 Não há migração Prisma nesta etapa. Antes de testar, preencha a data de nascimento de um cliente cuja situação/cadastro estejam corretos. Teste CPF+nascimento corretos e incorretos, sessão expirada, logout, isolamento entre dois clientes e a visibilidade de dados financeiros. **Para operação pública com dados pessoais sensíveis, acrescentar segundo fator por código de uso único (OTP), rate limiting compartilhado no banco/Redis e monitoramento de tentativas.** A proteção atual é uma primeira implementação e não substitui essa etapa de endurecimento.
+
+## Cartões emitidos e familiares
+
+O portal autenticado do associado agora exibe o número do titular (quando emitido), os números individuais de dependentes já cadastrados e os benefícios registrados para o tipo de cartão selecionado no Admin. A emissão é feita pelo back-end na criação/edição do cliente; usuários sem CPF confiável e nascimento confirmado permanecem com cartão pendente. A área continua sem geração de PDF oficial; esse recurso exigirá modelo de documento e validações próprias. Os cartões exibem apenas os últimos quatro dígitos do CPF no navegador.

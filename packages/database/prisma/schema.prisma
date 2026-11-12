@@ -164,6 +164,10 @@ model FinanceCustomer {
   cpfValid       Boolean        @default(false)
   cpfConflict    Boolean        @default(false)
   planType       String?
+  cardPlanId     String?        @db.Uuid
+  cardPlan       CardPlan?      @relation(fields: [cardPlanId], references: [id], onDelete: SetNull)
+  cardNumber     String?        @unique
+  dependents     CardDependent[]
   amountCents    Int?
   paymentMethod  String?
   paymentDetails String?
@@ -229,4 +233,36 @@ model FinanceAttendance {
   @@index([performedAt, voidedAt])
   @@index([partnerId, performedAt])
   @@index([customerId, performedAt])
+}
+
+model CardPlan {
+  id             String            @id @default(uuid()) @db.Uuid
+  name           String            @unique
+  priceCents     Int
+  maxDependents  Int               @default(0)
+  benefits       String[]          @default([])
+  active         Boolean           @default(true)
+  customers      FinanceCustomer[]
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model CardSequence {
+  key       String @id
+  lastValue Int    @default(0)
+}
+
+model CardDependent {
+  id          String          @id @default(uuid()) @db.Uuid
+  customerId  String          @db.Uuid
+  customer    FinanceCustomer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  name        String
+  cpfHash     String          @unique
+  cpfLast4    String
+  birthDate   DateTime        @db.Date
+  cardNumber  String          @unique
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([customerId])
 }

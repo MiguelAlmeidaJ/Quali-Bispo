@@ -9,7 +9,7 @@ export async function PATCH(request:NextRequest,context:{params:Promise<{resourc
  if(!token)return NextResponse.json({error:"Autenticação necessária"},{status:401});
  let body:string;
  try{body=JSON.stringify(await request.json());}catch{return NextResponse.json({error:"JSON inválido"},{status:400});}
- if(body.length>2000)return NextResponse.json({error:"Dados muito extensos"},{status:413});
+ if(body.length>10000)return NextResponse.json({error:"Dados muito extensos"},{status:413});
  try{
   const endpoint=process.env.INTERNAL_API_URL||"http://127.0.0.1:4002/v1";
   const response=await fetch(`${endpoint}/admin/finance/${resource}/${id}`,{

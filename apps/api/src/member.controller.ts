@@ -28,7 +28,9 @@ function verifySession(auth?:string):string{
  }catch{throw new UnauthorizedException("Sessão expirada ou inválida");}
 }
 const selectMember={
- id:true,name:true,cpfLast4:true,birthDate:true,planType:true,amountCents:true,
+ id:true,name:true,cpfLast4:true,birthDate:true,planType:true,amountCents:true,cardNumber:true,
+ cardPlan:{select:{name:true,priceCents:true,maxDependents:true,benefits:true}},
+ dependents:{select:{id:true,name:true,cpfLast4:true,birthDate:true,cardNumber:true},orderBy:{createdAt:"asc"}},
  status:true,partner:{select:{id:true,name:true,city:true}},unit:true,
  createdAt:true,referenceDate:true,cpfValid:true,cpfConflict:true,
 } as const;
@@ -71,7 +73,8 @@ export class MemberController{
   if(!member||!member.cpfValid||member.cpfConflict||!member.birthDate)
    throw new UnauthorizedException("Cadastro indisponível. Procure a central Quali.");
   return {
-   id:member.id,name:member.name,cpfLast4:member.cpfLast4,
+   id:member.id,name:member.name,cpfLast4:member.cpfLast4,cardNumber:member.cardNumber,
+   dependents:member.dependents,cardPlan:member.cardPlan,
    birthDate:member.birthDate,planType:member.planType,amountCents:member.amountCents,
    status:member.status,partner:member.partner,unit:member.partner?.name||member.unit,
    joinedAt:member.createdAt,referenceDate:member.referenceDate,
@@ -102,12 +105,14 @@ export class MemberController{
   const saved=(savings._sum.fullPriceCents||0)-(savings._sum.chargedCents||0);
   return {
    member:{name:member.name,cpfLast4:member.cpfLast4,birthDate:member.birthDate,
+    cardNumber:member.cardNumber,cardPlan:member.cardPlan,
     planType:member.planType,amountCents:member.amountCents,status:member.status,
     unit:member.partner?.name||member.unit,joinedAt:member.createdAt,
     referenceDate:member.referenceDate},
    consultationsThisMonth:consultations,savingsCents:saved,attendances,issues,partners,
    // Dados não registrados de forma confiável na base financeira.
-   dependentsAvailable:false,cardNumber:null,phone:null,nextDueDate:null,
+   dependentsAvailable:member.dependents.length>0,dependents:member.dependents,
+   cardNumber:member.cardNumber,phone:null,nextDueDate:null,
    consultationLimit:null,
   };
  }

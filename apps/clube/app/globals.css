@@ -169,3 +169,5 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
 @media(max-width:1000px){.member-layout{grid-template-columns:1fr}.member-left{max-width:420px}.member-benefit-grid,.member-partners-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.member-metrics,.member-details,.member-pay-summary{grid-template-columns:1fr 1fr}.member-benefit-grid,.member-partners-grid{grid-template-columns:1fr}.member-panel{padding:17px}.member-tabs button{padding:10px 12px}.member-metrics article{padding:14px}.member-metrics strong{font-size:20px}}
 @media(max-width:460px){.member-metrics{grid-template-columns:1fr}.member-banner-line h1{font-size:22px}.member-status{font-size:11px}.member-details{grid-template-columns:1fr 1fr}}
+
+.member-card-number{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-weight:900;font-size:19px;letter-spacing:1.1px;margin:0 0 20px;color:#fff}

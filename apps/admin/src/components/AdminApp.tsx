@@ -10,6 +10,7 @@ import {CatalogPage} from "../screens/CatalogPage";
 import {FinancePage} from "../screens/FinancePage";
 import {AttendancesPage} from "../screens/AttendancesPage";
 import {ReportsPage} from "../screens/ReportsPage";
+import {CardsPage} from "../screens/CardsPage";
 import {CustomerFormPage} from "../screens/CustomerFormPage";
 import {AdminUsersPage} from "../screens/dev/AdminUsersPage";
 import {AuditPage} from "../screens/dev/AuditPage";
@@ -17,15 +18,15 @@ import {SettingsPage} from "../screens/dev/SettingsPage";
 import type {User} from "../types/admin";
 
 const privileged = new Set<AdminView>(["dev-users","dev-audit","dev-settings"]);
-export function AdminApp({customerRoute}:{customerRoute?:{mode:"new"}|{mode:"edit";id:string}}){
+export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"}|{mode:"edit";id:string};initialView?:AdminView}){
  const[user,setUser]=useState<User|null>(null);
  const[loading,setLoading]=useState(true);
- const[view,setView]=useState<AdminView>("dashboard");
+ const[view,setView]=useState<AdminView>(initialView||"dashboard");
  const[collapsed,setCollapsed]=useState(false);
  useEffect(()=>{
    fetch("/admin/api/session",{cache:"no-store"})
      .then(r=>r.ok?r.json():null)
-     .then(data=>{if(data?.user){setUser(data.user);setView(customerRoute?"clients":data.user.role==="PARTNER"?"validate":new URLSearchParams(window.location.search).get("view") as AdminView||"dashboard");}})
+     .then(data=>{if(data?.user){setUser(data.user);setView(customerRoute?"clients":data.user.role==="PARTNER"?"validate":initialView||(new URLSearchParams(window.location.search).get("view") as AdminView)||"dashboard");}})
      .catch(()=>{})
      .finally(()=>setLoading(false));
  },[]);
@@ -33,7 +34,7 @@ export function AdminApp({customerRoute}:{customerRoute?:{mode:"new"}|{mode:"edi
    try {await fetch("/admin/api/session",{method:"DELETE"});} finally {setUser(null);setView("dashboard");}
  }
  if(loading)return <div className="splash">Carregando painel Quali...</div>;
- if(!user)return <Login onLogin={u=>{setUser(u);setView(customerRoute?"clients":u.role==="PARTNER"?"validate":new URLSearchParams(window.location.search).get("view") as AdminView||"dashboard");}}/>;
+ if(!user)return <Login onLogin={u=>{setUser(u);setView(customerRoute?"clients":u.role==="PARTNER"?"validate":initialView||(new URLSearchParams(window.location.search).get("view") as AdminView)||"dashboard");}}/>;
  const allowedView:AdminView = user.role!=="DEV"&&privileged.has(view)?"dashboard":user.role==="PARTNER"&&view==="dashboard"?"validate":view;
  return <div className={`app-layout ${collapsed?"sidebar-collapsed":""}`}>
    <Sidebar user={user} view={allowedView} setView={next=>{if(customerRoute){window.location.assign(`/admin/?view=${next}`);}else setView(next);}} logout={logout} collapsed={collapsed} setCollapsed={setCollapsed}/>
@@ -43,6 +44,7 @@ export function AdminApp({customerRoute}:{customerRoute?:{mode:"new"}|{mode:"edi
       allowedView==="validate"?<ValidateCpfPage/>:
       allowedView==="attendances"?<AttendancesPage user={user}/>:
       allowedView==="reports"&&user.role!=="PARTNER"?<ReportsPage/>:
+      allowedView==="cards"&&user.role!=="PARTNER"?<CardsPage/>:
       allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
       allowedView==="pricing"&&user.role!=="PARTNER"?<CatalogPage/>:
       allowedView==="clients"&&user.role!=="PARTNER"?<FinancePage type="customers"/>:
