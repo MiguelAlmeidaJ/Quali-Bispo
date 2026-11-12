@@ -10,6 +10,7 @@ import {CatalogPage} from "../screens/CatalogPage";
 import {FinancePage} from "../screens/FinancePage";
 import {AttendancesPage} from "../screens/AttendancesPage";
 import {ReportsPage} from "../screens/ReportsPage";
+import {CardsPage} from "../screens/CardsPage";
 import {CustomerFormPage} from "../screens/CustomerFormPage";
 import {AdminUsersPage} from "../screens/dev/AdminUsersPage";
 import {AuditPage} from "../screens/dev/AuditPage";
@@ -43,6 +44,7 @@ export function AdminApp({customerRoute}:{customerRoute?:{mode:"new"}|{mode:"edi
       allowedView==="validate"?<ValidateCpfPage/>:
       allowedView==="attendances"?<AttendancesPage user={user}/>:
       allowedView==="reports"&&user.role!=="PARTNER"?<ReportsPage/>:
+      allowedView==="cards"&&user.role!=="PARTNER"?<CardsPage/>:
       allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
       allowedView==="pricing"&&user.role!=="PARTNER"?<CatalogPage/>:
       allowedView==="clients"&&user.role!=="PARTNER"?<FinancePage type="customers"/>:
