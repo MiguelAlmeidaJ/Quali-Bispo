@@ -406,3 +406,27 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
 @media(max-width:1060px){.member-benefits-grid,.member-partner-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:770px){.member-benefits-grid,.member-partner-grid,.member-stat-grid{grid-template-columns:1fr}.member-partner-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.member-partner-filters label:first-child{grid-column:1/-1}.member-section-intro{align-items:flex-start;flex-direction:column}.member-benefit-card{min-height:300px}.member-stat{min-height:115px}}
 @media(max-width:450px){.member-partner-filters{grid-template-columns:1fr}.member-partner-filters label:first-child{grid-column:auto}.member-modern-tab{gap:15px}.member-benefit-card,.member-partner-card{padding:16px}.member-section-intro h2{font-size:21px}.member-stat strong{font-size:24px}}
+
+
+/* Cartão de Benefícios: frente limpa, sem selo ou situação.
+   PDF verdadeiro servido em /api/associate/card, tamanho físico ID-1. */
+.member-card-preview .member-card-head{justify-content:flex-start}
+.member-card-preview .member-card-bottom{grid-template-columns:1fr .8fr 1.1fr;gap:11px}
+.member-card-preview .member-card-bottom span:last-child b{white-space:nowrap;font-variant-numeric:tabular-nums}
+.member-download-card{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  min-height:48px;width:100%;background:#19854a;color:#fff;
+  border:1px solid #19854a;border-radius:12px;
+  font-size:13px;font-weight:900;text-decoration:none;
+  padding:12px 14px;transition:background .16s,transform .16s;
+  box-shadow:0 5px 12px rgba(20,104,64,.12)
+}
+.member-download-card:hover{background:#116b3a;color:#fff;transform:translateY(-1px)}
+.member-download-card:focus-visible{outline:3px solid #0c6ca9;outline-offset:3px}
+.member-download-card span{font-size:19px;line-height:1}
+.member-card-print-note{margin:0;text-align:center;color:#6b8496;font-size:11px;line-height:1.55;padding:0 9px}
+@media(max-width:460px){
+ .member-card-preview .member-card-bottom{gap:7px;grid-template-columns:.9fr .7fr 1.1fr}
+ .member-card-preview .member-card-bottom b{font-size:10px}
+ .member-download-card{font-size:12px}
+}
