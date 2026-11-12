@@ -179,7 +179,7 @@ export class FinanceController {
     paymentMethod:payload.paymentMethod,paymentDetails:payload.paymentDetails,status:payload.status,
     ...(payload.cpf?{cpfHash,cpfLast4:payload.cpf.slice(-4),cpfValid:true,cpfConflict:false}:{}),
    },select:{id:true,createdAt:true,birthDate:true,cpfValid:true,cpfConflict:true,cpfLast4:true,cardNumber:true}});
-   await issueHolderCard(tx,record);
+   if(plan)await issueHolderCard(tx,record);
    if(input.dependents!==undefined)await saveDependents(tx,id,input.dependents,plan!.maxDependents,actor.id);
    await tx.auditLog.create({data:{actorId:actor.id,action:"FINANCE_CUSTOMER_UPDATED",
     entityType:"FinanceCustomer",entityId:id,metadata:{cardPlanId:plan?.id||null,partnerId}}});
