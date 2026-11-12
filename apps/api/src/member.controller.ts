@@ -85,19 +85,21 @@ export class MemberController{
    throw new UnauthorizedException("Cadastro indisponível. Procure a central Quali.");
   const today=new Date(),start=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),1));
   const next=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth()+1,1));
-  const [attendances,consultations,issues,partners]=await Promise.all([
+  const [attendances,consultations,savings,issues,partners]=await Promise.all([
    db.financeAttendance.findMany({where:{customerId:id,voidedAt:null},orderBy:{performedAt:"desc"},
     take:100,select:{id:true,performedAt:true,serviceName:true,serviceType:true,
      fullPriceCents:true,chargedCents:true,partner:{select:{name:true}}}}),
-   db.financeAttendance.count({where:{customerId:id,voidedAt:null,serviceType:{in:["CONSULTA","TERAPIA"]},
+   db.financeAttendance.count({where:{customerId:id,voidedAt:null,serviceType:"CONSULTA",
     performedAt:{gte:start,lt:next}}}),
+   db.financeAttendance.aggregate({where:{customerId:id,voidedAt:null},
+    _sum:{fullPriceCents:true,chargedCents:true}}),
    db.financeIssue.findMany({where:{customerId:id,resolved:false},orderBy:{createdAt:"desc"},take:30,
     select:{id:true,rawStatus:true,status:true,amountCents:true,referenceDate:true,paymentMethod:true}}),
    db.partner.findMany({where:{active:true},orderBy:{name:"asc"},take:100,
     select:{id:true,name:true,city:true,address:true,phone:true,businessHours:true,
      serviceType:true,serviceTypes:true,discountPercent:true}}),
   ]);
-  const saved=attendances.reduce((sum,item)=>sum+item.fullPriceCents-item.chargedCents,0);
+  const saved=(savings._sum.fullPriceCents||0)-(savings._sum.chargedCents||0);
   return {
    member:{name:member.name,cpfLast4:member.cpfLast4,birthDate:member.birthDate,
     planType:member.planType,amountCents:member.amountCents,status:member.status,
