@@ -40,3 +40,5 @@
 
 - Cartões: `CardPlan` é fonte canônica para preço e benefícios, `CardDependent` possui CPF HMAC e número próprio, `CardSequence` reserva sequência global de 4 dígitos em transação. Números não devem ser alterados após emissão, nem CPFs completos expostos em API. Não deduzir aniversário ausente.
 - Não trocar para plano individual se já houver dependentes; bloqueie mudanças de CPF/nascimento após emissão até fluxo auditado de reemissão. Não criar/excluir dependentes silenciosamente.
+
+- Portal do associado: as quatro abas modernas usam `MemberBenefitsTab`, `MemberPartnersTab`, `MemberBillingTab` e `MemberAttendancesTab` com `member-types.ts`; preços do `CatalogItem`, parceiros ativos da rede e atendimentos do próprio titular. Não inventar meses pagos, datas de vencimento, limites de consultas ou registros de dependentes sem modelo e dados reais.
