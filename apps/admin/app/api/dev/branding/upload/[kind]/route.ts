@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest, context: { params: Promise<{ kind: string }> }) {
   const { kind } = await context.params;
-  if (kind !== "logo" && kind !== "favicon") {
+  if (kind !== "logo" && kind !== "logo-white" && kind !== "favicon") {
     return NextResponse.json({ error: "Imagem inválida" }, { status: 400 });
   }
   if (request.headers.has("sec-fetch-site") && !["same-origin","none"].includes(request.headers.get("sec-fetch-site")!)) {
