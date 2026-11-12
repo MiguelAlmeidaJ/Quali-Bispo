@@ -101,17 +101,29 @@ export class MemberController{
  @Get("card.pdf")
  async downloadCard(@Headers("authorization") auth:string|undefined,@Res() response:Response){
   // Mesmo JWT dedicado ao associado; nunca aceitar token de ADMIN/PARTNER.
-  const id=verifySession(auth);
-  const member=await db.financeCustomer.findUnique({where:{id},
-   select:{name:true,cardNumber:true,cpfLast4:true,birthDate:true,cpfValid:true,cpfConflict:true}});
-  if(!member||!member.cpfValid||member.cpfConflict||!member.birthDate||!member.benefitActive)
-   throw new UnauthorizedException("Cadastro indisponível. Procure a central Quali.");
-  if(!member.cardNumber||!member.cpfLast4)
+  const session=verifySession(auth);
+  let name:string,cardNumber:string|null,cpfLast4:string|null,birthDate:Date|null;
+  let relationship:"Titular"|"Dependente"="Titular";
+  if(session.kind==="dependent"){
+   const dep=await db.cardDependent.findUnique({where:{id:session.id},
+    select:{name:true,cardNumber:true,cpfLast4:true,birthDate:true,benefitActive:true,
+     customer:{select:{benefitActive:true,cpfValid:true,cpfConflict:true}}}});
+   if(!dep?.benefitActive||!dep.customer.benefitActive||!dep.customer.cpfValid||dep.customer.cpfConflict)
+    throw new UnauthorizedException("Benefício indisponível");
+   ({name,cardNumber,cpfLast4,birthDate}=dep);
+   relationship="Dependente";
+  }else{
+   const holder=await db.financeCustomer.findUnique({where:{id:session.id},
+    select:{name:true,cardNumber:true,cpfLast4:true,birthDate:true,cpfValid:true,cpfConflict:true,benefitActive:true}});
+   if(!holder||!holder.cpfValid||holder.cpfConflict||!holder.birthDate||!holder.benefitActive)
+    throw new UnauthorizedException("Cadastro indisponível. Procure a central Quali.");
+   ({name,cardNumber,cpfLast4,birthDate}=holder);
+  }
+  if(!cardNumber||!cpfLast4||!birthDate)
    throw new HttpException("Cartão ainda não emitido. Regularize o cadastro.",409);
-  const pdf=await makeMemberCardPdf({name:member.name,number:member.cardNumber,
-   cpfLast4:member.cpfLast4,birthDate:member.birthDate});
+  const pdf=await makeMemberCardPdf({name,number:cardNumber,cpfLast4,birthDate,relationship});
   response.setHeader("Content-Type","application/pdf");
-  response.setHeader("Content-Disposition",`attachment; filename="quali-cartao-${member.cardNumber}.pdf"`);
+  response.setHeader("Content-Disposition",`attachment; filename="quali-cartao-${cardNumber}.pdf"`);
   response.setHeader("Cache-Control","private, no-store, max-age=0");
   response.setHeader("X-Content-Type-Options","nosniff");
   response.end(pdf);
@@ -146,7 +158,7 @@ export class MemberController{
   }
   const id=session.id;
   const member=await db.financeCustomer.findUnique({where:{id},select:selectMember});
-  if(!member||!member.cpfValid||member.cpfConflict||!member.birthDate)
+  if(!member||!member.cpfValid||member.cpfConflict||!member.birthDate||!member.benefitActive)
    throw new UnauthorizedException("Cadastro indisponível. Procure a central Quali.");
   const today=new Date(),start=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth(),1));
   const next=new Date(Date.UTC(today.getUTCFullYear(),today.getUTCMonth()+1,1));
