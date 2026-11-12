@@ -146,7 +146,7 @@ export function CustomerFormPage({id}:{id?:string}){
       <input required minLength={2} maxLength={180} value={form.name} onChange={e=>update("name",e.target.value)}/></label>
      <label><span className="customer-field-title">CPF {!editing&&<em>*</em>}</span>
       <input required={!editing} disabled={!!original?.cardNumber} maxLength={14} inputMode="numeric" autoComplete="off"
-       onBlur={()=>{if(form.cpf)void checkCpf(form.cpf,"holder");}} value={form.cpf} placeholder="000.000.000-00" onChange={e=>update("cpf",formatCpf(e.target.value))}/>
+       onBlur={()=>{if(form.cpf)void checkCpf(form.cpf,"holder");}} value={form.cpf} placeholder="000.000.000-00" onChange={e=>{update("cpf",formatCpf(e.target.value));setCpfChecks(v=>({...v,holder:""}));}}/>
       {cpfChecks.holder&&<small className={cpfChecks.holder.includes("já possui")?"customer-cpf-blocked":"customer-cpf-checked"}>{cpfChecks.holder}</small>}
       <small>{original?.cpfLast4?`CPF cadastrado: final ${original.cpfLast4}. Deixe vazio para manter. Após emissão, CPF/nascimento exigem reemissão administrativa.`:"O CPF é protegido no banco."}</small></label>
      <label><span className="customer-field-title">Data de nascimento {!editing&&<em>*</em>}</span>
@@ -188,7 +188,7 @@ export function CustomerFormPage({id}:{id?:string}){
       <label>CPF <input required={!item.id} disabled={!!item.cardNumber} value={item.cpf} inputMode="numeric" maxLength={14}
        onBlur={()=>{if(!item.id)void checkCpf(item.cpf,`dependent-${index}`);}}
        placeholder={item.id?`Cadastrado: final ${item.cpfLast4}`:"000.000.000-00"}
-       onChange={e=>updateDependent(index,"cpf",formatCpf(e.target.value))}/>
+       onChange={e=>{updateDependent(index,"cpf",formatCpf(e.target.value));setCpfChecks(v=>({...v,[`dependent-${index}`]:""}));}}/>
        {cpfChecks[`dependent-${index}`]&&<small className={cpfChecks[`dependent-${index}`].includes("já possui")?"customer-cpf-blocked":"customer-cpf-checked"}>{cpfChecks[`dependent-${index}`]}</small>}</label>
       <label>Nascimento <input required type="date" disabled={!!item.cardNumber} max={new Date().toISOString().slice(0,10)}
        value={item.birthDate} onChange={e=>updateDependent(index,"birthDate",e.target.value)}/></label>
@@ -210,7 +210,7 @@ export function CustomerFormPage({id}:{id?:string}){
     </section>}
     {error&&<p className="notice error" role="alert">{error}</p>}
     <footer className="customer-editor-footer"><button type="button" className="customer-cancel" onClick={returnToClients} disabled={saving}>Cancelar</button>
-     <button type="submit" className="customer-submit" disabled={saving||loadingOptions}><FiCheck/> {saving?"Salvando...":editing?"Salvar alterações":"Cadastrar cliente"}</button></footer>
+     <button type="submit" className="customer-submit" disabled={saving||loadingOptions||Object.values(cpfChecks).some(value=>value.includes("já possui"))}><FiCheck/> {saving?"Salvando...":editing?"Salvar alterações":"Cadastrar cliente"}</button></footer>
    </form>}
  </div>;
 }
