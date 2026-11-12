@@ -75,10 +75,22 @@ export function MemberPortal(){
   <main className="wrap member-content">
    {tab==="overview"&&<div className="member-layout">
     <aside className="member-left">
-     <div className="member-card-preview">
-      <div className="member-card-head"><Brand/><span>{member.planType||"PLANO QUALI"}</span></div>
-      <div><div className="member-card-number">{member.cardNumber?member.cardNumber.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3"):"Número ainda não emitido"}</div><strong>{member.name}</strong></div><div className="member-card-bottom"><span>CPF (final)<b>•••• {member.cpfLast4||"—"}</b></span>
-       <span>Vínculo<b>Titular</b></span><span>Situação<b>{labels[member.status]}</b></span></div>
+     <div className="member-card-preview" aria-label="Cartão digital de identificação do associado">
+      <div className="member-card-head">
+       <span className="member-card-logo"><Brand/></span>
+       <span className="member-card-plan">{member.cardPlan?.name||member.planType||"PLANO QUALI"}</span>
+      </div>
+      <div className="member-card-main">
+       <div className={`member-card-number ${member.cardNumber?"":"member-card-number-pending"}`}>
+        {member.cardNumber?member.cardNumber.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3"):"AGUARDANDO EMISSÃO"}
+       </div>
+       <strong className="member-card-holder">{member.name}</strong>
+      </div>
+      <div className="member-card-bottom">
+       <span>CPF (final)<b>•••• {member.cpfLast4||"—"}</b></span>
+       <span>Vínculo<b>Titular</b></span>
+       <span>Situação<b className="member-card-status">{labels[member.status]}</b></span>
+      </div>
      </div>
      <div className="member-card-warning">{member.cardNumber?"Número de cartão gerado e registrado no sistema. A versão PDF ainda não foi implementada.":"Número pendente: confira CPF e data de nascimento no cadastro administrativo."}</div>
     </aside>
