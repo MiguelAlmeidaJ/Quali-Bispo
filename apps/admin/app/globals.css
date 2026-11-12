@@ -541,3 +541,13 @@
 .brand-upload-preview.brand-upload-preview-dark{background:linear-gradient(135deg,#208a4a,#12563b);border-color:#26714e}
 .brand-upload-preview-dark img{background:transparent!important}
 .brand-upload-preview-dark .muted{color:#eaf8ee}
+
+
+/* Atalho de atendimento após validar o CPF */
+.cpf-attendance-actions{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid rgba(20,119,68,.16)}
+.cpf-create-attendance{display:inline-flex;align-items:center;justify-content:center;gap:9px;background:#188449;color:white;border:1px solid #188449;border-radius:10px;padding:11px 18px;font-size:13px;font-weight:900;min-height:43px}
+.cpf-create-attendance:hover{background:#116b3b}
+.cpf-create-attendance:focus-visible{outline:3px solid #5cb993;outline-offset:2px}
+.cpf-attendance-actions>span,.cpf-attendance-hint{color:#4e715b;font-size:12px;line-height:1.5;margin:0}
+.cpf-attendance-hint{margin-top:12px}
+@media(max-width:550px){.cpf-attendance-actions{align-items:stretch;flex-direction:column}.cpf-create-attendance{width:100%}}
