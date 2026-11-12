@@ -98,7 +98,7 @@ export function MemberPortal(){
      {isDependent&&<div className="member-dependent-note">Cartão de dependente vinculado ao titular. Seus benefícios podem ser consultados nas abas Meus benefícios e Rede parceira.</div>}
      <section className="member-panel"><h2>Meus dados</h2>
       <div className="member-details">
-       <div><small>TITULAR</small><b>{member.name}</b></div>
+       <div><small>{isDependent?"BENEFICIÁRIO":"TITULAR"}</small><b>{member.name}</b></div>
        <div><small>CPF</small><b>Final {member.cpfLast4||"não informado"}</b></div>
        <div><small>NASCIMENTO</small><b>{date(member.birthDate)}</b></div>
        <div><small>PLANO</small><b>{member.cardPlan?.name||member.planType||"Não informado"} {!isDependent&&member.amountCents!==null?`· ${money(member.amountCents)}`:""}</b></div>
