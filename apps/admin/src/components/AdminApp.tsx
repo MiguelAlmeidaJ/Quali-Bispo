@@ -9,6 +9,7 @@ import {PartnersPage} from "../screens/PartnersPage";
 import {CatalogPage} from "../screens/CatalogPage";
 import {FinancePage} from "../screens/FinancePage";
 import {AttendancesPage} from "../screens/AttendancesPage";
+import {ReportsPage} from "../screens/ReportsPage";
 import {CustomerFormPage} from "../screens/CustomerFormPage";
 import {AdminUsersPage} from "../screens/dev/AdminUsersPage";
 import {AuditPage} from "../screens/dev/AuditPage";
@@ -41,6 +42,7 @@ export function AdminApp({customerRoute}:{customerRoute?:{mode:"new"}|{mode:"edi
       allowedView==="dashboard"&&user.role!=="PARTNER"?<DashboardPage/>:
       allowedView==="validate"?<ValidateCpfPage/>:
       allowedView==="attendances"?<AttendancesPage user={user}/>:
+      allowedView==="reports"&&user.role!=="PARTNER"?<ReportsPage/>:
       allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
       allowedView==="pricing"&&user.role!=="PARTNER"?<CatalogPage/>:
       allowedView==="clients"&&user.role!=="PARTNER"?<FinancePage type="customers"/>:
