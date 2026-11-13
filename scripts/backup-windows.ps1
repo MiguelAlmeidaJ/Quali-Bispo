@@ -44,7 +44,7 @@ $destinationPath = Join-Path $folder $filename
 try {
   & docker exec $Container pg_dump -U quali -d quali --format=custom --no-owner --no-acl "--file=$remote"
   if ($LASTEXITCODE -ne 0) { throw "pg_dump falhou; backup não foi confirmado." }
-  & docker exec $container pg_restore --list $remote | Out-Null
+  & docker exec $Container pg_restore --list $remote | Out-Null
   if ($LASTEXITCODE -ne 0) { throw "pg_restore não reconheceu o arquivo gerado." }
   & docker cp "${Container}:$remote" $destinationPath
   if ($LASTEXITCODE -ne 0) { throw "Falha ao copiar o dump para o Windows." }
@@ -56,7 +56,7 @@ try {
   Write-Host "BACKUP OK: $destinationPath ($($file.Length) bytes)" -ForegroundColor Green
   Write-Host "SHA256: $sha"
 } finally {
-  & docker exec $container rm -f $remote | Out-Null
+  & docker exec $Container rm -f $remote | Out-Null
 }
 $brandingPath = "apps/api/storage/branding"
 if (Test-Path $brandingPath) {
