@@ -643,3 +643,30 @@
  .finance-table-refined .finance-toolbar{padding:15px}
 }
 @media(max-width:520px){.finance-stats-refined{grid-template-columns:1fr}}
+
+
+/* Configurações administrativas: vencimentos, catálogo e cartões */
+.billing-settings-page{max-width:1500px;margin:0 auto}
+.billing-settings-eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:11px;letter-spacing:.1em;color:#5380a2;font-weight:900;margin-bottom:6px}
+.billing-settings-tabs{display:flex;align-items:center;gap:8px;margin:20px 0;padding:7px;background:white;border:1px solid #dbe7f0;border-radius:15px;flex-wrap:wrap;box-shadow:0 5px 18px rgba(16,66,100,.035)}
+.billing-settings-tabs button{display:inline-flex;align-items:center;justify-content:center;gap:9px;border:1px solid transparent;background:transparent;color:#52708b;border-radius:10px;padding:13px 18px;font-size:13px;font-weight:800;cursor:pointer}
+.billing-settings-tabs button:hover{background:#f0f6fc}
+.billing-settings-tabs button.active{background:#eaf5fc;color:#08669d;border-color:#bdddf3}
+.billing-days-panel{background:#fff;border:1px solid #dbe7f0;border-radius:17px;padding:27px 30px;box-shadow:0 8px 24px rgba(16,66,100,.04)}
+.billing-days-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:22px}
+.billing-days-heading h2{font-size:19px;color:#154366;margin:0 0 8px;font-weight:900}
+.billing-days-heading p{font-size:13px;line-height:1.6;color:#668099;max-width:780px;margin:0}
+.billing-days-heading>span{white-space:nowrap;background:#edf7fe;color:#126b9d;border-radius:999px;font-size:12px;font-weight:800;padding:9px 13px}
+.billing-days-form{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-bottom:24px}
+.billing-days-form label{font-size:13px;color:#315670;font-weight:800;align-self:center}
+.billing-days-form input{width:130px;border:1px solid #ccdfea;border-radius:10px;padding:11px 13px;font-size:14px;color:#183e5c;min-height:43px}
+.billing-days-form button{display:inline-flex;align-items:center;gap:8px;background:#0d70a9;color:#fff;border:0;border-radius:10px;padding:12px 16px;font-weight:800;cursor:pointer}
+.billing-days-form button:disabled{opacity:.6}
+.billing-days-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;min-height:48px}
+.billing-day-chip{display:inline-flex;align-items:center;gap:14px;background:#f4f9fd;border:1px solid #dceaf4;border-radius:11px;padding:8px 8px 8px 15px;color:#225775;font-size:13px}
+.billing-day-chip strong{white-space:nowrap}
+.billing-day-chip button{display:inline-grid;place-items:center;border:0;border-radius:8px;background:transparent;color:#a94c52;width:30px;height:30px;cursor:pointer}
+.billing-day-chip button:hover{background:#fee9eb}
+.billing-days-note{background:#f7fafc;border-left:3px solid #89b6d5;color:#617e96;padding:12px 14px;font-size:12px;line-height:1.65;margin-bottom:16px}
+.billing-days-footer{border-top:1px solid #e8f0f5;padding-top:20px;display:flex;justify-content:flex-end}
+@media(max-width:700px){.billing-settings-tabs button{flex:1 1 100%;justify-content:flex-start}.billing-days-panel{padding:19px}.billing-days-heading{flex-direction:column}}
