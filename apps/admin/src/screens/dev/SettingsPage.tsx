@@ -94,7 +94,7 @@ export function SettingsPage() {
   if (loading) return <p>Carregando configurações...</p>;
   return <div className="dev-page">
     <header className="page-title">
-      <div><h1>Configurações do sistema</h1><p>Identidade visual compartilhada com Clube e Admin</p></div>
+      <div><h1>Sistema</h1><p>Identidade visual compartilhada com Clube e Admin</p></div>
     </header>
     <section className="panel">
       <h2>Nome e cores</h2>
