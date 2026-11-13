@@ -48,7 +48,7 @@ export function CustomerFormPage({id}:{id?:string}){
    .then(async response=>{const data=await response.json();if(!response.ok)throw new Error(data.message||data.error||"Cliente não encontrado");return data as CustomerRecord;})
    .then(record=>{if(!controller.signal.aborted){
     setOriginal(record);setForm(fromRecord(record));
-    setDependents((record.dependents||[]).map(d=>({id:d.id,name:d.name,cpf:"",birthDate:d.birthDate.slice(0,10),
+    setDependents((record.dependents||[]).map(d=>({id:d.id,name:d.name,cpf:"",birthDate:d.birthDate?.slice(0,10)||"",
      cardNumber:d.cardNumber,cpfLast4:d.cpfLast4})));
    }}).catch(e=>{if(!controller.signal.aborted)setError(e instanceof Error?e.message:"Falha ao carregar cliente");})
    .finally(()=>{if(!controller.signal.aborted)setLoading(false)});
@@ -106,8 +106,8 @@ export function CustomerFormPage({id}:{id?:string}){
   }
   if(dependents.length>maximum){setError(`O cartão selecionado permite até ${maximum} dependente(s).`);return;}
   for(const item of dependents){
-   if(item.name.trim().length<2||!item.birthDate||(!item.id&&item.cpf.replace(/\D/g,"").length!==11)){
-    setError("Preencha nome, CPF e nascimento de cada novo dependente.");return;
+   if(item.name.trim().length<2||(!item.id&&item.cpf.replace(/\D/g,"").length!==11)){
+    setError("Preencha nome e CPF de cada novo dependente.");return;
    }
   }
   setSaving(true);
@@ -121,7 +121,7 @@ export function CustomerFormPage({id}:{id?:string}){
     paymentDetails:form.paymentDetails||null,
     ...(selected?{dependents:dependents.map(item=>({
      ...(item.id?{id:item.id}:{}),name:item.name.trim(),
-     ...(item.cpf?{cpf:item.cpf.replace(/\D/g,"")}:{}),birthDate:item.birthDate,
+     ...(item.cpf?{cpf:item.cpf.replace(/\D/g,"")}:{}),birthDate:item.birthDate||null,
     }))}:{}),
    };
    const r=await fetch(editing?`/admin/api/finance/customers/${id}`:"/admin/api/finance/customers",{
@@ -181,7 +181,7 @@ export function CustomerFormPage({id}:{id?:string}){
     </div></section>
     {(maximum>0||dependents.length>0)&&<section className="customer-dependents">
      <h2><FiUsersIcon/> Dependentes ({dependents.length} de {maximum})</h2>
-     <p>Este cartão permite até {maximum} dependente(s). Cada pessoa recebe um número exclusivo após o cadastro.</p>
+     <p>Este cartão permite até {maximum} dependente(s). O número do cartão do dependente será emitido após informar o nascimento.</p>
      {dependents.map((item,index)=><div className="customer-dependent-row" key={item.id||`new-${index}`}>
       <label>Nome do dependente <input required maxLength={180} value={item.name} placeholder={`Dependente ${index+1}`}
        onChange={e=>updateDependent(index,"name",e.target.value)}/></label>
@@ -190,7 +190,7 @@ export function CustomerFormPage({id}:{id?:string}){
        placeholder={item.id?`Cadastrado: final ${item.cpfLast4}`:"000.000.000-00"}
        onChange={e=>{updateDependent(index,"cpf",formatCpf(e.target.value));setCpfChecks(v=>({...v,[`dependent-${index}`]:""}));}}/>
        {cpfChecks[`dependent-${index}`]&&<small className={cpfChecks[`dependent-${index}`].includes("já possui")?"customer-cpf-blocked":"customer-cpf-checked"}>{cpfChecks[`dependent-${index}`]}</small>}</label>
-      <label>Nascimento <input required type="date" disabled={!!item.cardNumber} max={new Date().toISOString().slice(0,10)}
+      <label>Nascimento (opcional) <input type="date" disabled={!!item.cardNumber} max={new Date().toISOString().slice(0,10)}
        value={item.birthDate} onChange={e=>updateDependent(index,"birthDate",e.target.value)}/></label>
       {!item.id&&<button type="button" className="customer-cancel" onClick={()=>setDependents(current=>current.filter((_,i)=>i!==index))}>Remover novo dependente</button>}
       {item.cardNumber&&<small>Cartão: {item.cardNumber.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3")}</small>}
