@@ -64,7 +64,8 @@ export function CardsPage(){
      <button type="button" aria-label="Fechar" disabled={saving} onClick={()=>setEditing(false)}><FiX/></button></header>
     <form onSubmit={save}>
      <label>Nome do cartão <em>*</em><input required maxLength={80} value={form.name}
-      placeholder="Individual ou Familiar" onChange={e=>setForm({...form,name:e.target.value})}/></label>
+      placeholder="Individual ou Familiar" onChange={e=>setForm(old=>({...old,name:e.target.value,
+       maxDependents:!current&&old.name.trim()===""&&e.target.value.trim().toLowerCase()==="familiar"&&old.maxDependents===0?2:old.maxDependents}))}/></label>
      <div className="cards-form-grid"><label>Mensalidade (R$) <em>*</em><input required
       inputMode="decimal" placeholder="89,90" value={form.price}
       onChange={e=>setForm({...form,price:e.target.value})}/></label>
