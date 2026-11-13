@@ -42,14 +42,25 @@ export class CustomerBenefitsController {
  }
  @Get("incomplete")
  async incomplete(@Headers("authorization") auth:string|undefined,
-  @Query("page") pageRaw?:string){
+  @Query("page") pageRaw?:string,@Query("search") searchRaw?:string){
   await administrator(auth);
   const page=Math.max(1,Math.min(1000,Number.parseInt(pageRaw||"1",10)||1));
+  const search=typeof searchRaw==="string"?searchRaw.trim().slice(0,180):"";
+  const digits=search.replace(/\D/g,"");
+  let filter:Prisma.FinanceCustomerWhereInput={};
+  if(search){
+   if(/^\d[\d.\-/\s]*$/.test(search)){
+    if(digits.length===11&&validCpf(digits))filter={cpfHash:cpfFingerprint(digits)};
+    else if(digits.length>=1&&digits.length<=4)filter={cpfLast4:{endsWith:digits}};
+    else filter={id:{equals:"00000000-0000-0000-0000-000000000000"}};
+   }else filter={name:{contains:search,mode:"insensitive"}};
+  }
+  const where:Prisma.FinanceCustomerWhereInput={AND:[missingWhere,filter]};
   const [items,total]=await Promise.all([
-   db.financeCustomer.findMany({where:missingWhere,orderBy:{name:"asc"},skip:(page-1)*20,take:20,
+   db.financeCustomer.findMany({where,orderBy:{name:"asc"},skip:(page-1)*20,take:20,
     select:{id:true,name:true,cpfLast4:true,cpfValid:true,cpfConflict:true,birthDate:true,
      partnerId:true,cardPlanId:true,cardNumber:true,benefitActive:true}}),
-   db.financeCustomer.count({where:missingWhere}),
+   db.financeCustomer.count({where}),
   ]);
   return {total,page,pageSize:20,items:items.map(item=>({
    id:item.id,name:item.name,cpfLast4:item.cpfLast4,missing:missing(item),
