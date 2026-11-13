@@ -6,17 +6,17 @@ export const statusLabels:Record<FinanceStatus,string>={
 export type CustomerRecord={
  id:string;invoice:string|null;name:string;cpfLast4:string|null;cpfValid:boolean;cpfConflict:boolean;
  benefitActive:boolean;benefitCancelledAt:string|null;benefitCancelReason:string|null;
- birthDate:string|null;cardNumber:string|null;cardPlanId:string|null;
+ birthDate:string|null;dueDay:number|null;cardNumber:string|null;cardPlanId:string|null;
  cardPlan:{id:string;name:string;priceCents:number;maxDependents:number;benefits:string[];active:boolean}|null;
  dependents:{id:string;name:string;cpfLast4:string;birthDate:string|null;cardNumber:string|null}[];unit:string|null;partnerId:string|null;partner:{id:string;name:string;active:boolean}|null;planType:string|null;amountCents:number|null;
  paymentMethod:string|null;status:FinanceStatus;paymentDetails:string|null;
 };
 export type CustomerFormData={
- invoice:string;name:string;cpf:string;birthDate:string;partnerId:string;cardPlanId:string;planType:string;
+ invoice:string;name:string;cpf:string;birthDate:string;dueDay:string;partnerId:string;cardPlanId:string;planType:string;
  amount:string;paymentMethod:string;status:FinanceStatus;paymentDetails:string;
 };
 export const blankCustomer:CustomerFormData={
- invoice:"",name:"",cpf:"",birthDate:"",partnerId:"",cardPlanId:"",planType:"",
+ invoice:"",name:"",cpf:"",birthDate:"",dueDay:"",partnerId:"",cardPlanId:"",planType:"",
  amount:"",paymentMethod:"",status:"UNSPECIFIED",paymentDetails:"",
 };
 export const formatCpf=(value:string)=>{
