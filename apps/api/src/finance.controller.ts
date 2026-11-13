@@ -161,6 +161,7 @@ export class FinanceController {
     ]);
     if(holder||dependent)throw new HttpException("CPF já vinculado a outro benefício ativo.",409);
     // A numeração emitida contém os dígitos finais do CPF: substituir exige nova emissão.
+    if(record.cardNumber&&!record.birthDate)throw new HttpException("Cartão emitido sem nascimento. Solicite revisão administrativa.",409);
     const newCard=record.cardNumber&&record.birthDate?
      await nextCardNumber(tx,record.createdAt,record.birthDate,cpf.slice(-4)):null;
     await tx.financeCustomer.update({where:{id},data:{
