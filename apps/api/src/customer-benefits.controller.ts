@@ -1,4 +1,4 @@
-import {Body,Controller,ForbiddenException,Get,Headers,HttpException,Param,Patch,Query} from "@nestjs/common";
+import {Body,Controller,ForbiddenException,Get,Headers,HttpException,Param,Patch,Post,Query} from "@nestjs/common";
 import {createPrismaClient,type Prisma} from "@quali/database";
 import {currentUser} from "./auth.controller";
 import {cpfFingerprint,validCpf} from "./finance-customer.validation";
@@ -23,6 +23,10 @@ function missing(record:{birthDate:Date|null;cpfValid:boolean;cpfConflict:boolea
  if(!record.cardNumber)result.push("Cartão não emitido");
  return result;
 }
+const issueOnlyWhere:Prisma.FinanceCustomerWhereInput={
+ benefitActive:true,birthDate:{not:null},cpfValid:true,cpfConflict:false,cpfHash:{not:null},cpfLast4:{not:null},
+ partnerId:{not:null},cardPlanId:{not:null},cardNumber:null,
+};
 @Controller("admin/customer-benefits")
 export class CustomerBenefitsController {
  @Get("check-cpf")
@@ -65,6 +69,44 @@ export class CustomerBenefitsController {
   return {total,page,pageSize:20,items:items.map(item=>({
    id:item.id,name:item.name,cpfLast4:item.cpfLast4,missing:missing(item),
   }))};
+ }
+
+ @Get("issue-only/count")
+ async issueOnlyCount(@Headers("authorization") auth?:string){
+  await administrator(auth);
+  return {eligible:await db.financeCustomer.count({where:issueOnlyWhere})};
+ }
+ @Post("issue-only/batch")
+ async issueOnlyBatch(@Headers("authorization") auth?:string){
+  const actor=await administrator(auth);
+  // Limite por requisição para evitar timeout e facilitar a revisão do resultado.
+  const candidates=await db.financeCustomer.findMany({where:issueOnlyWhere,orderBy:{createdAt:"asc"},
+   take:50,select:{id:true}});
+  let issued=0,skipped=0,failed=0;
+  for(const candidate of candidates){
+   try{
+    const done=await db.$transaction(async tx=>{
+     // Revalida os campos dentro da transação: o cadastro pode mudar após a consulta.
+     const item=await tx.financeCustomer.findFirst({where:{AND:[issueOnlyWhere,{id:candidate.id}]},
+      select:{id:true,createdAt:true,birthDate:true,cpfLast4:true}});
+     if(!item?.birthDate||!item.cpfLast4)return false;
+     const {nextCardNumber}=await import("./cards.logic");
+     const number=await nextCardNumber(tx,item.createdAt,item.birthDate,item.cpfLast4);
+     const changed=await tx.financeCustomer.updateMany({where:{AND:[issueOnlyWhere,{id:item.id}]},
+      data:{cardNumber:number}});
+     if(changed.count!==1)return false;
+     await tx.auditLog.create({data:{actorId:actor.id,action:"CUSTOMER_CARD_BATCH_ISSUED",
+      entityType:"FinanceCustomer",entityId:item.id,metadata:{source:"customer-review"}}});
+     return true;
+    });
+    if(done)issued++;else skipped++;
+   }catch{
+    // Falha em um cadastro não interrompe a emissão dos demais.
+    failed++;
+   }
+  }
+  const remaining=await db.financeCustomer.count({where:issueOnlyWhere});
+  return {issued,skipped,failed,remaining,processed:candidates.length};
  }
  @Patch(":id")
  async toggle(@Headers("authorization") auth:string|undefined,@Param("id") id:string,@Body() body:unknown){
