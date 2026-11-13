@@ -49,7 +49,7 @@ export function CustomerFormPage({id}:{id?:string}){
    .then(record=>{if(!controller.signal.aborted){
     setOriginal(record);setForm(fromRecord(record));
     setDependents((record.dependents||[]).map(d=>({id:d.id,name:d.name,cpf:"",birthDate:d.birthDate?.slice(0,10)||"",
-     cardNumber:d.cardNumber,cpfLast4:d.cpfLast4})));
+     cardNumber:d.cardNumber||undefined,cpfLast4:d.cpfLast4})));
    }}).catch(e=>{if(!controller.signal.aborted)setError(e instanceof Error?e.message:"Falha ao carregar cliente");})
    .finally(()=>{if(!controller.signal.aborted)setLoading(false)});
   return()=>controller.abort();
