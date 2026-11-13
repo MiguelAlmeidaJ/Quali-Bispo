@@ -263,8 +263,8 @@ model CardDependent {
   name        String
   cpfHash     String
   cpfLast4    String
-  birthDate   DateTime        @db.Date
-  cardNumber  String          @unique
+  birthDate   DateTime?       @db.Date
+  cardNumber  String?         @unique
   benefitActive Boolean       @default(true)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
