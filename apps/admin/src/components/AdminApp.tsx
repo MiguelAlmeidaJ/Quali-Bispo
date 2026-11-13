@@ -52,7 +52,7 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
       allowedView==="reports"&&user.role!=="PARTNER"?<ReportsPage/>:
       allowedView==="cards"&&user.role!=="PARTNER"?<BillingSettingsPage/>:
       allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
-      allowedView==="pricing"?user.role==="PARTNER"?<CatalogPage readonly/>:<BillingSettingsPage/>:null:
+      allowedView==="pricing"?(user.role==="PARTNER"?<CatalogPage readonly/>:<BillingSettingsPage/>):
       allowedView==="settings"&&user.role!=="PARTNER"?<BillingSettingsPage/>:
       allowedView==="clients"&&user.role!=="PARTNER"?<FinancePage type="customers"/>:
       allowedView==="depara"&&user.role!=="PARTNER"?<CustomerReviewPage/>:
