@@ -62,7 +62,7 @@ export class MemberController{
   ]);
   const matches=[
    ...holders.filter(item=>item.birthDate?.toISOString().slice(0,10)===birth).map(item=>({id:item.id,kind:"member" as const})),
-   ...children.filter(item=>item.birthDate.toISOString().slice(0,10)===birth).map(item=>({id:item.id,kind:"dependent" as const})),
+   ...children.filter(item=>item.birthDate?.toISOString().slice(0,10)===birth).map(item=>({id:item.id,kind:"dependent" as const})),
   ];
   if(matches.length!==1)throw new UnauthorizedException(generic);
   const {id,kind}=matches[0];
