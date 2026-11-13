@@ -35,7 +35,7 @@ module.exports = {
       name: 'quali-clube',
       cwd: path.join(root, 'apps/clube'),
       script: path.join(root, 'apps/clube/node_modules/next/dist/bin/next'),
-      args: 'start --hostname 127.0.0.1 --port 3002',
+      args: 'start --hostname 0.0.0.0 --port 3002',
       interpreter: process.execPath,
       instances: 1,
       exec_mode: 'fork',
