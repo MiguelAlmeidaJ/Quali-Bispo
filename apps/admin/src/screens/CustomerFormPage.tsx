@@ -1,8 +1,8 @@
 "use client";
 import {useEffect,useState} from "react";
-import {FiArrowLeft,FiCheck,FiCreditCard,FiPlus,FiUser} from "react-icons/fi";
-import {blankCustomer,centsInput,formatCpf,parseCents,statusLabels,type CustomerFormData,
- type CustomerRecord,type FinanceStatus} from "../types/customer";
+import {FiArrowLeft,FiCheck,FiCreditCard,FiPlus,FiUser,FiEdit2,FiLock,FiX,FiSave} from "react-icons/fi";
+import {blankCustomer,centsInput,formatCpf,parseCents,type CustomerFormData,
+ type CustomerRecord} from "../types/customer";
 import type {CardPlan} from "./CardsPage";
 
 type PartnerOption={id:string;name:string;city:string;active:boolean};
@@ -10,6 +10,8 @@ type DependentForm={id?:string;name:string;cpf:string;birthDate:string;cardNumbe
 const emptyDependent=():DependentForm=>({name:"",cpf:"",birthDate:""});
 const returnToClients=()=>window.location.assign("/admin/?view=clients");
 const planPrice=(value:number)=>centsInput(value);
+const paymentOptions=[{value:"PIX",label:"PIX"},{value:"BOLETO",label:"Boleto"},{value:"DEBITO",label:"Débito"},{value:"CREDITO",label:"Crédito"}];
+const maskedCpf=(last4:string|null)=>last4?`***.***.*${last4.slice(0,2)}-${last4.slice(2)}`:"CPF não informado";
 function fromRecord(value:CustomerRecord):CustomerFormData{
  return {invoice:value.invoice||"",name:value.name,cpf:"",
   birthDate:value.birthDate?.slice(0,10)||"",dueDay:value.dueDay?String(value.dueDay):"",partnerId:value.partnerId||"",
@@ -29,6 +31,8 @@ export function CustomerFormPage({id}:{id?:string}){
  const [saving,setSaving]=useState(false),[error,setError]=useState("");
  const [cpfChecks,setCpfChecks]=useState<Record<string,string>>({});
  const [changingBenefit,setChangingBenefit]=useState(false);
+ const [cpfUnlocked,setCpfUnlocked]=useState(false),[cpfSaving,setCpfSaving]=useState(false);
+ const [cpfSuccess,setCpfSuccess]=useState("");
  useEffect(()=>{
   const controller=new AbortController();
   Promise.all([
@@ -71,10 +75,33 @@ export function CustomerFormPage({id}:{id?:string}){
   const digits=cpf.replace(/\D/g,"");
   if(digits.length!==11)return;
   try{
-   const r=await fetch(`/admin/api/customer-benefits/check-cpf?cpf=${digits}`,{cache:"no-store"});
+   const r=await fetch(`/admin/api/customer-benefits/check-cpf?cpf=${digits}${key==="holder"&&id?`&excludeId=${id}`:""}`,{cache:"no-store"});
    const result=await r.json();
    setCpfChecks(old=>({...old,[key]:r.ok?result.reason:result.message||result.error||"Não foi possível validar o CPF"}));
   }catch{setCpfChecks(old=>({...old,[key]:"Verificação indisponível. A validação será repetida ao salvar."}));}
+ }
+ async function saveCpf(){
+  if(!id||!original||!cpfUnlocked||cpfSaving)return;
+  const cpf=form.cpf.replace(/\\D/g,"");
+  if(cpf.length!==11){setError("Informe os 11 dígitos do CPF.");return;}
+  const reason=window.prompt("Informe o motivo da alteração do CPF (mínimo de 8 caracteres):");
+  if(reason===null)return;
+  if(reason.trim().length<8||reason.trim().length>500){setError("Informe um motivo entre 8 e 500 caracteres.");return;}
+  if(!window.confirm(original.cardNumber?
+   "Confirmar alteração do CPF? O cartão do titular será reemitido com um novo número. O cartão anterior será invalidado; informe o novo número ao cliente.":
+   "Confirmar alteração do CPF? A operação será registrada no histórico de auditoria."))return;
+  setCpfSaving(true);setError("");setCpfSuccess("");
+  try{
+   const r=await fetch(`/admin/api/finance/customers/${id}`,{
+    method:"PATCH",credentials:"same-origin",headers:{"content-type":"application/json"},
+    body:JSON.stringify({cpfCorrection:{cpf,reason:reason.trim()}})});
+   const result=await r.json();
+   if(!r.ok)throw new Error(result.message||result.error||"Não foi possível corrigir o CPF.");
+   setOriginal(result as CustomerRecord);setForm(current=>({...current,cpf:""}));
+   setCpfUnlocked(false);setCpfChecks(old=>({...old,holder:""}));
+   setCpfSuccess("CPF atualizado e alteração registrada na auditoria."+(original.cardNumber?" O número do cartão do titular foi reemitido.":""));
+  }catch(e){setError(e instanceof Error?e.message:"Erro ao corrigir CPF.");}
+  finally{setCpfSaving(false);}
  }
  async function changeBenefit(){
   if(!original||!id)return;
@@ -115,7 +142,7 @@ export function CustomerFormPage({id}:{id?:string}){
   setSaving(true);
   try{
    const body={
-    invoice:form.invoice||null,name:form.name.trim(),cpf:form.cpf.replace(/\D/g,"")||null,
+    invoice:form.invoice||null,name:form.name.trim(),cpf:editing?null:form.cpf.replace(/\D/g,"")||null,
     birthDate:form.birthDate||null,dueDay:form.dueDay?Number(form.dueDay):null,partnerId:form.partnerId||null,
     cardPlanId:form.cardPlanId||null,
     planType:form.planType||null,amountCents:selected?selected.priceCents:parseCents(form.amount),
@@ -147,15 +174,32 @@ export function CustomerFormPage({id}:{id?:string}){
      <label className="wide"><span className="customer-field-title">Nome completo <em>*</em></span>
       <input required minLength={2} maxLength={180} value={form.name} onChange={e=>update("name",e.target.value)}/></label>
      <label><span className="customer-field-title">CPF {!editing&&<em>*</em>}</span>
-      <input required={!editing} disabled={!!original?.cardNumber} maxLength={14} inputMode="numeric" autoComplete="off"
-       onBlur={()=>{if(form.cpf)void checkCpf(form.cpf,"holder");}} value={form.cpf} placeholder="000.000.000-00" onChange={e=>{update("cpf",formatCpf(e.target.value));setCpfChecks(v=>({...v,holder:""}));}}/>
+      <div className="customer-sensitive-field">
+       <input required={!editing||cpfUnlocked} readOnly={editing&&!cpfUnlocked} maxLength={14} inputMode={editing&&!cpfUnlocked?"text":"numeric"} autoComplete="off"
+        aria-label="CPF do titular"
+        onBlur={()=>{if((!editing||cpfUnlocked)&&form.cpf)void checkCpf(form.cpf,"holder");}}
+        value={editing&&!cpfUnlocked?maskedCpf(original?.cpfLast4||null):form.cpf}
+        placeholder="000.000.000-00"
+        onChange={e=>{update("cpf",formatCpf(e.target.value));setCpfChecks(v=>({...v,holder:""}));}}/>
+       {editing&&!cpfUnlocked&&<button type="button" className="customer-cpf-edit" title="Habilitar correção de CPF"
+        aria-label="Habilitar correção de CPF" disabled={saving||cpfSaving}
+        onClick={()=>{setCpfUnlocked(true);setCpfSuccess("");setForm(old=>({...old,cpf:""}));}}>
+        <FiEdit2 size={17}/><span>Editar</span></button>}
+       {editing&&cpfUnlocked&&<>
+        <button type="button" className="customer-cpf-save" disabled={cpfSaving||saving||form.cpf.replace(/\\D/g,"").length!==11}
+         onClick={()=>void saveCpf()}><FiSave size={16}/><span>{cpfSaving?"Salvando":"Salvar CPF"}</span></button>
+        <button type="button" className="customer-cpf-close" aria-label="Cancelar edição do CPF"
+         disabled={cpfSaving} onClick={()=>{setCpfUnlocked(false);setForm(old=>({...old,cpf:""}));setCpfChecks(old=>({...old,holder:""}));}}><FiX size={17}/></button>
+       </>}
+      </div>
+      {editing&&!cpfUnlocked&&<small className="customer-cpf-lock"><FiLock size={13}/> CPF protegido. Utilize Editar para corrigir o cadastro.</small>}
+      {editing&&cpfUnlocked&&<small className="customer-cpf-warning">A alteração é auditada e pode gerar um novo cartão para o titular. Confirme o CPF e salve separadamente.</small>}
       {cpfChecks.holder&&<small className={cpfChecks.holder.includes("já possui")?"customer-cpf-blocked":"customer-cpf-checked"}>{cpfChecks.holder}</small>}
-      <small>{original?.cpfLast4?`CPF cadastrado: final ${original.cpfLast4}. Deixe vazio para manter. Após emissão, CPF/nascimento exigem reemissão administrativa.`:"O CPF é protegido no banco."}</small></label>
+      {cpfSuccess&&<small className="customer-cpf-success" role="status">{cpfSuccess}</small>}
+     </label>
      <label><span className="customer-field-title">Data de nascimento {!editing&&<em>*</em>}</span>
       <input type="date" required={!editing} disabled={!!original?.cardNumber} value={form.birthDate}
        max={new Date().toISOString().slice(0,10)} onChange={e=>update("birthDate",e.target.value)}/></label>
-     {original?.cardNumber&&<label>Número do cartão do titular<input readOnly value={original.cardNumber.replace(/(\d{4})(\d{4})(\d{4})/,"$1 $2 $3")}/>
-      <small>Gerado pelo sistema. Não pode ser alterado.</small></label>}
      <label className="wide"><span className="customer-field-title">Unidade credenciada {!editing&&<em>*</em>}</span>
       <select value={form.partnerId} required={!editing||!!original?.partnerId} disabled={loadingOptions||saving}
        onChange={e=>update("partnerId",e.target.value)}>
@@ -177,11 +221,14 @@ export function CustomerFormPage({id}:{id?:string}){
       <option value="">Não definido</option>
       {[...new Set([...dueDays,...(original?.dueDay?[original.dueDay]:[])])].sort((a,b)=>a-b).map(day=><option key={day} value={day}>Dia {day}</option>)}
      </select><small>Gerencie os dias em Configurações → Dias de vencimento. Não gera cobrança automática.</small></label>
-     <label>Forma de pagamento<input maxLength={140} value={form.paymentMethod} placeholder="Pix, cartão ou boleto"
-      onChange={e=>update("paymentMethod",e.target.value)}/></label>
-     <label>Status<select value={form.status} onChange={e=>update("status",e.target.value as FinanceStatus)}>
-      {(Object.entries(statusLabels) as [FinanceStatus,string][]).map(([key,label])=>
-       <option key={key} value={key}>{label}</option>)}</select></label>
+     <label>Forma de pagamento
+      <select value={form.paymentMethod} onChange={e=>update("paymentMethod",e.target.value)}>
+       <option value="">Selecione a forma de pagamento</option>
+       {paymentOptions.map(item=><option key={item.value} value={item.value}>{item.label}</option>)}
+       {form.paymentMethod&&!paymentOptions.some(item=>item.value===form.paymentMethod)&&
+        <option value={form.paymentMethod}>{form.paymentMethod} (legado)</option>}
+      </select>
+     </label>
      <label className="wide">Detalhes<textarea rows={4} maxLength={2000} value={form.paymentDetails}
       onChange={e=>update("paymentDetails",e.target.value)}/></label>
     </div></section>
@@ -216,7 +263,7 @@ export function CustomerFormPage({id}:{id?:string}){
     </section>}
     {error&&<p className="notice error" role="alert">{error}</p>}
     <footer className="customer-editor-footer"><button type="button" className="customer-cancel" onClick={returnToClients} disabled={saving}>Cancelar</button>
-     <button type="submit" className="customer-submit" disabled={saving||loadingOptions||Object.values(cpfChecks).some(value=>value.includes("já possui"))}><FiCheck/> {saving?"Salvando...":editing?"Salvar alterações":"Cadastrar cliente"}</button></footer>
+     <button type="submit" className="customer-submit" disabled={saving||cpfSaving||cpfUnlocked||loadingOptions||Object.values(cpfChecks).some(value=>value.includes("já possui"))}><FiCheck/> {saving?"Salvando...":editing?"Salvar alterações":"Cadastrar cliente"}</button></footer>
    </form>}
  </div>;
 }
