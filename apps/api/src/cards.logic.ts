@@ -4,21 +4,24 @@ import type {Prisma} from "@quali/database";
 
 const fail=(msg:string,status=400):never=>{throw new HttpException(msg,status);};
 export const cardUUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-export type DependentInput={id?:string;name:string;cpf?:string;birthDate:string};
+export type DependentInput={id?:string;name:string;cpf?:string;birthDate:string|null};
 export function parseDependent(raw:unknown):DependentInput{
  if(!raw||typeof raw!=="object"||Array.isArray(raw))return fail("Dados do dependente inválidos.");
  const b=raw as Record<string,unknown>;
  if(typeof b.name!=="string"||b.name.trim().length<2||b.name.length>180)return fail("Informe o nome completo do dependente.");
- if(typeof b.birthDate!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(b.birthDate))return fail("Nascimento do dependente inválido.");
- const date=new Date(b.birthDate+"T00:00:00.000Z");
- if(Number.isNaN(date.getTime())||date.toISOString().slice(0,10)!==b.birthDate||date.getTime()>Date.now())
-  return fail("Nascimento do dependente inválido.");
+ const birthDate=b.birthDate===undefined||b.birthDate===null||b.birthDate===""?null:b.birthDate;
+ if(birthDate!==null){
+  if(typeof birthDate!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(birthDate))return fail("Nascimento do dependente inválido.");
+  const date=new Date(birthDate+"T00:00:00.000Z");
+  if(Number.isNaN(date.getTime())||date.toISOString().slice(0,10)!==birthDate||date.getTime()>Date.now())
+   return fail("Nascimento do dependente inválido.");
+ }
  const cpf=typeof b.cpf==="string"?b.cpf.replace(/\D/g,""):"";
  if(cpf&&!validCpf(cpf))return fail("CPF do dependente inválido.");
  const id=typeof b.id==="string"?b.id:undefined;
  if(id&&!cardUUID.test(id))return fail("Identificador do dependente inválido.");
  if(!id&&!cpf)return fail("Informe o CPF do novo dependente.");
- return {id,name:b.name.trim(),cpf:cpf||undefined,birthDate:b.birthDate};
+ return {id,name:b.name.trim(),cpf:cpf||undefined,birthDate:birthDate as string|null};
 }
 export function parseDependents(raw:unknown):DependentInput[]{
  if(raw===undefined)return [];
