@@ -1,0 +1,36 @@
+{
+  "name": "quali-bispo",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.18.0",
+  "scripts": {
+    "dev": "pnpm --filter @quali/database build && pnpm -r --parallel --filter @quali/api --filter @quali/clube --filter @quali/admin dev",
+    "dev:clube": "pnpm --filter @quali/clube dev",
+    "dev:admin": "pnpm --filter @quali/admin dev",
+    "dev:api": "pnpm --filter @quali/api dev",
+    "db:generate": "pnpm --filter @quali/database generate",
+    "db:migrate": "pnpm --filter @quali/database migrate",
+    "db:studio": "pnpm --filter @quali/database studio",
+    "typecheck": "pnpm -r typecheck",
+    "build": "pnpm -r --filter @quali/contracts --filter @quali/database --filter @quali/api --filter @quali/admin --filter @quali/clube build",
+    "pm2:start": "pm2 start ecosystem.config.cjs --update-env",
+    "pm2:status": "pm2 status",
+    "pm2:logs": "pm2 logs",
+    "pm2:restart": "pm2 restart ecosystem.config.cjs --update-env",
+    "pm2:reload": "pm2 reload ecosystem.config.cjs --update-env",
+    "pm2:stop": "pm2 stop ecosystem.config.cjs",
+    "pm2:delete": "pm2 delete ecosystem.config.cjs",
+    "pm2:save": "pm2 save",
+    "db:seed": "pnpm --filter @quali/database seed",
+    "db:seed:partners": "pnpm --filter @quali/database seed:partners",
+    "db:seed:catalog": "pnpm --filter @quali/database seed:catalog",
+    "db:import:financeiro": "pnpm --filter @quali/database import:financeiro",
+    "db:import:nascimentos": "pnpm --filter @quali/database import:nascimentos",
+    "db:vincular:unidades": "pnpm --filter @quali/database vincular:unidades"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "@types/node": "^22.0.0",
+    "pm2": "^6.0.0"
+  }
+}

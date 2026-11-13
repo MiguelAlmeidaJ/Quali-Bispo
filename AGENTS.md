@@ -1,0 +1,48 @@
+# Quali Bispo — Regras técnicas do projeto
+
+- Trabalhar prioritariamente na branch `refactor`; não alterar `main` sem solicitação.
+- Preservar a identidade visual original dos sistemas Clube e Admin.
+- Manter arquitetura PNPM: `apps/clube`, `apps/admin`, `apps/api`, `packages/contracts`, `packages/database`.
+- Usar Prisma ORM **7+**. **Nunca** inserir `url`, `directUrl` ou `shadowDatabaseUrl` no datasource do arquivo `schema.prisma`.
+- Configurar o acesso do Prisma CLI ao banco exclusivamente em `packages/database/prisma.config.ts`.
+- Para conexão PostgreSQL em runtime, utilizar `@prisma/adapter-pg` com `new PrismaClient({ adapter })`.
+- Gerar o cliente com `provider = "prisma-client"` e output explícito. Evitar importar o cliente gerado de `@prisma/client`.
+- Não versionar arquivos `.env`, senhas, segredos e credenciais do HTML legado.
+- API local: porta 4002 com prefixo `/v1`. Clube: 3002, Admin: `/admin`.
+
+- Perfis: DEV (gestão técnica, contas ADMIN, auditoria e identidade visual), ADMIN (operação geral), PARTNER (operações restritas). Conferir permissão na API e consultar estado ativo no banco em cada operação.
+- Nunca incluir senha DEV fixa no código; bootstrap DEV apenas via variável de ambiente local e seed, sem sobrescrever senha existente.
+- Registros de auditoria não devem conter senhas, JWTs nem dados pessoais em claro.
+
+- Identidade visual: arquivo PNG logo/favicon apenas no backend via endpoint DEV autenticado, limite 2 MB e normalização com Sharp. Não versionar arquivos enviados nem expor diretórios de armazenamento.
+- Ambos os frontends devem ler identidade visual da mesma API pública e manter fallback quando a API estiver indisponível.
+
+- Rede credenciada: fonte única no modelo Prisma `Partner` e API Nest. CRUD somente DEV/ADMIN; página pública exibe exclusivamente ativos. Inativar em vez de apagar para preservar histórico. Ações de mudança devem gerar AuditLog.
+
+- Catálogo de serviços: uma fonte da verdade no PostgreSQL (`CatalogItem`), preços armazenados em centavos; alterações apenas DEV/ADMIN, logs de auditoria, inativação em vez de exclusão física.
+- As listas do Clube e o simulador devem consumir a API pública. Não duplicar valores em componentes ou constantes estáticas.
+- Seed `pnpm db:seed:catalog` importa os 99 registros dos documentos de consultas e exames, preservando correções já realizadas via Admin.
+
+- Para a Rede Credenciada, `Partner.serviceTypes` é o conjunto de tipos oferecidos; `serviceType` é legado e deve refletir a primeira seleção. Conservar ambos enquanto houver consumidores antigos, aceitar fallback de registros pré-migração, validar lista na API.
+- CPF: aplicar máscara apenas no frontend, enviar 11 dígitos para a API e preservar checagem do dígito verificador no backend.
+
+- Dados pessoais/financeiros: nunca incluir planilhas nem JSONs de clientes no Git; a importação `db:import:financeiro` lê exclusivamente `private/` local. Não registrar CPF puro, credenciais nem dados financeiros completos em AuditLog.
+- `FinanceCustomer` e `FinanceIssue` são registros financeiros, separados de `Beneficiary`. Não conceder status de associado nem acesso por CPF somente com base na situação de cobrança.
+- Se pendência não tiver correspondência exata não ambígua, manter `customerId=null` para revisão, sem criar vínculo presumido.
+
+- Cadastro financeiro de clientes: a rota `/admin/cliente/novo` e `/admin/cliente/:id/edit` são internas ao Next Admin (basePath `/admin`), com autorização ADMIN/DEV na API. Dados de CPF apenas HMAC SHA-256 e sufixo, não armazenar CPF puro. Edição com CPF vazio mantém fingerprint existente.
+- `FinanceCustomer.birthDate` é uma data opcional `@db.Date`; a importação histórica mantém null até haver informação confirmada.
+
+- O cliente financeiro vincula-se a `Partner` via FK opcional `FinanceCustomer.partnerId`. Novos clientes exigem um parceiro ativo; cadastros antigos não recebem vínculo presumido. `FinanceCustomer.unit` é apenas o texto histórico da planilha, não a FK. Preferir `partner.name` na exibição quando houver vínculo.
+
+- CPF na validação: consultar beneficiários e clientes financeiros pelo mesmo HMAC; não confundir `found` com `eligible`. Nunca liberar acesso com `cpfValid=false`, `cpfConflict=true` ou `FinanceStatus != PAID` no FinanceCustomer.
+- Atendimentos financeiros: utilizar `FinanceAttendance` com snapshot de preços e cancelamento lógico. Usuário PARTNER acessa apenas o partnerId do próprio usuário, ADMIN/DEV toda a rede. Nunca copiar dados de atendimento do HTML legado como se fossem reais.
+
+- Cartões: `CardPlan` é fonte canônica para preço e benefícios, `CardDependent` possui CPF HMAC e número próprio, `CardSequence` reserva sequência global de 4 dígitos em transação. Números não devem ser alterados após emissão, nem CPFs completos expostos em API. Não deduzir aniversário ausente.
+- Não trocar para plano individual se já houver dependentes; bloqueie mudanças de CPF/nascimento após emissão até fluxo auditado de reemissão. Não criar/excluir dependentes silenciosamente.
+
+- Portal do associado: as quatro abas modernas usam `MemberBenefitsTab`, `MemberPartnersTab`, `MemberBillingTab` e `MemberAttendancesTab` com `member-types.ts`; preços do `CatalogItem`, parceiros ativos da rede e atendimentos do próprio titular. Não inventar meses pagos, datas de vencimento, limites de consultas ou registros de dependentes sem modelo e dados reais.
+
+- Benefício ativo é campo separado de status financeiro: FinanceCustomer.benefitActive. Cancelamento desativa dependentes e sessões sem excluir histórico/cartões; reativação exige checagem de colisão de CPF ativo.
+- Dados pessoais da planilha só em /private/ (gitignored), importação de nascimentos por CPF HMAC + nome idêntico e simulação obrigatória antes de --apply; nunca publicar CPF ou planilhas no GitHub.
+- De-para de clientes lista pendências de CPF/nascimento/unidade/plano/número do cartão, calculadas pelo banco, sem mutação automática.

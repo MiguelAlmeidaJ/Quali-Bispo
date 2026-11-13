@@ -1,0 +1,28 @@
+node_modules/
+.next/
+dist/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+*.log
+.DS_Store
+apps/*/legacy/
+packages/database/src/generated/
+
+# Imagens da identidade visual persistidas no servidor, fora do Git
+apps/api/storage/
+
+# Arquivos financeiros e pessoais: nunca versionar
+/private/
+**/private/
+*Controle_Financeiro_QualiBeneficios*.xlsx
+quali_importacao_financeira_privada.json
+
+# Backups locais sensíveis de PostgreSQL, arquivos de marca e metadados
+/backups/
+*.dump
+*.dump.sha256
+branding-*.zip
+*.backup
+*.sql.gz
