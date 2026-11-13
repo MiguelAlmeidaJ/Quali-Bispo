@@ -8,7 +8,7 @@ export type CustomerRecord={
  benefitActive:boolean;benefitCancelledAt:string|null;benefitCancelReason:string|null;
  birthDate:string|null;cardNumber:string|null;cardPlanId:string|null;
  cardPlan:{id:string;name:string;priceCents:number;maxDependents:number;benefits:string[];active:boolean}|null;
- dependents:{id:string;name:string;cpfLast4:string;birthDate:string;cardNumber:string}[];unit:string|null;partnerId:string|null;partner:{id:string;name:string;active:boolean}|null;planType:string|null;amountCents:number|null;
+ dependents:{id:string;name:string;cpfLast4:string;birthDate:string|null;cardNumber:string|null}[];unit:string|null;partnerId:string|null;partner:{id:string;name:string;active:boolean}|null;planType:string|null;amountCents:number|null;
  paymentMethod:string|null;status:FinanceStatus;paymentDetails:string|null;
 };
 export type CustomerFormData={
