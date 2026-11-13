@@ -36,8 +36,8 @@ if ($LASTEXITCODE -ne 0 -or $running -ne "true") {
 if ($LASTEXITCODE -ne 0) {
   throw "O banco quali não está pronto no contêiner '$Container'. Confirme se selecionou o PostgreSQL correto."
 }
-& docker exec $Container psql -U quali -d quali -tAc 'SELECT 1 FROM information_schema.tables WHERE table_schema = ''public'' AND table_name = ''FinanceCustomer'';' | Out-Null
-if ($LASTEXITCODE -ne 0) { throw "Falha ao consultar o banco Quali. Confirme o contêiner correto." }
+$verified = (& docker exec $Container psql -U quali -d quali -tAc 'SELECT 1 FROM information_schema.tables WHERE table_schema = ''public'' AND table_name = ''FinanceCustomer'';' | Select-Object -First 1)
+if ($LASTEXITCODE -ne 0 -or "$verified".Trim() -ne "1") { throw "O banco não contém FinanceCustomer. Confirme o contêiner correto antes de continuar." }
 $filename = "quali-$stamp.dump"
 $remote = "/tmp/$filename"
 $destinationPath = Join-Path $folder $filename
