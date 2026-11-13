@@ -6,16 +6,18 @@ type Page={total:number;page:number;pageSize:number;items:Missing[]};
 export function CustomerReviewPage(){
  const [result,setResult]=useState<Page|null>(null);
  const [page,setPage]=useState(1),[loading,setLoading]=useState(true),[error,setError]=useState("");
+ const [search,setSearch]=useState(""),[query,setQuery]=useState("");
  const reload=useCallback(async()=>{
   setLoading(true);setError("");
   try{
-   const response=await fetch(`/admin/api/customer-benefits/incomplete?page=${page}`,{cache:"no-store"});
+   const response=await fetch(`/admin/api/customer-benefits/incomplete?page=${page}&search=${encodeURIComponent(query)}`,{cache:"no-store"});
    const data=await response.json();
    if(!response.ok)throw new Error(data.message||data.error||"Falha ao carregar pendências");
    setResult(data);
   }catch(e){setError(e instanceof Error?e.message:"Falha ao carregar registros");}
   finally{setLoading(false);}
- },[page]);
+ },[page,query]);
+ useEffect(()=>{const timer=setTimeout(()=>{setPage(1);setQuery(search.trim());},300);return ()=>clearTimeout(timer);},[search]);
  useEffect(()=>{void reload();},[reload]);
  const total=result?.total||0;
  const totalPages=Math.max(1,Math.ceil(total/20));
@@ -30,11 +32,16 @@ export function CustomerReviewPage(){
    <article><FiAlertCircle/><div><strong>{total}</strong><span>Cadastros a revisar</span></div></article>
    <article><FiCheckCircle/><div><strong>Atualização automática</strong><span>Ao corrigir todos os campos, o cliente sai desta lista.</span></div></article>
   </div>
+  <div style={{display:"flex",alignItems:"center",gap:10,margin:"16px 0"}}>
+   <FiSearch aria-hidden="true"/>
+   <input type="search" aria-label="Pesquisar clientes por nome ou CPF" placeholder="Pesquisar por nome, CPF completo ou 4 dígitos finais" value={search}
+    onChange={event=>setSearch(event.target.value)} style={{width:"100%",maxWidth:480,padding:"12px 14px",border:"1px solid #cbdbea",borderRadius:10,background:"#fff",color:"#153855"}}/>
+  </div>
   {error&&<p className="notice error" role="alert">{error}</p>}
   <section className="finance-table-card">
    {loading?<div className="finance-empty">Carregando pendências...</div>:
    !result?.items.length?<div className="customer-review-empty"><FiCheckCircle size={32}/>
-    <h2>Nenhuma pendência encontrada</h2><p>Os clientes ativos consultados estão com os campos essenciais preenchidos.</p></div>:
+    <h2>{query?"Nenhum cliente encontrado":"Nenhuma pendência encontrada"}</h2><p>{query?"Tente pesquisar outro nome ou CPF.":"Os clientes ativos consultados estão com os campos essenciais preenchidos."}</p></div>:
    <div className="finance-scroll"><table className="finance-table">
     <thead><tr><th>CLIENTE</th><th>CPF (FINAL)</th><th>INFORMAÇÕES FALTANTES</th><th>AÇÃO</th></tr></thead>
     <tbody>{result.items.map(row=><tr key={row.id}>
@@ -44,7 +51,7 @@ export function CustomerReviewPage(){
      <td><a className="customer-edit-link" href={`/admin/cliente/${row.id}/edit`}><FiEdit2/> Corrigir cadastro</a></td>
     </tr>)}</tbody>
    </table></div>}
-   <footer className="finance-footer"><span>{total} cliente(s) pendente(s) · 20 por página</span>
+   <footer className="finance-footer"><span>{total} {query?"resultado(s) na pesquisa":"cliente(s) pendente(s)"} · 20 por página</span>
     <nav aria-label="Páginas de revisão"><button type="button" disabled={page<=1||loading} onClick={()=>setPage(p=>p-1)}>Anterior</button>
      <span>Página {page} de {totalPages}</span>
      <button type="button" disabled={page>=totalPages||loading} onClick={()=>setPage(p=>p+1)}>Próxima</button></nav>
