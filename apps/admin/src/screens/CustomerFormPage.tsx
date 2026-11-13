@@ -167,7 +167,7 @@ export function CustomerFormPage({id}:{id?:string}){
      <label><span className="customer-field-title">Tipo de cartão {!editing&&<em>*</em>}</span>
       <select required={!editing} disabled={loadingOptions} value={form.cardPlanId} onChange={e=>changePlan(e.target.value)}>
        <option value="">Selecione um cartão</option>{plans.filter(p=>p.active||p.id===original?.cardPlanId).map(p=>
-        <option value={p.id} key={p.id}>{p.name} — {p.maxDependents?"Familiar":"Individual"}</option>)}
+        <option value={p.id} key={p.id}>{p.name} — {p.maxDependents?`até ${p.maxDependents} dependente(s)`:"somente titular"}</option>)}
       </select>
       {!selected&&original?.planType&&<small>Plano histórico da planilha: {original.planType}. Selecione um cartão cadastrado para migrar o cliente.</small>}
      </label>
@@ -181,7 +181,7 @@ export function CustomerFormPage({id}:{id?:string}){
     </div></section>
     {(maximum>0||dependents.length>0)&&<section className="customer-dependents">
      <h2><FiUsersIcon/> Dependentes ({dependents.length} de {maximum})</h2>
-     <p>Plano Familiar: até três dependentes. Cada pessoa recebe um número exclusivo após o cadastro.</p>
+     <p>Este cartão permite até {maximum} dependente(s). Cada pessoa recebe um número exclusivo após o cadastro.</p>
      {dependents.map((item,index)=><div className="customer-dependent-row" key={item.id||`new-${index}`}>
       <label>Nome do dependente <input required maxLength={180} value={item.name} placeholder={`Dependente ${index+1}`}
        onChange={e=>updateDependent(index,"name",e.target.value)}/></label>

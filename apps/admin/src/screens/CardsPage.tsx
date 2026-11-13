@@ -27,6 +27,7 @@ export function CardsPage(){
  async function save(e:React.FormEvent){
   e.preventDefault();const cents=toCents(form.price);
   if(!Number.isSafeInteger(cents)||cents<0){setError("Informe um preço válido, como 89,90.");return;}
+  if(!Number.isInteger(form.maxDependents)||form.maxDependents<0||form.maxDependents>30){setError("Informe de 0 a 30 dependentes.");return;}
   setSaving(true);setError("");
   try{
    const r=await fetch(current?`/admin/api/card-plans/${current.id}`:"/admin/api/card-plans",{
@@ -63,13 +64,14 @@ export function CardsPage(){
      <button type="button" aria-label="Fechar" disabled={saving} onClick={()=>setEditing(false)}><FiX/></button></header>
     <form onSubmit={save}>
      <label>Nome do cartão <em>*</em><input required maxLength={80} value={form.name}
-      placeholder="Individual ou Familiar" onChange={e=>setForm({...form,name:e.target.value})}/></label>
+      placeholder="Individual ou Familiar" onChange={e=>setForm(old=>({...old,name:e.target.value,
+       maxDependents:!current&&old.name.trim()===""&&e.target.value.trim().toLowerCase()==="familiar"&&old.maxDependents===0?2:old.maxDependents}))}/></label>
      <div className="cards-form-grid"><label>Mensalidade (R$) <em>*</em><input required
       inputMode="decimal" placeholder="89,90" value={form.price}
       onChange={e=>setForm({...form,price:e.target.value})}/></label>
-      <label>Composição do cartão<select value={form.maxDependents} onChange={e=>setForm({...form,maxDependents:Number(e.target.value)})}>
-       <option value={0}>Individual — somente titular</option>
-       <option value={3}>Familiar — até 3 dependentes</option></select></label></div>
+      <label>Quantidade máxima de dependentes <em>*</em><input required type="number" min={0} max={30} step={1}
+       value={form.maxDependents} onChange={e=>setForm({...form,maxDependents:Number(e.target.value)})}/>
+       <small>0 = somente titular. Defina até 30 dependentes para cada plano.</small></label></div>
      <label>Benefícios <small>(um por linha)</small><textarea rows={5} maxLength={6000}
       placeholder="Consultas médicas com desconto&#10;Exames e check-ups&#10;Rede credenciada"
       value={form.benefits} onChange={e=>setForm({...form,benefits:e.target.value})}/></label>

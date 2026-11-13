@@ -22,7 +22,7 @@ export function parseDependent(raw:unknown):DependentInput{
 }
 export function parseDependents(raw:unknown):DependentInput[]{
  if(raw===undefined)return [];
- if(!Array.isArray(raw)||raw.length>3)return fail("São permitidos até três dependentes.");
+ if(!Array.isArray(raw)||raw.length>30)return fail("São permitidos até 30 dependentes por plano. Confira o limite do cartão selecionado.");
  const items=raw.map(parseDependent);
  if(new Set(items.filter(item=>item.id).map(item=>item.id)).size!==items.filter(item=>item.id).length)
   return fail("Dependente repetido.");

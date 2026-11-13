@@ -17,8 +17,8 @@ function parsePlan(raw:unknown):PlanInput{
   throw new HttpException("Informe o nome do cartão (até 80 caracteres).",400);
  if(!Number.isSafeInteger(b.priceCents)||Number(b.priceCents)<0||Number(b.priceCents)>100000000)
   throw new HttpException("Preço do cartão inválido.",400);
- if(b.maxDependents!==0&&b.maxDependents!==3)
-  throw new HttpException("O cartão deve ser individual (0) ou familiar (até 3 dependentes).",400);
+ if(!Number.isSafeInteger(b.maxDependents)||Number(b.maxDependents)<0||Number(b.maxDependents)>30)
+  throw new HttpException("Informe a quantidade de dependentes entre 0 e 30.",400);
  if(!Array.isArray(b.benefits)||b.benefits.length>30||
     !b.benefits.every(x=>typeof x==="string"&&x.trim().length>0&&x.length<=180))
   throw new HttpException("Benefícios inválidos.",400);
@@ -55,9 +55,10 @@ export class CardPlansController {
   if(!cardUUID.test(id))throw new HttpException("Identificador inválido.",400);
   const existing=await db.cardPlan.findUnique({where:{id},select:{id:true,maxDependents:true}});
   if(!existing)throw new HttpException("Tipo de cartão não encontrado.",404);
-  if(data.maxDependents===0){
-   const used=await db.cardDependent.count({where:{customer:{cardPlanId:id}}});
-   if(used)throw new HttpException("Existem clientes com dependentes neste cartão. Não é possível torná-lo Individual.",409);
+  if(data.maxDependents<existing.maxDependents){
+   const grouped=await db.cardDependent.groupBy({by:["customerId"],where:{customer:{cardPlanId:id}},_count:{id:true}});
+   const greatest=grouped.reduce((max,row)=>Math.max(max,row._count.id),0);
+   if(greatest>data.maxDependents)throw new HttpException(`Há clientes com até ${greatest} dependente(s). O limite não pode ser reduzido abaixo dessa quantidade.`,409);
   }
   try{return await db.$transaction(async tx=>{
    const plan=await tx.cardPlan.update({where:{id},data,select:selection});
