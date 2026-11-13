@@ -12,7 +12,7 @@ const returnToClients=()=>window.location.assign("/admin/?view=clients");
 const planPrice=(value:number)=>centsInput(value);
 function fromRecord(value:CustomerRecord):CustomerFormData{
  return {invoice:value.invoice||"",name:value.name,cpf:"",
-  birthDate:value.birthDate?.slice(0,10)||"",partnerId:value.partnerId||"",
+  birthDate:value.birthDate?.slice(0,10)||"",dueDay:value.dueDay?String(value.dueDay):"",partnerId:value.partnerId||"",
   cardPlanId:value.cardPlanId||"",planType:value.planType||"",
   amount:centsInput(value.amountCents),paymentMethod:value.paymentMethod||"",
   status:value.status,paymentDetails:value.paymentDetails||""};
@@ -23,6 +23,7 @@ export function CustomerFormPage({id}:{id?:string}){
  const [original,setOriginal]=useState<CustomerRecord|null>(null);
  const [plans,setPlans]=useState<CardPlan[]>([]);
  const [partners,setPartners]=useState<PartnerOption[]>([]);
+ const [dueDays,setDueDays]=useState<number[]>([]);
  const [dependents,setDependents]=useState<DependentForm[]>([]);
  const [loading,setLoading]=useState(editing),[loadingOptions,setLoadingOptions]=useState(true);
  const [saving,setSaving]=useState(false),[error,setError]=useState("");
@@ -33,10 +34,11 @@ export function CustomerFormPage({id}:{id?:string}){
   Promise.all([
    fetch("/admin/api/partners",{cache:"no-store",signal:controller.signal}),
    fetch("/admin/api/card-plans",{cache:"no-store",signal:controller.signal}),
-  ]).then(async ([pr,pl])=>{
-   const [partnerData,planData]=await Promise.all([pr.json(),pl.json()]);
-   if(!pr.ok||!pl.ok)throw new Error(partnerData.message||planData.message||partnerData.error||planData.error||"Falha ao carregar opções.");
-   if(!controller.signal.aborted){setPartners(partnerData);setPlans(planData);}
+   fetch("/admin/api/billing-settings/due-days",{cache:"no-store",signal:controller.signal}),
+  ]).then(async ([pr,pl,dr])=>{
+   const [partnerData,planData,daysData]=await Promise.all([pr.json(),pl.json(),dr.json()]);
+   if(!pr.ok||!pl.ok||!dr.ok)throw new Error(partnerData.message||planData.message||daysData.message||partnerData.error||planData.error||daysData.error||"Falha ao carregar opções.");
+   if(!controller.signal.aborted){setPartners(partnerData);setPlans(planData);setDueDays(daysData.days||[]);}
   }).catch(e=>{if(!controller.signal.aborted)setError(e instanceof Error?e.message:"Falha ao carregar opções");})
    .finally(()=>{if(!controller.signal.aborted)setLoadingOptions(false)});
   return()=>controller.abort();
@@ -114,7 +116,7 @@ export function CustomerFormPage({id}:{id?:string}){
   try{
    const body={
     invoice:form.invoice||null,name:form.name.trim(),cpf:form.cpf.replace(/\D/g,"")||null,
-    birthDate:form.birthDate||null,partnerId:form.partnerId||null,
+    birthDate:form.birthDate||null,dueDay:form.dueDay?Number(form.dueDay):null,partnerId:form.partnerId||null,
     cardPlanId:form.cardPlanId||null,
     planType:form.planType||null,amountCents:selected?selected.priceCents:parseCents(form.amount),
     paymentMethod:form.paymentMethod||null,status:form.status,
@@ -171,6 +173,10 @@ export function CustomerFormPage({id}:{id?:string}){
       </select>
       {!selected&&original?.planType&&<small>Plano histórico da planilha: {original.planType}. Selecione um cartão cadastrado para migrar o cliente.</small>}
      </label>
+     <label>Dia de vencimento<select value={form.dueDay} onChange={e=>update("dueDay",e.target.value)}>
+      <option value="">Não definido</option>
+      {[...new Set([...dueDays,...(original?.dueDay?[original.dueDay]:[])])].sort((a,b)=>a-b).map(day=><option key={day} value={day}>Dia {day}</option>)}
+     </select><small>Gerencie os dias em Configurações → Dias de vencimento. Não gera cobrança automática.</small></label>
      <label>Forma de pagamento<input maxLength={140} value={form.paymentMethod} placeholder="Pix, cartão ou boleto"
       onChange={e=>update("paymentMethod",e.target.value)}/></label>
      <label>Status<select value={form.status} onChange={e=>update("status",e.target.value as FinanceStatus)}>
