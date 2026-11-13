@@ -4,7 +4,7 @@ import {currentUser} from "./auth.controller";
 
 const db=createPrismaClient();
 export const dueDaysKey="billing.allowedDueDays";
-const defaultDays=[5,10,15,20,25];
+const defaultDays:number[]=[];
 export function validDays(value:unknown):value is number[]{
  return Array.isArray(value)&&value.length<=31&&
   value.every(day=>typeof day==="number"&&Number.isInteger(day)&&day>=1&&day<=31)&&
