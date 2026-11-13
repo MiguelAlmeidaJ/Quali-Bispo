@@ -39,11 +39,11 @@ if ($LASTEXITCODE -ne 0) {
 # Evitar literais SQL com aspas na linha de comando do PowerShell 5.1:
 # a passagem de argumentos nativos pode remover aspas e causar falso negativo.
 # O metacomando psql consulta o catálogo sem aspas SQL e retorna uma linha por tabela.
-$tables = @(& docker exec $Container psql -U quali -d quali -A -t -c "\\dt public.*")
+$tables = @(& docker exec $Container psql -U quali -d quali -A -t -c "\dt public.*")
 if ($LASTEXITCODE -ne 0) {
   throw "Falha ao listar tabelas do banco quali no contêiner '$Container'."
 }
-$found = @($tables | Where-Object { $_ -match '^public\\|FinanceCustomer\\|' })
+$found = @($tables | Where-Object { $_ -match '^public\|FinanceCustomer\|' })
 if ($found.Count -ne 1) {
   Write-Host "Tabelas encontradas em public:" -ForegroundColor Yellow
   $tables | ForEach-Object { Write-Host "  $_" }
