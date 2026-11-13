@@ -23,7 +23,7 @@ function parsePlan(raw:unknown):PlanInput{
     !b.benefits.every(x=>typeof x==="string"&&x.trim().length>0&&x.length<=180))
   throw new HttpException("Benefícios inválidos.",400);
  if(typeof b.active!=="boolean")throw new HttpException("Situação do cartão inválida.",400);
- return {name:b.name.trim(),priceCents:Number(b.priceCents),maxDependents:b.maxDependents,
+ return {name:b.name.trim(),priceCents:Number(b.priceCents),maxDependents:Number(b.maxDependents),
   benefits:[...new Set((b.benefits as string[]).map(x=>x.trim()))],active:b.active};
 }
 const selection={id:true,name:true,priceCents:true,maxDependents:true,benefits:true,active:true,
