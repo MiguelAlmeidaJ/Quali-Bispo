@@ -12,6 +12,7 @@ import {CustomerReviewPage} from "../screens/CustomerReviewPage";
 import {AttendancesPage} from "../screens/AttendancesPage";
 import {ReportsPage} from "../screens/ReportsPage";
 import {CardsPage} from "../screens/CardsPage";
+import {BillingSettingsPage} from "../screens/BillingSettingsPage";
 import {CustomerFormPage} from "../screens/CustomerFormPage";
 import {AdminUsersPage} from "../screens/dev/AdminUsersPage";
 import {AuditPage} from "../screens/dev/AuditPage";
@@ -49,9 +50,10 @@ export function AdminApp({customerRoute,initialView}:{customerRoute?:{mode:"new"
       }}/>:
       allowedView==="attendances"?<AttendancesPage user={user} preselectedCustomer={attendanceCustomer} onPrefillConsumed={()=>setAttendanceCustomer(null)}/>:
       allowedView==="reports"&&user.role!=="PARTNER"?<ReportsPage/>:
-      allowedView==="cards"&&user.role!=="PARTNER"?<CardsPage/>:
+      allowedView==="cards"&&user.role!=="PARTNER"?<BillingSettingsPage/>:
       allowedView==="partners"&&user.role!=="PARTNER"?<PartnersPage/>:
-      allowedView==="pricing"?<CatalogPage readonly={user.role==="PARTNER"}/>:
+      allowedView==="pricing"?user.role==="PARTNER"?<CatalogPage readonly/>:<BillingSettingsPage/>:null:
+      allowedView==="settings"&&user.role!=="PARTNER"?<BillingSettingsPage/>:
       allowedView==="clients"&&user.role!=="PARTNER"?<FinancePage type="customers"/>:
       allowedView==="depara"&&user.role!=="PARTNER"?<CustomerReviewPage/>:
       allowedView==="payments"&&user.role!=="PARTNER"?<FinancePage type="issues"/>:
