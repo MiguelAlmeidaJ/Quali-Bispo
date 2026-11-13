@@ -1,6 +1,6 @@
 "use client";
 import {useCallback,useEffect,useState} from "react";
-import {FiAlertTriangle,FiCheckCircle,FiSearch,FiPlus,FiEdit2} from "react-icons/fi";
+import {FiAlertTriangle,FiCheckCircle,FiSearch,FiPlus,FiEdit2,FiUserX,FiUserCheck,FiUsers,FiCreditCard,FiActivity,FiAlertCircle} from "react-icons/fi";
 
 type Status="PAID"|"OPEN"|"EXPECTED"|"PENDING"|"IN_REVIEW"|"AWAITING"|"UNSPECIFIED";
 type BaseRow={
@@ -32,6 +32,7 @@ export function FinancePage({type}:{type:"customers"|"issues"}){
  const [unresolved,setUnresolved]=useState(true);
  const [total,setTotal]=useState(0),[loading,setLoading]=useState(true),[error,setError]=useState("");
  const [savingId,setSavingId]=useState<string|null>(null);
+ const [benefitSavingId,setBenefitSavingId]=useState<string|null>(null);
  const title=type==="customers"?"Clientes":"Inadimplência e pendências";
  const refresh=useCallback(async()=>{
   setLoading(true);
@@ -60,21 +61,43 @@ export function FinancePage({type}:{type:"customers"|"issues"}){
   }catch(e){setError(e instanceof Error?e.message:"Falha na atualização");}
   finally{setSavingId(null);}
  }
+ async function changeBenefit(row:Customer){
+  const next=!row.benefitActive;
+  const reason=window.prompt(next?
+   `Informe o motivo para reativar o benefício de ${row.name} e seus dependentes:`:
+   `Informe o motivo para cancelar o benefício de ${row.name} e seus dependentes:`);
+  if(reason===null)return;
+  if(reason.trim().length<8||reason.trim().length>500){
+   setError("Informe um motivo de 8 a 500 caracteres.");return;
+  }
+  if(!window.confirm(next?
+   `Confirma a reativação de ${row.name} e dos dependentes?`:
+   `Confirma o cancelamento do benefício de ${row.name} e dos dependentes? Os cadastros e histórico serão preservados.`))return;
+  setBenefitSavingId(row.id);setError("");
+  try{
+   await request(`/admin/api/customer-benefits/${row.id}`,{
+    method:"PATCH",headers:{"content-type":"application/json"},
+    body:JSON.stringify({active:next,reason:reason.trim()}),
+   });
+   await refresh();
+  }catch(e){setError(e instanceof Error?e.message:"Falha ao alterar benefício.");}
+  finally{setBenefitSavingId(null);}
+ }
  const pages=Math.max(1,Math.ceil(total/20));
  return <div className="finance-page">
   <header className="page-title finance-page-title"><div><h1>{title}</h1><p>{type==="customers"?"Cadastro financeiro importado da planilha Quali.":"Pendências e cobranças para acompanhamento."}</p></div>{type==="customers"&&<a className="customer-new-link" href="/admin/cliente/novo"><FiPlus size={18}/> Novo cliente</a>}</header>
-  <div className="finance-stats">
-   <article><span>Clientes importados</span><strong>{summary?.customers??"—"}</strong></article>
-   <article><span>Pagamentos em dia</span><strong className="finance-ok">{summary?.paid??"—"}</strong></article>
-   <article><span>Pendências não resolvidas</span><strong className="finance-alert">{summary?.unresolved??"—"}</strong></article>
-   <article><span>Sem vínculo confirmado</span><strong>{summary?.unmatched??"—"}</strong></article>
+  <div className="finance-stats finance-stats-refined">
+   <article><FiUsers className="finance-stat-icon"/><span>Clientes cadastrados</span><strong>{summary?.customers??"—"}</strong><small>Total registrado no sistema</small></article>
+   <article><FiCheckCircle className="finance-stat-icon"/><span>Pagamentos em dia</span><strong className="finance-ok">{summary?.paid??"—"}</strong><small>Situação financeira: pago</small></article>
+   <article><FiActivity className="finance-stat-icon"/><span>Pendências não resolvidas</span><strong className="finance-alert">{summary?.unresolved??"—"}</strong><small>Pendências financeiras abertas</small></article>
+   <article><FiAlertCircle className="finance-stat-icon"/><span>Sem vínculo confirmado</span><strong>{summary?.unmatched??"—"}</strong><small>Pendências sem cliente associado</small></article>
   </div>
   {summary&&summary.invalidCpf>0&&<div className="finance-info"><FiAlertTriangle size={18}/>
    {summary.invalidCpf} registros precisam de revisão de CPF (ausente, inválido ou repetido). Nenhuma associação automática foi feita para esses casos.
   </div>}
-  <section className="finance-table-card">
-   <div className="finance-toolbar">
-    <label className="finance-search"><FiSearch size={18}/><input aria-label="Buscar cliente" placeholder="Pesquisar pelo nome..." value={search}
+  <section className="finance-table-card finance-table-refined">
+   <div className="finance-toolbar"><div className="finance-toolbar-intro"><strong>{type==="customers"?"Relação de clientes":"Relação de pendências"}</strong><span>{type==="customers"?"Consulte, edite ou gerencie benefícios.":"Acompanhe os registros financeiros."}</span></div>
+    <label className="finance-search"><FiSearch size={18}/><input aria-label="Buscar cliente" placeholder={type==="customers"?"Pesquisar clientes por nome ou unidade...":"Pesquisar pendências por nome..."} value={search}
      onChange={e=>{setSearch(e.target.value);setPage(1);}}/></label>
     <select aria-label="Filtrar situação" value={status} onChange={e=>{setStatus(e.target.value);setPage(1);}}>
      <option value="">Todas as situações</option>{statusOptions.map(([key,label])=><option value={key} key={key}>{label}</option>)}
@@ -87,14 +110,14 @@ export function FinancePage({type}:{type:"customers"|"issues"}){
     {type==="customers"?<th>CPF</th>:<th>VÍNCULO</th>}
     <th>PLANO</th><th>VALOR</th><th>PAGAMENTO</th><th>OBSERVAÇÕES</th><th>SITUAÇÃO</th>{type==="customers"&&<th>AÇÕES</th>}{type==="issues"&&<th>RESOLUÇÃO</th>}</tr></thead>
     <tbody>{items.map(row=><tr key={row.id}>
-     <td><b>{row.name}</b>{type==="customers"&&!(row as Customer).benefitActive&&<small className="benefit-disabled">Benefício cancelado</small>}{type==="customers"&&((row as Customer).partner||(row as Customer).unit)&&<small>{(row as Customer).partner?.name||(row as Customer).unit}</small>}</td>
+     <td><b>{row.name}</b>{type==="customers"&&<small className={(row as Customer).benefitActive?"finance-benefit-active":"benefit-disabled"}>{(row as Customer).benefitActive?"Benefício ativo":"Benefício cancelado"}</small>}{type==="customers"&&((row as Customer).partner||(row as Customer).unit)&&<small>{(row as Customer).partner?.name||(row as Customer).unit}</small>}</td>
      <td>{type==="customers"?(row as Customer).cpfValid&&!(row as Customer).cpfConflict?`***.***.***-${(row as Customer).cpfLast4?.slice(-2)||"**"}`:"Revisar CPF":
       (row as Issue).customerId?<span className="finance-linked"><FiCheckCircle/> Vinculado</span>:<span className="finance-unmatched">Não identificado</span>}</td>
-     <td>{row.planType||"—"}</td><td>{money(row.amountCents)}</td><td>{row.paymentMethod||"—"}</td>
+     <td><span className="finance-plan-pill"><FiCreditCard size={13}/>{row.planType||"Sem cartão"}</span></td><td>{money(row.amountCents)}</td><td>{row.paymentMethod||"—"}</td>
      <td className="finance-notes">{row.paymentDetails||"—"}{row.referenceDate&&<small>{new Date(row.referenceDate).toLocaleDateString("pt-BR",{timeZone:"UTC"})}</small>}</td>
      <td><select className="finance-status-select" aria-label={`Situação de ${row.name}`} value={row.status} disabled={savingId===row.id}
       onChange={e=>void save(row,{status:e.target.value as Status})}>{statusOptions.map(([key,label])=><option value={key} key={key}>{label}</option>)}</select></td>
-     {type==="customers"&&<td><a className="customer-edit-link" href={`/admin/cliente/${row.id}/edit`}><FiEdit2 size={15}/> Editar</a></td>}
+     {type==="customers"&&<td><div className="finance-row-actions"><a className="finance-icon-action" href={`/admin/cliente/${row.id}/edit`} title={`Editar cadastro de ${row.name}`} aria-label={`Editar cadastro de ${row.name}`}><FiEdit2 size={17}/></a><button type="button" className={`finance-icon-action ${(row as Customer).benefitActive?"finance-icon-danger":"finance-icon-restore"}`} disabled={benefitSavingId===row.id} title={(row as Customer).benefitActive?`Cancelar benefício de ${row.name}`:`Reativar benefício de ${row.name}`} aria-label={(row as Customer).benefitActive?`Cancelar benefício de ${row.name}`:`Reativar benefício de ${row.name}`} onClick={()=>void changeBenefit(row as Customer)}>{(row as Customer).benefitActive?<FiUserX size={18}/>:<FiUserCheck size={18}/>}</button></div></td>}
      {type==="issues"&&<td><label className="finance-resolve"><input type="checkbox" checked={(row as Issue).resolved} disabled={savingId===row.id}
       onChange={e=>void save(row,{resolved:e.target.checked})}/> Resolvida</label></td>}
     </tr>)}</tbody></table></div>}
