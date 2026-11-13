@@ -24,16 +24,16 @@ export async function issueHolderCard(tx:Tx,customer:{
 export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacity:number,actorId:string){
  if(raw===undefined)return;
  const inputs=parseDependents(raw);
- const current=await tx.cardDependent.findMany({where:{customerId},select:{id:true,cpfHash:true,cardNumber:true,birthDate:true,benefitActive:true}});
+ const current=await tx.cardDependent.findMany({where:{customerId},select:{id:true,cpfHash:true,cpfLast4:true,cardNumber:true,birthDate:true,benefitActive:true}});
  // Sem exclusão implícita: os dependentes omitidos permanecem cadastrados.
  const additions=inputs.filter(item=>!item.id);
  if(current.length+additions.length>capacity)return error(`Este cartão permite até ${capacity} dependente(s). Remova ou revise os registros existentes antes de continuar.`);
  for(const input of inputs){
-  const birthday=new Date(input.birthDate+"T00:00:00.000Z");
+  const birthday=input.birthDate?new Date(input.birthDate+"T00:00:00.000Z"):null;
   if(input.id){
    const own=current.find(item=>item.id===input.id);
    if(!own)return error("Dependente não pertence ao cliente.",403);
-   if(own.cardNumber&&(own.birthDate.toISOString().slice(0,10)!==input.birthDate||
+   if(own.cardNumber&&((own.birthDate?.toISOString().slice(0,10)||null)!==input.birthDate||
       (input.cpf&&cpfFingerprint(input.cpf)!==own.cpfHash)))
     return error("O dependente já possui cartão emitido. CPF ou nascimento exigem reemissão controlada.",409);
    let hash=own.cpfHash,last4:string|undefined;
@@ -41,7 +41,13 @@ export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacit
    const duplicate=await tx.cardDependent.findFirst({where:{cpfHash:hash,benefitActive:true,id:{not:input.id}},select:{id:true}});
    const holder=await tx.financeCustomer.findFirst({where:{cpfHash:hash,benefitActive:true},select:{id:true}});
    if(duplicate||holder)return error("CPF já cadastrado para outro beneficiário.",409);
+   let cardNumber:string|undefined;
+   if(!own.cardNumber&&birthday){
+    const customer=await tx.financeCustomer.findUniqueOrThrow({where:{id:customerId},select:{createdAt:true}});
+    cardNumber=await nextCardNumber(tx,customer.createdAt,birthday,last4||own.cpfLast4);
+   }
    await tx.cardDependent.update({where:{id:input.id},data:{name:input.name,birthDate:birthday,
+     ...(cardNumber?{cardNumber}:{}),
      ...(last4?{cpfHash:hash,cpfLast4:last4}: {})}});
   }else{
    const hash=cpfFingerprint(input.cpf!);
@@ -51,11 +57,11 @@ export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacit
    ]);
    if(dependent||holder)return error("CPF já cadastrado para outro beneficiário.",409);
    const customer=await tx.financeCustomer.findUniqueOrThrow({where:{id:customerId},select:{createdAt:true}});
-   const number=await nextCardNumber(tx,customer.createdAt,birthday,input.cpf!.slice(-4));
+   const number=birthday?await nextCardNumber(tx,customer.createdAt,birthday,input.cpf!.slice(-4)):null;
    const created=await tx.cardDependent.create({data:{customerId,name:input.name,benefitActive:true,
     cpfHash:hash,cpfLast4:input.cpf!.slice(-4),birthDate:birthday,cardNumber:number},select:{id:true}});
    await tx.auditLog.create({data:{actorId,action:"CARD_DEPENDENT_CREATED",entityType:"CardDependent",
-    entityId:created.id,metadata:{customerId}}});
+    entityId:created.id,metadata:{customerId,cardIssued:!!number}}});
   }
  }
 }
