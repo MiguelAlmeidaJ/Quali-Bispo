@@ -144,7 +144,7 @@ export class FinanceController {
    if(!correction||typeof correction!=="object"||Array.isArray(correction))
     throw new HttpException("Correção de CPF inválida.",400);
    const data=correction as Record<string,unknown>;
-   const cpf=typeof data.cpf==="string"?data.cpf.replace(/\\D/g,""):"";
+   const cpf=typeof data.cpf==="string"?data.cpf.replace(/\D/g,""):"";
    const reason=typeof data.reason==="string"?data.reason.trim():"";
    if(!validCpf(cpf))throw new HttpException("Informe um CPF válido.",400);
    if(reason.length<8||reason.length>500)throw new HttpException("Informe o motivo da correção (8 a 500 caracteres).",400);
