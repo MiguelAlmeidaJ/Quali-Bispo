@@ -13,7 +13,7 @@ import type { IconType } from "react-icons";
 export type AdminView =
   | "dashboard" | "validate" | "clients" | "payments"
   | "attendances" | "pricing" | "partners" | "reports" | "cards" | "depara"
-  | "dev-users" | "dev-audit" | "dev-settings";
+  | "settings" | "dev-users" | "dev-audit" | "dev-settings";
 type User = { name: string; role: "DEV" | "ADMIN" | "PARTNER" };
 
 type MenuItem = {
@@ -28,7 +28,6 @@ const items: MenuItem[] = [
   { view: "dashboard", label: "Painel", icon: FiBarChart2, adminOnly: true },
   { view: "validate", label: "Validar CPF", icon: FiSearch },
   { view: "clients", label: "Clientes", icon: FiUsers, adminOnly: true },
-  { view: "cards", label: "Cartões", icon: FiCreditCard, adminOnly: true },
   { view: "depara", label: "De-para de clientes", icon: FiAlertCircle, adminOnly: true },
   { view: "payments", label: "Inadimplência", icon: FiDollarSign, adminOnly: true },
   { view: "attendances", label: "Atendimentos", icon: FiActivity },
@@ -37,7 +36,8 @@ const items: MenuItem[] = [
   { view: "reports", label: "Relatórios", icon: FiFileText, adminOnly: true },
   { view: "dev-users", label: "Administradores", icon: FiUserPlus, devOnly: true },
   { view: "dev-audit", label: "Auditoria", icon: FiShield, devOnly: true },
-  { view: "dev-settings", label: "Configurações", icon: FiSettings, devOnly: true },
+  { view: "settings", label: "Configurações", icon: FiSettings, adminOnly: true },
+  { view: "dev-settings", label: "Sistema", icon: FiShield, devOnly: true },
 ];
 
 export function Sidebar({
@@ -51,7 +51,7 @@ export function Sidebar({
   setCollapsed: (value: boolean) => void;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const allowedItems = items.filter(item => (!item.adminOnly || user.role === "ADMIN" || user.role === "DEV") && (!item.devOnly || user.role === "DEV"));
+  const allowedItems = items.filter(item => (!item.adminOnly || user.role === "ADMIN" || user.role === "DEV") && (!item.devOnly || user.role === "DEV") && (item.view !== "pricing" || user.role === "PARTNER"));
 
   function navigate(nextView: AdminView) {
     setView(nextView);
