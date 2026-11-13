@@ -2,9 +2,9 @@ import {Body,Controller,ForbiddenException,Get,Headers,HttpException,Param,Patch
 import {config as loadEnv} from "dotenv";
 import jwt from "jsonwebtoken";
 import {createPrismaClient} from "@quali/database";
-import {cpfFingerprint,createManualImportKey,parseCustomerPayload} from "./finance-customer.validation";
+import {cpfFingerprint,createManualImportKey,parseCustomerPayload,validCpf} from "./finance-customer.validation";
 import {issueHolderCard,saveDependents,selectedCardPlan} from "./finance-cards.service";
-import {parseDependents} from "./cards.logic";
+import {nextCardNumber,parseDependents} from "./cards.logic";
 import {allowedDueDays} from "./billing-settings.controller";
 
 loadEnv({path:"../../.env"});
@@ -138,6 +138,46 @@ export class FinanceController {
   if(!previous)throw new HttpException("Cliente não encontrado",404);
   if(!body||typeof body!=="object"||Array.isArray(body))throw new HttpException("Dados inválidos",400);
   const input=body as Record<string,unknown>;
+  // Alteração sensível: endpoint lógico independente do formulário normal.
+  if(Object.keys(input).length===1&&Object.prototype.hasOwnProperty.call(input,"cpfCorrection")){
+   const correction=input.cpfCorrection;
+   if(!correction||typeof correction!=="object"||Array.isArray(correction))
+    throw new HttpException("Correção de CPF inválida.",400);
+   const data=correction as Record<string,unknown>;
+   const cpf=typeof data.cpf==="string"?data.cpf.replace(/\\D/g,""):"";
+   const reason=typeof data.reason==="string"?data.reason.trim():"";
+   if(!validCpf(cpf))throw new HttpException("Informe um CPF válido.",400);
+   if(reason.length<8||reason.length>500)throw new HttpException("Informe o motivo da correção (8 a 500 caracteres).",400);
+   const hash=cpfFingerprint(cpf);
+   if(hash===previous.cpfHash)throw new HttpException("O CPF informado é igual ao cadastrado.",400);
+   try{return await db.$transaction(async tx=>{
+    const record=await tx.financeCustomer.findUniqueOrThrow({where:{id},
+     select:{id:true,cpfHash:true,cpfLast4:true,cardNumber:true,birthDate:true,createdAt:true,benefitActive:true}});
+    if(record.cpfHash!==previous.cpfHash||record.cardNumber!==previous.cardNumber)
+     throw new HttpException("O cadastro foi alterado por outro usuário. Recarregue a página.",409);
+    const [holder,dependent]=await Promise.all([
+     tx.financeCustomer.findFirst({where:{cpfHash:hash,benefitActive:true,id:{not:id}},select:{id:true}}),
+     tx.cardDependent.findFirst({where:{cpfHash:hash,benefitActive:true,customer:{benefitActive:true}},select:{id:true}}),
+    ]);
+    if(holder||dependent)throw new HttpException("CPF já vinculado a outro benefício ativo.",409);
+    // A numeração emitida contém os dígitos finais do CPF: substituir exige nova emissão.
+    const newCard=record.cardNumber&&record.birthDate?
+     await nextCardNumber(tx,record.createdAt,record.birthDate,cpf.slice(-4)):null;
+    await tx.financeCustomer.update({where:{id},data:{
+     cpfHash:hash,cpfLast4:cpf.slice(-4),cpfValid:true,cpfConflict:false,
+     ...(record.cardNumber?{cardNumber:newCard}:{}),
+    }});
+    await tx.auditLog.create({data:{actorId:actor.id,action:"FINANCE_CUSTOMER_CPF_CORRECTED",
+     entityType:"FinanceCustomer",entityId:id,
+     metadata:{reason,previousLast4:record.cpfLast4,newLast4:cpf.slice(-4),
+      oldCardNumber:record.cardNumber,newCardNumber:newCard,cardReissued:!!record.cardNumber}}});
+    return tx.financeCustomer.findUniqueOrThrow({where:{id},select:customerFields});
+   });}catch(error){
+    if(error instanceof Error&&"code" in error&&error.code==="P2002")
+     throw new HttpException("CPF ou número de cartão já cadastrado.",409);
+    throw error;
+   }
+  }
   if(Object.keys(input).length===1&&Object.prototype.hasOwnProperty.call(input,"status")){
    const status=input.status;
    if(!validStatus(status))throw new HttpException("Situação inválida",400);
@@ -148,7 +188,9 @@ export class FinanceController {
     return item;
    });
   }
-  const payload=parseCustomerPayload(input);
+  if(Object.prototype.hasOwnProperty.call(input,"cpf")&&input.cpf!==null&&input.cpf!=="" )
+   throw new HttpException("Use a ação específica para correção de CPF.",400);
+  const payload=parseCustomerPayload({...input,status:previous.status,cpf:null});
   if(payload.dueDay!==null&&payload.dueDay!==previous.dueDay&&!(await allowedDueDays()).includes(payload.dueDay))throw new HttpException("Dia de vencimento não permitido nas Configurações.",400);
   parseDependents(input.dependents);
   if(previous.cardNumber){
@@ -181,8 +223,7 @@ export class FinanceController {
     ...(partnerId?{partnerId}:{}),
     ...(plan?{cardPlanId:plan.id,planType:plan.name,amountCents:plan.priceCents}:
       {planType:payload.planType,amountCents:payload.amountCents}),
-    paymentMethod:payload.paymentMethod,paymentDetails:payload.paymentDetails,status:payload.status,
-    ...(payload.cpf?{cpfHash,cpfLast4:payload.cpf.slice(-4),cpfValid:true,cpfConflict:false}:{}),
+    paymentMethod:payload.paymentMethod,paymentDetails:payload.paymentDetails,
    },select:{id:true,createdAt:true,birthDate:true,cpfValid:true,cpfConflict:true,cpfLast4:true,cardNumber:true}});
    if(plan)await issueHolderCard(tx,record);
    if(input.dependents!==undefined)await saveDependents(tx,id,input.dependents,plan!.maxDependents,actor.id);
