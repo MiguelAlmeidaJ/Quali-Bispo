@@ -36,8 +36,19 @@ if ($LASTEXITCODE -ne 0 -or $running -ne "true") {
 if ($LASTEXITCODE -ne 0) {
   throw "O banco quali não está pronto no contêiner '$Container'. Confirme se selecionou o PostgreSQL correto."
 }
-$verified = (& docker exec $Container psql -U quali -d quali -tAc 'SELECT 1 FROM information_schema.tables WHERE table_schema = ''public'' AND table_name = ''FinanceCustomer'';' | Select-Object -First 1)
-if ($LASTEXITCODE -ne 0 -or "$verified".Trim() -ne "1") { throw "O banco não contém FinanceCustomer. Confirme o contêiner correto antes de continuar." }
+# Evitar literais SQL com aspas na linha de comando do PowerShell 5.1:
+# a passagem de argumentos nativos pode remover aspas e causar falso negativo.
+# O metacomando psql consulta o catálogo sem aspas SQL e retorna uma linha por tabela.
+$tables = @(& docker exec $Container psql -U quali -d quali -A -t -c "\dt public.*")
+if ($LASTEXITCODE -ne 0) {
+  throw "Falha ao listar tabelas do banco quali no contêiner '$Container'."
+}
+$found = @($tables | Where-Object { $_ -match '^public\|FinanceCustomer\|' })
+if ($found.Count -ne 1) {
+  Write-Host "Tabelas encontradas em public:" -ForegroundColor Yellow
+  $tables | ForEach-Object { Write-Host "  $_" }
+  throw "FinanceCustomer não foi encontrada em public. Confirme se o .env aponta para este mesmo banco. Não será feito backup de uma base possivelmente errada."
+}
 $filename = "quali-$stamp.dump"
 $remote = "/tmp/$filename"
 $destinationPath = Join-Path $folder $filename
