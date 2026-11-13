@@ -30,7 +30,7 @@ const date=(raw:unknown):Date|null=>{
 };
 export type CustomerPayload={
  invoice:string|null;name:string;cpf:string|null;birthDate:Date|null;partnerId:string|null;planType:string|null;
- amountCents:number|null;paymentMethod:string|null;status:FinanceStatus;paymentDetails:string|null;
+ amountCents:number|null;dueDay:number|null;paymentMethod:string|null;status:FinanceStatus;paymentDetails:string|null;
 };
 export function parseCustomerPayload(raw:unknown):CustomerPayload {
  if(!raw||typeof raw!=="object"||Array.isArray(raw))throw bad("Dados do cliente inválidos.");
@@ -46,13 +46,15 @@ export function parseCustomerPayload(raw:unknown):CustomerPayload {
  const cents=body.amountCents;
  if(cents!==null&&cents!==undefined&&(!Number.isSafeInteger(cents)||Number(cents)<0||Number(cents)>100000000))
   throw bad("Valor do plano inválido.");
+ const dueDay=body.dueDay===undefined||body.dueDay===null||body.dueDay===""?null:body.dueDay;
+ if(dueDay!==null&&(!Number.isInteger(dueDay)||Number(dueDay)<1||Number(dueDay)>31))throw bad("Dia de vencimento deve estar entre 1 e 31.");
  if(!statuses.includes(String(body.status)))throw bad("Situação inválida.");
  return {
   invoice:field(body.invoice,"NF",100),name,
   cpf:cpf?.replace(/\D/g,"")||null,
   birthDate:date(body.birthDate),partnerId,
   planType:field(body.planType,"tipo de cartão",80),
-  amountCents:cents===null||cents===undefined?null:Number(cents),
+  amountCents:cents===null||cents===undefined?null:Number(cents),dueDay:dueDay as number|null,
   paymentMethod:field(body.paymentMethod,"forma de pagamento",140),
   status:body.status as FinanceStatus,
   paymentDetails:field(body.paymentDetails,"detalhes",2000),
