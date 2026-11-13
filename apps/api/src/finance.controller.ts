@@ -5,6 +5,7 @@ import {createPrismaClient} from "@quali/database";
 import {cpfFingerprint,createManualImportKey,parseCustomerPayload} from "./finance-customer.validation";
 import {issueHolderCard,saveDependents,selectedCardPlan} from "./finance-cards.service";
 import {parseDependents} from "./cards.logic";
+import {allowedDueDays} from "./billing-settings.controller";
 
 loadEnv({path:"../../.env"});
 const db=createPrismaClient(),secret=process.env.AUTH_JWT_SECRET;
@@ -24,7 +25,7 @@ async function requireFinanceStaff(header?:string){
  return actor;
 }
 const customerFields={
- id:true,importKey:true,name:true,birthDate:true,cpfLast4:true,cpfValid:true,cpfConflict:true,planType:true,
+ id:true,importKey:true,name:true,birthDate:true,dueDay:true,cpfLast4:true,cpfValid:true,cpfConflict:true,planType:true,
  benefitActive:true,benefitCancelledAt:true,benefitCancelReason:true,
  cardPlanId:true,cardPlan:{select:{id:true,name:true,priceCents:true,maxDependents:true,benefits:true,active:true}},cardNumber:true,
  dependents:{select:{id:true,name:true,cpfLast4:true,birthDate:true,cardNumber:true},orderBy:{createdAt:"asc"}},
@@ -82,6 +83,7 @@ export class FinanceController {
   const actor=await requireFinanceStaff(auth);
   const payload=parseCustomerPayload(body);
   const input=body as Record<string,unknown>;
+  if(payload.dueDay!==null&&!(await allowedDueDays()).includes(payload.dueDay))throw new HttpException("Dia de vencimento não permitido nas Configurações.",400);
   const cpf=payload.cpf;
   if(!cpf||!payload.birthDate)throw new HttpException("CPF e data de nascimento são obrigatórios para emitir o cartão.",400);
   if(!payload.partnerId)throw new HttpException("Selecione uma unidade da Rede Credenciada.",400);
@@ -98,7 +100,7 @@ export class FinanceController {
    if(!plan)throw new HttpException("Selecione um tipo de cartão cadastrado.",400);
    const record=await tx.financeCustomer.create({data:{
     importKey:createManualImportKey(),name:payload.name,invoice:payload.invoice,
-    birthDate:payload.birthDate,partnerId:assigned.id,unit:assigned.name,
+    birthDate:payload.birthDate,dueDay:payload.dueDay,partnerId:assigned.id,unit:assigned.name,
     planType:plan.name,cardPlanId:plan.id,amountCents:plan.priceCents,
     paymentMethod:payload.paymentMethod,status:payload.status,paymentDetails:payload.paymentDetails,
     cpfHash,cpfLast4:cpf.slice(-4),cpfValid:true,cpfConflict:false,
@@ -147,6 +149,7 @@ export class FinanceController {
    });
   }
   const payload=parseCustomerPayload(input);
+  if(payload.dueDay!==null&&payload.dueDay!==previous.dueDay&&!(await allowedDueDays()).includes(payload.dueDay))throw new HttpException("Dia de vencimento não permitido nas Configurações.",400);
   parseDependents(input.dependents);
   if(previous.cardNumber){
    const changedBirth=(payload.birthDate?.toISOString().slice(0,10)||null)!==(previous.birthDate?.toISOString().slice(0,10)||null);
@@ -174,7 +177,7 @@ export class FinanceController {
     throw new HttpException("O novo cartão não comporta os dependentes existentes.",409);
    if(input.dependents!==undefined&&!plan)throw new HttpException("Selecione um tipo de cartão antes de incluir dependentes.",400);
    const record=await tx.financeCustomer.update({where:{id},data:{
-    name:payload.name,invoice:payload.invoice,birthDate:payload.birthDate,
+    name:payload.name,invoice:payload.invoice,birthDate:payload.birthDate,dueDay:payload.dueDay,
     ...(partnerId?{partnerId}:{}),
     ...(plan?{cardPlanId:plan.id,planType:plan.name,amountCents:plan.priceCents}:
       {planType:payload.planType,amountCents:payload.amountCents}),
