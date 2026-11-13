@@ -82,7 +82,7 @@ export function CustomerFormPage({id}:{id?:string}){
  }
  async function saveCpf(){
   if(!id||!original||!cpfUnlocked||cpfSaving)return;
-  const cpf=form.cpf.replace(/\\D/g,"");
+  const cpf=form.cpf.replace(/\D/g,"");
   if(cpf.length!==11){setError("Informe os 11 dígitos do CPF.");return;}
   const reason=window.prompt("Informe o motivo da alteração do CPF (mínimo de 8 caracteres):");
   if(reason===null)return;
@@ -186,7 +186,7 @@ export function CustomerFormPage({id}:{id?:string}){
         onClick={()=>{setCpfUnlocked(true);setCpfSuccess("");setForm(old=>({...old,cpf:""}));}}>
         <FiEdit2 size={17}/><span>Editar</span></button>}
        {editing&&cpfUnlocked&&<>
-        <button type="button" className="customer-cpf-save" disabled={cpfSaving||saving||form.cpf.replace(/\\D/g,"").length!==11}
+        <button type="button" className="customer-cpf-save" disabled={cpfSaving||saving||form.cpf.replace(/\D/g,"").length!==11}
          onClick={()=>void saveCpf()}><FiSave size={16}/><span>{cpfSaving?"Salvando":"Salvar CPF"}</span></button>
         <button type="button" className="customer-cpf-close" aria-label="Cancelar edição do CPF"
          disabled={cpfSaving} onClick={()=>{setCpfUnlocked(false);setForm(old=>({...old,cpf:""}));setCpfChecks(old=>({...old,holder:""}));}}><FiX size={17}/></button>
