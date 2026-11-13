@@ -212,7 +212,6 @@ model FinanceIssue {
 
   @@index([status, resolved])
   @@index([customerId])
-  @@index([cpfHash])
 }
 
 model FinanceAttendance {
