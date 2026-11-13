@@ -670,3 +670,24 @@
 .billing-days-note{background:#f7fafc;border-left:3px solid #89b6d5;color:#617e96;padding:12px 14px;font-size:12px;line-height:1.65;margin-bottom:16px}
 .billing-days-footer{border-top:1px solid #e8f0f5;padding-top:20px;display:flex;justify-content:flex-end}
 @media(max-width:700px){.billing-settings-tabs button{flex:1 1 100%;justify-content:flex-start}.billing-days-panel{padding:19px}.billing-days-heading{flex-direction:column}}
+
+
+/* Cadastro de clientes: selects modernos, CPF protegido e ações de correção */
+.customer-editor-grid select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:46px;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23507693' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+ background-repeat:no-repeat;background-size:18px;background-position:right 15px center;
+ box-shadow:0 2px 8px rgba(25,66,98,.025);transition:border-color .15s,box-shadow .15s}
+.customer-editor-grid select:hover{border-color:#a4c3d9}
+.customer-editor-grid input,.customer-editor-grid textarea{transition:border-color .15s,box-shadow .15s}
+.customer-sensitive-field{display:flex;align-items:center;gap:8px;min-width:0}
+.customer-editor-grid .customer-sensitive-field input{flex:1;min-width:0;width:100%}
+.customer-editor-grid .customer-sensitive-field input[readonly]{background:#f4f8fc;color:#51738c;cursor:default;letter-spacing:.035em}
+.customer-sensitive-field button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:46px;border-radius:10px;border:1px solid #bfd8ea;padding:0 11px;background:#f0f7fc;color:#08669b;font-size:12px;font-weight:900;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.customer-sensitive-field button:hover:not(:disabled){background:#e3f1fc}
+.customer-sensitive-field button:disabled{opacity:.45;cursor:not-allowed}
+.customer-sensitive-field .customer-cpf-save{background:#e9f8f0;border-color:#b5e2ca;color:#197b48}
+.customer-sensitive-field .customer-cpf-close{padding:0;width:43px;background:#fff;color:#a14c55;border-color:#f0d8dd}
+.customer-editor-grid .customer-cpf-lock{display:inline-flex;align-items:center;gap:5px;color:#7892a5}
+.customer-editor-grid .customer-cpf-warning{color:#a46b21;font-weight:700;line-height:1.55}
+.customer-editor-grid .customer-cpf-success{color:#198046;font-weight:700}
+@media(max-width:560px){.customer-sensitive-field{flex-wrap:wrap}.customer-sensitive-field input{flex-basis:100%}}
