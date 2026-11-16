@@ -6,7 +6,7 @@ import {date} from "./member-types";
 type Card={id?:string;name:string;cpfLast4:string|null;birthDate:string|null;cardNumber:string|null;relationship:"Titular"|"Dependente"};
 export function MemberCardsTab({data}:{data:Dashboard}){
  const isDependent=data.accessKind==="dependent";
- const cards:Card=[
+ const cards:Card[]=[
   {name:data.member.name,cpfLast4:data.member.cpfLast4,birthDate:data.member.birthDate,
    cardNumber:data.member.cardNumber,relationship:isDependent?"Dependente":"Titular"},
   ...(!isDependent?data.dependents.map(item=>({...item,relationship:"Dependente" as const})):[]),
