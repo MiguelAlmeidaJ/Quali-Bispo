@@ -34,19 +34,21 @@ export function parseDependents(raw:unknown):DependentInput[]{
  return items;
 }
 export const cardDigits=(value:string)=>value.replace(/\D/g,"");
-export function assembleCardNumber(created:Date,birth:Date,cpfLast4:string,sequence:number){
+export function assembleCardNumber(created:Date,birth:Date|null,cpfLast4:string,sequence:number){
  if(sequence<1||sequence>9999)return fail("Limite de numeração de cartões atingido. Contate o administrador.",409);
  const local=Object.fromEntries(new Intl.DateTimeFormat("en-US",{timeZone:"America/Sao_Paulo",year:"2-digit",month:"2-digit"})
   .formatToParts(created).filter(part=>part.type==="year"||part.type==="month").map(part=>[part.type,part.value]));
  const year=local.year,month=local.month;
- const born=String(birth.getUTCFullYear()).slice(-2);
+ // Sem nascimento confirmado, reservar "00" apenas para novos cartões.
+ // Números existentes são persistidos e nunca recalculados.
+ const born=birth?String(birth.getUTCFullYear()).slice(-2):"00";
  const lastCpf=cpfLast4.slice(-2);
  if(lastCpf.length!==2)return fail("CPF insuficiente para gerar número do cartão.");
  return year+month+born+lastCpf+String(sequence).padStart(4,"0");
 }
 // Reservar próximo número de forma atômica na mesma transação que grava a carteirinha.
-// O cartão só será emitido após confirmar a data de nascimento e os dois últimos dígitos de CPF.
-export async function nextCardNumber(tx:Prisma.TransactionClient,created:Date,birth:Date,last4:string):Promise<string>{
+// A sequência global é persistida; o número salvo jamais deve ser recalculado.
+export async function nextCardNumber(tx:Prisma.TransactionClient,created:Date,birth:Date|null,last4:string):Promise<string>{
  for(let i=0;i<100;i++){
   const counter=await tx.cardSequence.upsert({where:{key:"global"},create:{key:"global",lastValue:1},
    update:{lastValue:{increment:1}},select:{lastValue:true}});

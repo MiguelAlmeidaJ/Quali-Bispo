@@ -432,3 +432,14 @@ tbody tr:nth-child(even){background:#fbfcfe}.badge-info{display:inline-block;bac
 }
 
 .member-dependent-note{background:#eef8f3;border:1px solid #d0e7d8;border-radius:14px;color:#376e4e;font-size:12px;line-height:1.6;padding:16px 18px;margin-bottom:15px}
+
+/* Galeria de cartões: reutiliza as cores, marca e proporções originais. */
+.member-cards-gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.member-cards-entry{min-width:0;background:#fff;border:1px solid #dce7f0;border-radius:18px;padding:17px;display:flex;flex-direction:column;gap:12px}
+.member-cards-entry .member-card-preview{width:100%;max-width:none;margin:0}
+.member-cards-entry-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#154c72;font-size:13px}
+.member-cards-entry-heading span{font-size:10px;font-weight:800;border-radius:999px;padding:6px 10px;background:#ebf5f0;color:#167746}
+.member-cards-entry .member-download-card{margin-top:auto}
+.member-cards-shortcut{width:100%;border:1px solid #c8e0d5;border-radius:11px;background:#f1faf5;color:#137945;padding:11px;font-size:12px;font-weight:900;cursor:pointer}
+.member-cards-shortcut:hover{background:#e4f4eb}
+@media(max-width:800px){.member-cards-gallery{grid-template-columns:1fr}}

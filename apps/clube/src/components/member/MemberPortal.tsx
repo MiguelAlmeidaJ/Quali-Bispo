@@ -5,13 +5,14 @@ import {Brand} from "../layout/Brand";
 import type {Dashboard} from "./member-types";
 import {statuses as labels,money,date} from "./member-types";
 import {MemberBenefitsTab} from "./MemberBenefitsTab";
+import {MemberCardsTab} from "./MemberCardsTab";
 import {MemberPartnersTab} from "./MemberPartnersTab";
 import {MemberBillingTab} from "./MemberBillingTab";
 import {MemberAttendancesTab} from "./MemberAttendancesTab";
 
-type Tab="overview"|"benefits"|"partners"|"payments"|"attendances";
+type Tab="overview"|"cards"|"benefits"|"partners"|"payments"|"attendances";
 const tabs:{key:Tab;label:string}[]=[
- {key:"overview",label:"Visão geral"},{key:"benefits",label:"Meus benefícios"},
+ {key:"overview",label:"Visão geral"},{key:"cards",label:"Meus cartões"},{key:"benefits",label:"Meus benefícios"},
  {key:"partners",label:"Rede parceira"},{key:"payments",label:"Mensalidades"},
  {key:"attendances",label:"Meus atendimentos"},
 ];
@@ -87,6 +88,7 @@ export function MemberPortal(){
        <span aria-hidden="true">↓</span> Baixar Cartão de Benefícios (PDF)
       </a>:
       <div className="member-card-warning">Emissão pendente: confirme CPF e data de nascimento no cadastro administrativo.</div>}
+     {!isDependent&&data.dependents.length>0&&<button type="button" className="member-cards-shortcut" onClick={()=>setTab("cards")}>Ver cartões dos dependentes →</button>}
      <p className="member-card-print-note">PDF em tamanho real de cartão (85,60 × 53,98 mm), sem margens ou informações adicionais.</p>
     </aside>
     <div className="member-right">
@@ -118,6 +120,7 @@ export function MemberPortal(){
      </section>}
     </div>
    </div>}
+   {tab==="cards"&&<MemberCardsTab data={data}/>}
    {tab==="benefits"&&<MemberBenefitsTab data={data}/>}
    {tab==="partners"&&<MemberPartnersTab partners={data.partners}/>}
    {tab==="payments"&&<MemberBillingTab data={data}/>}
