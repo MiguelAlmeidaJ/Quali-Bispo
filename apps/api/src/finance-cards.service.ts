@@ -19,7 +19,8 @@ export async function issueHolderCard(tx:Tx,customer:{
 }){
  if(customer.cardNumber||!customer.cpfValid||customer.cpfConflict||!customer.cpfLast4)return;
  const number=await nextCardNumber(tx,customer.createdAt,customer.birthDate,customer.cpfLast4);
- await tx.financeCustomer.update({where:{id:customer.id},data:{cardNumber:number}});
+ // Atualiza somente cartões ainda sem número, mesmo em caso de gravação concorrente.
+ await tx.financeCustomer.updateMany({where:{id:customer.id,cardNumber:null},data:{cardNumber:number}});
 }
 export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacity:number,actorId:string){
  if(raw===undefined)return;
