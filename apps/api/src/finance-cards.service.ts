@@ -17,7 +17,7 @@ export async function selectedCardPlan(tx:Tx,raw:unknown,existingId?:string|null
 export async function issueHolderCard(tx:Tx,customer:{
  id:string;createdAt:Date;birthDate:Date|null;cpfValid:boolean;cpfConflict:boolean;cpfLast4:string|null;cardNumber:string|null;
 }){
- if(customer.cardNumber||!customer.birthDate||!customer.cpfValid||customer.cpfConflict||!customer.cpfLast4)return;
+ if(customer.cardNumber||!customer.cpfValid||customer.cpfConflict||!customer.cpfLast4)return;
  const number=await nextCardNumber(tx,customer.createdAt,customer.birthDate,customer.cpfLast4);
  await tx.financeCustomer.update({where:{id:customer.id},data:{cardNumber:number}});
 }
@@ -27,6 +27,7 @@ export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacit
  const current=await tx.cardDependent.findMany({where:{customerId},select:{id:true,cpfHash:true,cpfLast4:true,cardNumber:true,birthDate:true,benefitActive:true}});
  // Sem exclusão implícita: os dependentes omitidos permanecem cadastrados.
  const additions=inputs.filter(item=>!item.id);
+ if(additions.some(item=>!item.birthDate))return error("Informe a data de nascimento dos novos dependentes.");
  if(current.length+additions.length>capacity)return error(`Este cartão permite até ${capacity} dependente(s). Remova ou revise os registros existentes antes de continuar.`);
  for(const input of inputs){
   const birthday=input.birthDate?new Date(input.birthDate+"T00:00:00.000Z"):null;
@@ -57,11 +58,11 @@ export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacit
    ]);
    if(dependent||holder)return error("CPF já cadastrado para outro beneficiário.",409);
    const customer=await tx.financeCustomer.findUniqueOrThrow({where:{id:customerId},select:{createdAt:true}});
-   const number=birthday?await nextCardNumber(tx,customer.createdAt,birthday,input.cpf!.slice(-4)):null;
+   const number=await nextCardNumber(tx,customer.createdAt,birthday,input.cpf!.slice(-4));
    const created=await tx.cardDependent.create({data:{customerId,name:input.name,benefitActive:true,
     cpfHash:hash,cpfLast4:input.cpf!.slice(-4),birthDate:birthday,cardNumber:number},select:{id:true}});
    await tx.auditLog.create({data:{actorId,action:"CARD_DEPENDENT_CREATED",entityType:"CardDependent",
-    entityId:created.id,metadata:{customerId,cardIssued:!!number}}});
+    entityId:created.id,metadata:{customerId,cardIssued:true}}});
   }
  }
 }
