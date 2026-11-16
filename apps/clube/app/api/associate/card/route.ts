@@ -7,7 +7,11 @@ export async function GET(request:NextRequest){
   {status:401,headers:{"cache-control":"private, no-store"}});
  try{
   const base=process.env.INTERNAL_API_URL||"http://127.0.0.1:4002/v1";
-  const response=await fetch(`${base}/member/card.pdf`,{
+  const dependentId=request.nextUrl.searchParams.get("dependentId");
+  if(dependentId&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dependentId))
+   return NextResponse.json({error:"Cartão inválido."},{status:400,headers:{"cache-control":"private, no-store"}});
+  const path=dependentId?`/member/card.pdf?dependentId=${encodeURIComponent(dependentId)}`:"/member/card.pdf";
+  const response=await fetch(`${base}${path}`,{
    headers:{authorization:`Bearer ${token}`},
    cache:"no-store",signal:AbortSignal.timeout(15000),
   });
