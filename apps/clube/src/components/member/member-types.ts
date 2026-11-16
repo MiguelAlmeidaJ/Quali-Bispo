@@ -9,7 +9,7 @@ export type Dashboard={
  consultationsThisMonth:number;savingsCents:number;
  attendanceTotals:{count:number;fullPriceCents:number;chargedCents:number;savingsCents:number};
  attendances:Attendance[];issues:Issue[];partners:Partner[];catalog:CatalogItem[];
- dependentsAvailable:boolean;cardNumber:string|null;dependents:{id:string;name:string;cpfLast4:string;birthDate:string;cardNumber:string}[];
+ dependentsAvailable:boolean;cardNumber:string|null;dependents:{id:string;name:string;cpfLast4:string;birthDate:string|null;cardNumber:string|null}[];
  phone:null;nextDueDate:null;consultationLimit:null;
 };
 export const statuses:Record<Status,string>={PAID:"Pago",OPEN:"Em aberto",EXPECTED:"Previsto",PENDING:"Pendente",IN_REVIEW:"Em tratativa",AWAITING:"Aguardando",UNSPECIFIED:"Não informado"};
