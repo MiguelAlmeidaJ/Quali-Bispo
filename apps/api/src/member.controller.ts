@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, HttpException, Post, Req, Res, UnauthorizedException } from "@nestjs/common";
+import { Body, Controller, Get, Headers, HttpException, Post, Query, Req, Res, UnauthorizedException } from "@nestjs/common";
 import { createPrismaClient } from "@quali/database";
 import { createHmac } from "node:crypto";
 import { config as loadEnv } from "dotenv";
@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import type { Request, Response } from "express";
 import { makeMemberCardPdf } from "./member-card-pdf";
 import { cpfFingerprint, validCpf } from "./finance-customer.validation";
+import { cardUUID } from "./cards.logic";
 
 loadEnv({path:"../../.env"});
 const db=createPrismaClient();
@@ -32,7 +33,7 @@ function verifySession(auth?:string):{id:string;kind:"holder"|"dependent"}{
 const selectMember={
  id:true,name:true,cpfLast4:true,birthDate:true,benefitActive:true,planType:true,amountCents:true,cardNumber:true,
  cardPlan:{select:{name:true,priceCents:true,maxDependents:true,benefits:true}},
- dependents:{select:{id:true,name:true,cpfLast4:true,birthDate:true,cardNumber:true},orderBy:{createdAt:"asc"}},
+ dependents:{where:{benefitActive:true},select:{id:true,name:true,cpfLast4:true,birthDate:true,cardNumber:true},orderBy:{createdAt:"asc"}},
  status:true,partner:{select:{id:true,name:true,city:true}},unit:true,
  createdAt:true,referenceDate:true,cpfValid:true,cpfConflict:true,
 } as const;
@@ -99,13 +100,16 @@ export class MemberController{
   };
  }
  @Get("card.pdf")
- async downloadCard(@Headers("authorization") auth:string|undefined,@Res() response:Response){
+ async downloadCard(@Headers("authorization") auth:string|undefined,@Query("dependentId") dependentId:string|undefined,@Res() response:Response){
   // Mesmo JWT dedicado ao associado; nunca aceitar token de ADMIN/PARTNER.
   const session=verifySession(auth);
   let name:string,cardNumber:string|null,cpfLast4:string|null,birthDate:Date|null;
   let relationship:"Titular"|"Dependente"="Titular";
-  if(session.kind==="dependent"){
-   const dep=await db.cardDependent.findUnique({where:{id:session.id},
+  if(dependentId&&(!cardUUID.test(dependentId)||session.kind==="dependent"))
+   throw new HttpException("Cartão não disponível.",403);
+  if(session.kind==="dependent"||dependentId){
+   const dep=await db.cardDependent.findFirst({where:{id:dependentId||session.id,
+     ...(dependentId?{customerId:session.id}:{})},
     select:{name:true,cardNumber:true,cpfLast4:true,birthDate:true,benefitActive:true,
      customer:{select:{benefitActive:true,cpfValid:true,cpfConflict:true}}}});
    if(!dep?.benefitActive||!dep.customer.benefitActive||!dep.customer.cpfValid||dep.customer.cpfConflict)
