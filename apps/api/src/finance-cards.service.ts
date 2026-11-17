@@ -28,7 +28,6 @@ export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacit
  const current=await tx.cardDependent.findMany({where:{customerId},select:{id:true,cpfHash:true,cpfLast4:true,cardNumber:true,birthDate:true,benefitActive:true}});
  // Sem exclusão implícita: os dependentes omitidos permanecem cadastrados.
  const additions=inputs.filter(item=>!item.id);
- if(additions.some(item=>!item.birthDate))return error("Informe a data de nascimento dos novos dependentes.");
  if(current.length+additions.length>capacity)return error(`Este cartão permite até ${capacity} dependente(s). Remova ou revise os registros existentes antes de continuar.`);
  for(const input of inputs){
   const birthday=input.birthDate?new Date(input.birthDate+"T00:00:00.000Z"):null;
@@ -44,7 +43,7 @@ export async function saveDependents(tx:Tx,customerId:string,raw:unknown,capacit
    const holder=await tx.financeCustomer.findFirst({where:{cpfHash:hash,benefitActive:true},select:{id:true}});
    if(duplicate||holder)return error("CPF já cadastrado para outro beneficiário.",409);
    let cardNumber:string|undefined;
-   if(!own.cardNumber&&birthday){
+   if(!own.cardNumber){
     const customer=await tx.financeCustomer.findUniqueOrThrow({where:{id:customerId},select:{createdAt:true}});
     cardNumber=await nextCardNumber(tx,customer.createdAt,birthday,last4||own.cpfLast4);
    }
