@@ -234,7 +234,7 @@ export function CustomerFormPage({id}:{id?:string}){
     </div></section>
     {(maximum>0||dependents.length>0)&&<section className="customer-dependents">
      <h2><FiUsersIcon/> Dependentes ({dependents.length} de {maximum})</h2>
-     <p>Este cartão permite até {maximum} dependente(s). O número do cartão do dependente será emitido após informar o nascimento.</p>
+     <p>Este cartão permite até {maximum} dependente(s). A data de nascimento é opcional. O número do cartão é gerado no cadastro e não será alterado após a emissão.</p>
      {dependents.map((item,index)=><div className="customer-dependent-row" key={item.id||`new-${index}`}>
       <label>Nome do dependente <input required maxLength={180} value={item.name} placeholder={`Dependente ${index+1}`}
        onChange={e=>updateDependent(index,"name",e.target.value)}/></label>
